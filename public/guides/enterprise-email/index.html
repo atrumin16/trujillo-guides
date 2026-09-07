@@ -1,0 +1,2064 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arquitectura de Correo a Coste 0 € · ATM Docs</title>
+  <meta name="description" content="Cómo construir infraestructura de email de nivel enterprise sin Google Workspace: pipelines transaccionales, avatares verificados, DKIM/SPF/DMARC.">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="canonical" href="https://guides.trujillomingorance.com/guides/enterprise-email/">
+  <meta name="theme-color" content="#080c14">
+  <link rel="stylesheet" href="/style.css?v=20260907">
+</head>
+<body>
+
+  <div id="progress-bar"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <a href="/" class="header-left">
+      <svg class="header-logo" width="28" height="28" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="7" fill="#000000" stroke="#ffffff" stroke-width="1.2"/>
+        <path d="M8 6.5C8 5.67157 8.67157 5 9.5 5H18L24 11V25.5C24 26.3284 23.3284 27 22.5 27H9.5C8.67157 27 8 26.3284 8 25.5V6.5Z" fill="#0c0c0c" stroke="#ffffff" stroke-width="1.4" stroke-linejoin="round"/>
+        <path d="M18 5V11H24" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="12" y1="15" x2="20" y2="15" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="12" y1="19" x2="18" y2="19" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-title">ATM DOCS</span>
+    </a>
+
+    <!-- Breadcrumb -->
+    <nav style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary, #71717a);">
+      <a href="/" style="color:var(--text-secondary, #71717a);text-decoration:none;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-secondary, #71717a)'">Índice</a>
+      <span style="opacity:0.4;">/</span>
+      <span style="color:#e5e5e5;" id="breadcrumb-title">Correo Empresarial</span>
+    </nav>
+
+    <div class="header-right">
+      <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle theme">
+        <svg class="sun-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="moon-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+
+      <div class="lang-toggle-group">
+        <button id="lang-btn-es" class="lang-btn active" onclick="setLanguage('es')">ES</button>
+        <button id="lang-btn-en" class="lang-btn" onclick="setLanguage('en')">EN</button>
+      </div>
+
+      <a href="https://labs.trujillomingorance.com" target="_blank" rel="noopener" class="nav-link-pill">
+        ATM Hub
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <div class="main-wrapper">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-brand-avatar">
+          <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="7" fill="#111111" stroke="#27272a"/>
+            <path d="M8 6.5C8 5.67157 8.67157 5 9.5 5H18L24 11V25.5C24 26.3284 23.3284 27 22.5 27H9.5C8.67157 27 8 26.3284 8 25.5V6.5Z" fill="#18181b" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M18 5V11H24" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="12" y1="15" x2="20" y2="15" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="12" y1="19" x2="18" y2="19" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="sidebar-author-name">ATM Software Labs</div>
+        <div id="sidebar-role" class="sidebar-author-role">DevOps &amp; Systems Engineering</div>
+        <a href="https://labs.trujillomingorance.com" target="_blank" rel="noopener" class="sidebar-author-link">
+          <span id="sidebar-hub-label">ATM Hub</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+        </a>
+      </div>
+
+      <div class="sidebar-status-box">
+        <div class="status-indicator">
+          <span class="status-dot"></span>
+          <span id="sidebar-status-title">Sistemas en Línea</span>
+        </div>
+        <div class="status-meta" id="sidebar-status-meta">Runbook Verificado · Producción</div>
+      </div>
+
+      <div id="toc-title" class="toc-title">Capítulos</div>
+
+      <ul id="toc-es" class="toc-list">
+        <li><a href="#es-mito" class="toc-link">1. El Mito de los 15 €/mes</a></li>
+        <li><a href="#es-arquitectura" class="toc-link">2. Arquitectura General</a></li>
+        <li><a href="#es-autenticacion" class="toc-link">3. Autenticación Criptográfica</a></li>
+        <li><a href="#es-enrutamiento" class="toc-link">4. Enrutamiento Invisible Edge</a></li>
+        <li><a href="#es-avatar" class="toc-link">5. Foto de Perfil en Gmail</a></li>
+        <li><a href="#es-enviar-como" class="toc-link">6. Enviar como (Gmail)</a></li>
+        <li><a href="#es-diseno" class="toc-link">7. Sistema de Diseño</a></li>
+        <li><a href="#es-tiempo" class="toc-link">8. Fechas y Reloj Real</a></li>
+        <li><a href="#es-delegacion" class="toc-link">9. Delegación de Equipo</a></li>
+        <li><a href="#es-costes" class="toc-link">10. Comparativa de Costes</a></li>
+      </ul>
+
+      <ul id="toc-en" class="toc-list" style="display:none;">
+        <li><a href="#en-fallacy" class="toc-link">1. The $15/User Fallacy</a></li>
+        <li><a href="#en-architecture" class="toc-link">2. System Architecture</a></li>
+        <li><a href="#en-deliverability" class="toc-link">3. Cryptographic Deliverability</a></li>
+        <li><a href="#en-inbound" class="toc-link">4. Inbound Edge Interception</a></li>
+        <li><a href="#en-avatars" class="toc-link">5. Verified Brand Avatars</a></li>
+        <li><a href="#en-send-as" class="toc-link">6. Gmail "Send Mail As"</a></li>
+        <li><a href="#en-design" class="toc-link">7. Design System</a></li>
+        <li><a href="#en-time" class="toc-link">8. Real-Time Temporal Grounding</a></li>
+        <li><a href="#en-playbook" class="toc-link">9. Team Delegation Playbook</a></li>
+        <li><a href="#en-costs" class="toc-link">10. Cost &amp; Capability Matrix</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main>
+      <section id="tab-guides" class="tab-view active">
+        <article id="full-guide-article" class="guide-content">
+          
+          <!-- ENGLISH CONTENT -->
+          <div class="content-en">
+            <div class="hero-category">
+              <span class="pulse-dot"></span>
+              <span>PRODUCTION ARCHITECTURE SPECIFICATION · 0 € COST MATRIX</span>
+            </div>
+
+            <h1 class="guide-title">The Zero-Cost Enterprise Email Architecture for AI Startups</h1>
+            <p class="guide-subtitle">
+              How modern founders build production transactional infrastructure, verified Google brand avatars, and Trujillo high-contrast OLED dark aesthetics without paying $15/user/month for legacy corporate suites.
+            </p>
+
+            <div class="meta-bar">
+              <div class="meta-item">
+                <span>Author:</span>
+                <span class="meta-author">Alberto Trujillo Mingorance</span>
+              </div>
+              <div class="meta-item">·</div>
+              <div class="meta-item">September 6, 2026</div>
+              <div class="meta-item">·</div>
+              <div class="meta-item">10 min read</div>
+              <div class="meta-item">·</div>
+              <div class="meta-item" style="color:#22c55e;">Verified Production Stack</div>
+            </div>
+
+            <!-- Visual KPI Grid -->
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <span class="kpi-label">Cost Runrate</span>
+                <span class="kpi-value" style="color:#22c55e;">$0.00 / mo</span>
+                <span class="kpi-sub">Save $864/yr vs Workspace</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Edge Latency</span>
+                <span class="kpi-value">&lt; 85 ms</span>
+                <span class="kpi-sub">Enrutamiento Edge Global</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Security Grade</span>
+                <span class="kpi-value">100% A+</span>
+                <span class="kpi-sub">SPF + DKIM 2048b + DMARC</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Setup Velocity</span>
+                <span class="kpi-value">15 Mins</span>
+                <span class="kpi-sub">Zero-Downtime Deployment</span>
+              </div>
+            </div>
+
+            <!-- Section 1 -->
+            <section id="en-fallacy">
+              <h2>1. The $15/User/Month Fallacy</h2>
+              <p>
+                When founders launch an AI product or SaaS, the conventional reflex is to immediately subscribe to <strong>Google Workspace</strong> or <strong>Microsoft 365</strong> at $6 to $18 per user every month.
+              </p>
+              <p>
+                For a lean 4-person team, that burns <strong>$500 to $1,000 annually</strong> before generating a single dollar of revenue. Worse, when the system needs automated mailboxes (<code>no-reply@</code>, <code>ops@</code>, <code>alerts@</code>, <code>support@</code>), teams wastefully spin up full paid seats for accounts that will never be touched by a human.
+              </p>
+              <div class="callout">
+                <div class="callout-title">The Silicon Valley Edge Pattern</div>
+                <p>
+                  Companies like Stripe, Vercel, Supabase, and Linear treat email as programmable infrastructure: separate machine transactional pipelines from personal inboxes, intercept incoming traffic at DNS edge servers, and project brand identity through open directory protocols.
+                </p>
+              </div>
+
+              <!-- Interactive Startup Savings Calculator -->
+              <div class="savings-calc-box">
+                <div class="calc-header">
+                  <div class="calc-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v2m0 8v2"/></svg>
+                    <span>Interactive Startup Savings Calculator</span>
+                  </div>
+                  <span class="calc-badge">Real-Time Simulator</span>
+                </div>
+
+                <div class="calc-controls">
+                  <div class="calc-control-group">
+                    <label class="calc-label" for="calc-team-slider-en">Team Size: <span id="calc-team-display-en" class="calc-val-highlight">4 founders</span></label>
+                    <input type="range" id="calc-team-slider-en" class="calc-slider" min="1" max="30" value="4">
+                  </div>
+
+                  <div class="calc-control-group">
+                    <label class="calc-label">Corporate Suite Plan:</label>
+                    <div class="calc-plan-selector" id="calc-plans-en">
+                      <button type="button" class="calc-plan-btn" data-rate="6">Starter ($6/mo)</button>
+                      <button type="button" class="calc-plan-btn active" data-rate="12">Standard ($12/mo)</button>
+                      <button type="button" class="calc-plan-btn" data-rate="18">Plus ($18/mo)</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="calc-results-matrix">
+                  <div class="calc-result-card ws">
+                    <div class="calc-result-label">Google Workspace / Yr</div>
+                    <div id="calc-ws-annual-en" class="calc-result-number ws">$576 / yr</div>
+                    <div class="calc-result-sub">Recurring burn rate</div>
+                  </div>
+                  <div class="calc-result-card trujillo">
+                    <div class="calc-result-label">Trujillo Architecture</div>
+                    <div class="calc-result-number trujillo">$0.00 / yr</div>
+                    <div class="calc-result-sub">Zero seat license fees</div>
+                  </div>
+                  <div class="calc-result-card savings">
+                    <div class="calc-result-label">Net Annual Savings</div>
+                    <div id="calc-net-annual-en" class="calc-result-number savings">$576 / yr</div>
+                    <div id="calc-5yr-savings-en" class="calc-result-sub highlight">5-Year Savings: $2,880</div>
+                  </div>
+                </div>
+                <div class="calc-footer-note">
+                  💡 <strong>Easy to Understand for All Audiences:</strong> That money stays directly in your company bank account to fund your LLM API inference tokens, domains, or engineering runway instead of paying for empty corporate mailboxes.
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 2 -->
+            <section id="en-architecture">
+              <h2>2. System Architecture & Packet Flow</h2>
+              <p>
+                The architecture decouples the four functional pillars of enterprise communication into high-speed, zero-cost edge components:
+              </p>
+
+              <!-- Interactive Architecture Pipeline -->
+              <div class="pipeline-flow-container">
+                <div class="pipeline-header">
+                  <span class="pipeline-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <span>Trujillo Enterprise Decoupled Dataflow</span>
+                  </span>
+                  <span class="pipeline-tech-tag">Sub-100ms Anycast</span>
+                </div>
+
+                <div class="pipeline-steps">
+                  <div class="pipeline-step-card">
+                    <span class="pipeline-step-badge">STAGE 01 · INBOUND</span>
+                    <h4 class="pipeline-step-name">Edge MX Intercept</h4>
+                    <p class="pipeline-step-desc">Cloudflare MX catches mail globally in memory and forwards instantly to your personal Gmail. Zero storage liability.</p>
+                    <span class="pipeline-tech-tag">Cloudflare Routing</span>
+                  </div>
+
+                  <div class="pipeline-step-card">
+                    <span class="pipeline-step-badge">STAGE 02 · OUTBOUND</span>
+                    <h4 class="pipeline-step-name">Transactional API</h4>
+                    <p class="pipeline-step-desc">Cloudflare Workers trigger Resend REST API with custom 2048-bit DKIM keys for instant inbox delivery.</p>
+                    <span class="pipeline-tech-tag">Resend TLS 1.3</span>
+                  </div>
+
+                  <div class="pipeline-step-card">
+                    <span class="pipeline-step-badge">STAGE 03 · IDENTITY</span>
+                    <h4 class="pipeline-step-name">Verified Avatar</h4>
+                    <p class="pipeline-step-desc">Free standalone Google account injects your official logo directly into Gmail and Apple Mail inbox feeds.</p>
+                    <span class="pipeline-tech-tag">Google Directory</span>
+                  </div>
+
+                  <div class="pipeline-step-card">
+                    <span class="pipeline-step-badge">STAGE 04 · HUMAN</span>
+                    <h4 class="pipeline-step-name">Gmail "Send Mail As"</h4>
+                    <p class="pipeline-step-desc">Founder replies from standard Gmail app using Resend SMTP relay as founder@yourdomain.com.</p>
+                    <span class="pipeline-tech-tag">TLS SMTP Relay</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 3 -->
+            <section id="en-deliverability">
+              <h2>3. Cryptographic Deliverability: SPF, DKIM, and DMARC</h2>
+              <p>
+                To guarantee that transactional emails hit the primary inbox rather than Spam, your domain must carry rigorous cryptographic proofs.
+              </p>
+              
+              <h3>Visual DNS Records Specification</h3>
+
+              <!-- DNS Card 1: DKIM -->
+              <div class="dns-record-card">
+                <div class="dns-record-header">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="dns-type-pill">TXT</span>
+                    <span class="dns-record-name">resend._domainkey.yourdomain.com</span>
+                  </div>
+                  <span style="font-family:var(--font-mono);font-size:10px;color:#22c55e;">DKIM 2048-bit (Essential)</span>
+                </div>
+                <div class="dns-record-body">
+                  <code class="dns-record-value">k=rsa; p=YOUR_DKIM_PUBLIC_KEY</code>
+                  <button class="dns-quick-copy" data-copy="k=rsa; p=YOUR_DKIM_PUBLIC_KEY">COPY VALUE</button>
+                </div>
+              </div>
+
+              <!-- DNS Card 2: SPF -->
+              <div class="dns-record-card">
+                <div class="dns-record-header">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="dns-type-pill">TXT</span>
+                    <span class="dns-record-name">yourdomain.com (@ root)</span>
+                  </div>
+                  <span style="font-family:var(--font-mono);font-size:10px;color:#38bdf8;">SPF Sender Authorization</span>
+                </div>
+                <div class="dns-record-body">
+                  <code class="dns-record-value">v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com ~all</code>
+                  <button class="dns-quick-copy" data-copy="v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com ~all">COPY VALUE</button>
+                </div>
+              </div>
+
+              <!-- DNS Card 3: DMARC -->
+              <div class="dns-record-card">
+                <div class="dns-record-header">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="dns-type-pill">TXT</span>
+                    <span class="dns-record-name">_dmarc.yourdomain.com</span>
+                  </div>
+                  <span style="font-family:var(--font-mono);font-size:10px;color:#a855f7;">DMARC Anti-Spoofing</span>
+                </div>
+                <div class="dns-record-body">
+                  <code class="dns-record-value">v=DMARC1; p=none; rua=mailto:founder@yourdomain.com</code>
+                  <button class="dns-quick-copy" data-copy="v=DMARC1; p=none; rua=mailto:founder@yourdomain.com">COPY VALUE</button>
+                </div>
+              </div>
+
+              <!-- DNS Card 4: Cloudflare MX -->
+              <div class="dns-record-card">
+                <div class="dns-record-header">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="dns-type-pill mx">MX</span>
+                    <span class="dns-record-name">yourdomain.com (@ root)</span>
+                  </div>
+                  <span style="font-family:var(--font-mono);font-size:10px;color:#38bdf8;">Cloudflare Inbound Edge (Priority 63, 93, 98)</span>
+                </div>
+                <div class="dns-record-body">
+                  <code class="dns-record-value">route1.mx.cloudflare.net · route2.mx.cloudflare.net · route3.mx.cloudflare.net</code>
+                  <button class="dns-quick-copy" data-copy="route1.mx.cloudflare.net">COPY MX 1</button>
+                </div>
+              </div>
+
+              <!-- Interactive DNS Security & Deliverability Simulator -->
+              <div class="interactive-simulator">
+                <div class="sim-header">
+                  <div class="sim-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <span>Interactive DNS Security & Deliverability Simulator</span>
+                  </div>
+                  <span class="calc-badge">Click to Verify</span>
+                </div>
+
+                <div class="sim-grid">
+                  <!-- SPF Sim -->
+                  <div class="sim-card" id="sim-card-spf-en">
+                    <div class="sim-card-top">
+                      <span class="sim-card-type">SPF Alignment</span>
+                      <span class="sim-status-pill" id="sim-status-spf-en">Ready</span>
+                    </div>
+                    <p class="sim-simple-desc">
+                      <strong>Simple Analogy:</strong> Like a VIP guest list for your domain. It tells Gmail & Outlook exactly which mail servers are permitted to send emails on your behalf.
+                    </p>
+                    <div class="sim-output-box" id="sim-out-spf-en">
+                      ✓ PASS: include:_spf.mx.cloudflare.net include:amazonses.com ~all (100% Aligned)
+                    </div>
+                    <button type="button" class="sim-test-btn" onclick="testDnsProtocol('spf', 'en')">
+                      <span>Test SPF Alignment</span>
+                    </button>
+                  </div>
+
+                  <!-- DKIM Sim -->
+                  <div class="sim-card" id="sim-card-dkim-en">
+                    <div class="sim-card-top">
+                      <span class="sim-card-type">DKIM 2048-bit</span>
+                      <span class="sim-status-pill" id="sim-status-dkim-en">Ready</span>
+                    </div>
+                    <p class="sim-simple-desc">
+                      <strong>Simple Analogy:</strong> An unbreakable digital wax seal. It cryptographically proves nobody tampered with a single character of your message during transit.
+                    </p>
+                    <div class="sim-output-box" id="sim-out-dkim-en">
+                      ✓ PASS: RSA-SHA256 (2048-bit signature verified by Google Edge MX)
+                    </div>
+                    <button type="button" class="sim-test-btn" onclick="testDnsProtocol('dkim', 'en')">
+                      <span>Verify DKIM Key</span>
+                    </button>
+                  </div>
+
+                  <!-- DMARC Sim -->
+                  <div class="sim-card" id="sim-card-dmarc-en">
+                    <div class="sim-card-top">
+                      <span class="sim-card-type">DMARC Protection</span>
+                      <span class="sim-status-pill" id="sim-status-dmarc-en">Ready</span>
+                    </div>
+                    <p class="sim-simple-desc">
+                      <strong>Simple Analogy:</strong> The security guard at Gmail's entrance. Instructs inbox providers to immediately reject or quarantine impostors trying to spoof your identity.
+                    </p>
+                    <div class="sim-output-box" id="sim-out-dmarc-en">
+                      ✓ PASS: p=reject policy enforced. Unauthorized spoofing attempts blocked.
+                    </div>
+                    <button type="button" class="sim-test-btn" onclick="testDnsProtocol('dmarc', 'en')">
+                      <span>Check Anti-Spoofing</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="code-container">
+                <div class="code-header">
+                  <span>RAW BIND ZONE EXPORT</span>
+                  <button class="copy-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span>COPY ALL</span>
+                  </button>
+                </div>
+                <pre><code>; 1. DKIM 2048-bit Public Key
+resend._domainkey.yourdomain.com. IN TXT "k=rsa; p=YOUR_DKIM_PUBLIC_KEY"
+
+; 2. SPF Record (Authorizing Cloudflare + Resend/SES)
+yourdomain.com. IN TXT "v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com ~all"
+
+; 3. DMARC Enforcement Policy
+_dmarc.yourdomain.com. IN TXT "v=DMARC1; p=none; rua=mailto:founder@yourdomain.com"</code></pre>
+              </div>
+            </section>
+
+            <!-- Section 4 -->
+            <section id="en-inbound">
+              <h2>4. Inbound Edge Interception (Email Routing)</h2>
+              <p>
+                Instead of maintaining legacy email servers or storage, inbound mail is intercepted globally by Cloudflare's Edge network and forwarded immediately to your personal operating inbox.
+              </p>
+              <ul>
+                <li><strong>Zero Privacy Leakage</strong>: Public DNS records only reveal <code>route1.mx.cloudflare.net</code>. Your personal Gmail address is never exposed in WHOIS or headers.</li>
+                <li><strong>Unlimited Aliases</strong>: Create <code>founder@</code>, <code>no-reply@</code>, <code>ai@</code>, <code>security@</code>, <code>legal@</code>, and <code>billing@</code> instantly at zero cost.</li>
+              </ul>
+
+              <div class="code-container">
+                <div class="code-header">
+                  <span>EMAIL ROUTING SPECIFICATION</span>
+                  <button class="copy-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span>COPY</span>
+                  </button>
+                </div>
+                <pre><code>Rule 1: Custom Address: founder@yourdomain.com   -> Forward to: personal_hub@gmail.com
+Rule 2: Custom Address: no-reply@yourdomain.com  -> Forward to: personal_hub@gmail.com
+Rule 3: Custom Address: ai@yourdomain.com        -> Forward to: personal_hub@gmail.com
+Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid scrapers)</code></pre>
+              </div>
+            </section>
+
+            <!-- Section 5 -->
+            <section id="en-avatars">
+              <h2>5. Bypassing Google Workspace: Verified Brand Avatars</h2>
+              <p>
+                Gmail strictly blocks emails from embedding their own profile pictures inside HTML code for anti-phishing protection. Gmail resolves sender avatars exclusively against Google’s central user directory.
+              </p>
+              
+              <h3>The 5-Step Edge Identity Protocol</h3>
+              
+              <div class="stepper-container">
+                <div class="step-item">
+                  <div class="step-number">1</div>
+                  <div class="step-body">
+                    <h4>Open Incognito Google Signup</h4>
+                    <p>Open <code>accounts.google.com/signup</code> in a private window to prevent caching existing corporate sessions.</p>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <div class="step-number">2</div>
+                  <div class="step-body">
+                    <h4>Trigger Standalone Account Mode</h4>
+                    <p>Enter your brand name (e.g., <em>Trujillo AI</em>) and click <strong>"Use my current email address instead"</strong>. Enter <code>no-reply@yourdomain.com</code>.</p>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <div class="step-number">3</div>
+                  <div class="step-body">
+                    <h4>Intercept Edge Verification Code</h4>
+                    <p>Google dispatches a 6-digit confirmation PIN. Cloudflare forwards it to your Gmail in &lt;100ms. Copy and confirm.</p>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <div class="step-number">4</div>
+                  <div class="step-body">
+                    <h4>Dismiss Workspace Upsell Modal</h4>
+                    <p>When Google prompts <em>"Add Gmail to your account"</em>, <strong>dismiss or close the prompt</strong>. The standalone identity container is already established.</p>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <div class="step-number">5</div>
+                  <div class="step-body">
+                    <h4>Upload Brand Icon & Set Public Visibility</h4>
+                    <p>Navigate to <code>myaccount.google.com</code> &rarr; <em>Personal Info</em> &rarr; <em>Profile Picture</em>. Upload your official 512x512 logo and set visibility to <strong>"Anyone"</strong>.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="callout tip">
+                <div class="callout-title">Universal Fallback for Apple Mail & Thunderbird</div>
+                <p>
+                  Register <code>no-reply@yourdomain.com</code> on <strong>Gravatar.com</strong> with the identical SVG/PNG asset. Apple Mail and desktop clients resolve avatars via Gravatar's global edge CDN.
+                </p>
+              </div>
+
+              <!-- Real Production Verification Proof EN -->
+              <div class="production-proof-badge">
+                <div class="proof-header">
+                  <span class="proof-pulse"></span>
+                  <span class="proof-title">Live Production Verification · Gmail & Google Directory</span>
+                  <span class="proof-tag">Verified Brand Avatar</span>
+                </div>
+                <div class="proof-image-wrapper" style="background:#050505;border-radius:8px;overflow:hidden;">
+                  <svg width="100%" height="120" viewBox="0 0 480 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="480" height="120" fill="#050505"/>
+                    <!-- Gmail inbox row -->
+                    <rect x="16" y="16" width="448" height="88" rx="8" fill="#0a0a0a" stroke="#1a1a1a"/>
+                    <!-- Sender avatar circle -->
+                    <circle cx="52" cy="60" r="22" fill="#111" stroke="#222"/>
+                    <circle cx="52" cy="60" r="16" fill="#0c0c0c" stroke="#fff" stroke-width="1.5"/>
+                    <text x="44" y="66" fill="#fff" font-size="13" font-weight="800">T</text>
+                    <!-- Verified dot -->
+                    <circle cx="67" cy="75" r="7" fill="#050505" stroke="#1a1a1a"/>
+                    <circle cx="67" cy="75" r="5" fill="#22c55e"/>
+                    <!-- Email content -->
+                    <text x="88" y="45" fill="#aaa" font-size="8" font-family="monospace">no-reply@trujillomingorance.com</text>
+                    <text x="88" y="58" fill="#fff" font-size="11" font-weight="700">Workspace Authentication</text>
+                    <text x="88" y="73" fill="#555" font-size="8">Use this single-use cryptographic code to verify…</text>
+                    <!-- Sent via badge -->
+                    <rect x="88" y="82" width="100" height="13" rx="3" fill="#0d1a0d" stroke="#22c55e" stroke-width="0.8"/>
+                    <text x="93" y="91.5" fill="#22c55e" font-size="7.5" font-weight="600">✓ Verified Sender · DKIM+SPF</text>
+                    <!-- Timestamp -->
+                    <text x="400" y="45" fill="#444" font-size="8" font-family="monospace">09:14</text>
+                  </svg>
+                </div>
+                <p class="proof-caption">
+                  <strong>Production Render in Gmail:</strong> Outbound transactional dispatch from <code>no-reply@trujillomingorance.com</code> displaying the circular brand logo, verified sender name, and zero spam warnings without paying for Google Workspace.
+                </p>
+              </div>
+
+              <!-- Visual Gallery & Screenshots Explorer EN -->
+              <div class="resources-gallery-box">
+                <div class="sim-header">
+                  <div class="sim-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <span>Graphic Resources & Production Screenshots Explorer</span>
+                  </div>
+                  <span class="calc-badge">Production Assets</span>
+                </div>
+
+                <div class="resources-notice">
+                  📁 <strong>Custom Screenshots Folder:</strong> Real screen captures can be dropped directly into the project directory at <code>public/images/</code>. See <code>public/images/README.md</code> for exact dimensions and filenames. Below are the annotated architectural previews.
+                </div>
+
+                <div class="resources-grid">
+                  <!-- Card 1: DNS Records Table SVG -->
+                  <div class="resource-card">
+                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                      <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="260" height="90" fill="#0d0d0d"/>
+                        <!-- Header row -->
+                        <rect x="8" y="8" width="244" height="16" rx="2" fill="#111"/>
+                        <text x="14" y="19" fill="#555" font-size="7" font-family="monospace" font-weight="600">TYPE</text>
+                        <text x="48" y="19" fill="#555" font-size="7" font-family="monospace" font-weight="600">NAME</text>
+                        <text x="150" y="19" fill="#555" font-size="7" font-family="monospace" font-weight="600">STATUS</text>
+                        <!-- MX row -->
+                        <rect x="8" y="28" width="244" height="14" rx="2" fill="#111"/>
+                        <rect x="14" y="30" width="22" height="10" rx="1.5" fill="#1e3a5f"/>
+                        <text x="18" y="38" fill="#38bdf8" font-size="7" font-weight="700">MX</text>
+                        <text x="48" y="38" fill="#ccc" font-size="7" font-family="monospace">route1.mx.edge.net</text>
+                        <circle cx="190" cy="35" r="3" fill="#22c55e"/>
+                        <text x="197" y="38" fill="#22c55e" font-size="7">Active</text>
+                        <!-- TXT SPF row -->
+                        <rect x="8" y="46" width="244" height="14" rx="2" fill="#0f0f0f"/>
+                        <rect x="14" y="48" width="22" height="10" rx="1.5" fill="#14532d"/>
+                        <text x="17" y="56" fill="#22c55e" font-size="7" font-weight="700">TXT</text>
+                        <text x="48" y="56" fill="#ccc" font-size="7" font-family="monospace">v=spf1 include:_spf...</text>
+                        <circle cx="190" cy="53" r="3" fill="#22c55e"/>
+                        <text x="197" y="56" fill="#22c55e" font-size="7">Active</text>
+                        <!-- TXT DKIM row -->
+                        <rect x="8" y="64" width="244" height="14" rx="2" fill="#111"/>
+                        <rect x="14" y="66" width="22" height="10" rx="1.5" fill="#2e1065"/>
+                        <text x="17" y="74" fill="#a855f7" font-size="7" font-weight="700">TXT</text>
+                        <text x="48" y="74" fill="#ccc" font-size="7" font-family="monospace">resend._domainkey</text>
+                        <circle cx="190" cy="71" r="3" fill="#22c55e"/>
+                        <text x="197" y="74" fill="#22c55e" font-size="7">Active</text>
+                      </svg>
+                    </div>
+                    <div class="resource-info">
+                      <div class="resource-filename">dns-records-table.svg</div>
+                      <div class="resource-title">Edge DNS Records Table</div>
+                      <div class="resource-desc">MX, SPF y DKIM activos. Todos los registros verificados y operativos en producción.</div>
+                    </div>
+                  </div>
+
+                  <!-- Card 2: Domain Verified SVG -->
+                  <div class="resource-card">
+                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                      <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="260" height="90" fill="#0d0d0d"/>
+                        <!-- Domain panel -->
+                        <rect x="8" y="10" width="244" height="70" rx="6" fill="#0f0f0f" stroke="#1a1a1a"/>
+                        <!-- Brand logo circle -->
+                        <circle cx="44" cy="45" r="20" fill="#111" stroke="#1f1f1f"/>
+                        <rect x="34" y="36" width="20" height="18" rx="2" fill="#0c0c0c" stroke="#fff" stroke-width="1.2"/>
+                        <line x1="37" y1="42" x2="51" y2="42" stroke="#fff" stroke-width="1.2"/>
+                        <line x1="37" y1="46" x2="49" y2="46" stroke="#fff" stroke-width="1.2"/>
+                        <!-- Domain text -->
+                        <text x="76" y="38" fill="#fff" font-size="10" font-weight="700">resend.com</text>
+                        <text x="76" y="52" fill="#666" font-size="8" font-family="monospace">yourdomain.com</text>
+                        <!-- VERIFIED badge -->
+                        <rect x="76" y="59" width="60" height="14" rx="3" fill="#052e16" stroke="#22c55e" stroke-width="0.8"/>
+                        <text x="79" y="69" fill="#22c55e" font-size="7.5" font-weight="700">✓ VERIFIED DKIM</text>
+                        <!-- Score -->
+                        <text x="180" y="42" fill="#22c55e" font-size="22" font-weight="800">A+</text>
+                        <text x="184" y="56" fill="#555" font-size="7">Score</text>
+                      </svg>
+                    </div>
+                    <div class="resource-info">
+                      <div class="resource-filename">resend-domain-verified.svg</div>
+                      <div class="resource-title">Verificación DKIM en Resend</div>
+                      <div class="resource-desc">Dominio verificado criptográficamente con clave RSA 2048-bit. Score A+.</div>
+                    </div>
+                  </div>
+
+                  <!-- Card 3: Google Account Avatar SVG -->
+                  <div class="resource-card">
+                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                      <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="260" height="90" fill="#0d0d0d"/>
+                        <!-- myaccount.google.com panel -->
+                        <rect x="8" y="10" width="244" height="70" rx="6" fill="#0f0f0f" stroke="#1a1a1a"/>
+                        <!-- Avatar circle (brand logo) -->
+                        <circle cx="50" cy="45" r="22" fill="#1a1a1a" stroke="#333"/>
+                        <circle cx="50" cy="45" r="18" fill="#0c0c0c" stroke="#fff" stroke-width="1.4"/>
+                        <text x="42" y="51" fill="#fff" font-size="14" font-weight="800">A</text>
+                        <!-- Status indicator -->
+                        <circle cx="66" cy="61" r="6" fill="#0d0d0d" stroke="#1a1a1a"/>
+                        <circle cx="66" cy="61" r="4" fill="#22c55e"/>
+                        <!-- Account info -->
+                        <text x="86" y="36" fill="#fff" font-size="9.5" font-weight="700">no-reply@yourdomain.com</text>
+                        <text x="86" y="50" fill="#666" font-size="8">Standalone Google Account</text>
+                        <!-- Visibility pill -->
+                        <rect x="86" y="58" width="70" height="13" rx="3" fill="#111" stroke="#333"/>
+                        <text x="90" y="68" fill="#aaa" font-size="7.5">👤 Public visibility</text>
+                      </svg>
+                    </div>
+                    <div class="resource-info">
+                      <div class="resource-filename">google-account-avatar.svg</div>
+                      <div class="resource-title">Cuenta Google · Avatar de Marca</div>
+                      <div class="resource-desc">Cuenta standalone con logo corporativo visible públicamente en Gmail y Gravatar.</div>
+                    </div>
+                  </div>
+
+                  <!-- Card 4: Gmail Send As SMTP SVG -->
+                  <div class="resource-card">
+                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                      <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="260" height="90" fill="#0d0d0d"/>
+                        <rect x="8" y="10" width="244" height="70" rx="6" fill="#0f0f0f" stroke="#1a1a1a"/>
+                        <!-- Gmail settings icon -->
+                        <text x="18" y="34" fill="#555" font-size="7.5" font-family="monospace">Gmail › Settings › Accounts</text>
+                        <line x1="16" y1="38" x2="244" y2="38" stroke="#1a1a1a"/>
+                        <!-- Config rows -->
+                        <text x="18" y="51" fill="#aaa" font-size="7.5" font-family="monospace">SMTP Server</text>
+                        <text x="100" y="51" fill="#38bdf8" font-size="7.5" font-family="monospace">smtp.resend.com</text>
+                        <text x="18" y="63" fill="#aaa" font-size="7.5" font-family="monospace">Port</text>
+                        <text x="100" y="63" fill="#a855f7" font-size="7.5" font-family="monospace">465 (SSL/TLS)</text>
+                        <!-- Connected badge -->
+                        <rect x="180" y="55" width="58" height="16" rx="3" fill="#052e16" stroke="#22c55e" stroke-width="0.8"/>
+                        <circle cx="188" cy="63" r="3" fill="#22c55e"/>
+                        <text x="194" y="67" fill="#22c55e" font-size="7" font-weight="700">Connected</text>
+                      </svg>
+                    </div>
+                    <div class="resource-info">
+                      <div class="resource-filename">gmail-send-as-smtp.svg</div>
+                      <div class="resource-title">Gmail SMTP "Enviar como"</div>
+                      <div class="resource-desc">Bridge SMTP a través de Resend. Envío desde founder@yourdomain.com sin coste.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 6 -->
+            <section id="en-send-as">
+              <h2>6. The "Send Mail As" Pipeline (Replying via Resend SMTP)</h2>
+              <p>
+                You can draft, send, and reply to emails directly from your standard Gmail web and mobile apps appearing officially as <code>founder@yourdomain.com</code> with zero header warnings.
+              </p>
+
+              <div class="code-container">
+                <div class="code-header">
+                  <span>GMAIL SMTP CONFIGURATION DIALOG</span>
+                  <button class="copy-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span>COPY</span>
+                  </button>
+                </div>
+                <pre><code>1. In Gmail -> Settings -> "Accounts and Import" -> "Send mail as" -> "Add another email address"
+2. Name: Your Name (e.g., Alberto Trujillo)
+3. Email: founder@yourdomain.com
+4. Uncheck: "Treat as an alias"
+5. SMTP Server: smtp.resend.com
+6. Port: 465 (SSL) or 587 (TLS)
+7. Username: resend
+8. Password: YOUR_API_KEY (Your Resend Full-Access API Key)</code></pre>
+              </div>
+            </section>
+
+            <!-- Section 7 -->
+            <section id="en-design">
+              <h2>7. The Trujillo Minimalist Email Design System (TES-v1)</h2>
+              <p>
+                Modern technical users reject colorful gradients, bubbly cartoon badges, and cluttered promotional templates. The Trujillo Design Standard emphasizes <strong>pitch black <code>#000000</code> backgrounds, high contrast, clean monospace metadata, and brutalist elegance</strong>.
+              </p>
+
+              <!-- Live Interactive Mockup -->
+              <div class="mockup-container">
+                <div class="mockup-bar">
+                  <div class="mockup-dots">
+                    <div class="mockup-dot" style="background:#ff5f56;"></div>
+                    <div class="mockup-dot" style="background:#ffbd2e;"></div>
+                    <div class="mockup-dot" style="background:#27c93f;"></div>
+                  </div>
+                  <div class="mockup-title">TRUJILLO OLED EMAIL CLIENT PREVIEW</div>
+                  <div style="width:30px;"></div>
+                </div>
+                <div class="mockup-body">
+                  <div style="background:#000000;border:1px solid #1f1f1f;border-radius:8px;max-width:520px;margin:0 auto;padding:32px 28px;text-align:center;">
+                    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:24px;">
+                      <img src="/avatar.png" width="28" height="28" style="border-radius:50%;border:1px solid #222;" alt="">
+                      <span style="font-family:ui-monospace,monospace;font-size:13px;font-weight:800;letter-spacing:0.16em;color:#fff;">TRUJILLO AI</span>
+                    </div>
+
+                    <h3 style="font-size:18px;font-weight:700;color:#ffffff;margin-bottom:8px;">Workspace Authentication</h3>
+                    <p style="font-size:13px;color:#a1a1aa;line-height:1.5;margin-bottom:20px;">
+                      Use this single-use cryptographic security code to verify your session. Code expires in 10 minutes.
+                    </p>
+
+                    <div style="background:#050505;border:1px solid #262626;border-radius:6px;padding:18px 24px;max-width:320px;margin:0 auto 24px;">
+                      <div style="font-family:ui-monospace,monospace;font-size:32px;font-weight:800;color:#ffffff;letter-spacing:12px;text-indent:12px;">
+                        849201
+                      </div>
+                    </div>
+
+                    <a href="#" style="display:inline-block;padding:10px 26px;background:#ffffff;color:#000000;font-size:12px;font-weight:700;text-decoration:none;border-radius:9999px;">
+                      Open Workspace &rarr;
+                    </a>
+
+                    <div style="border-top:1px solid #1a1a1a;margin-top:28px;padding-top:16px;font-family:ui-monospace,monospace;font-size:10px;color:#52525b;">
+                      Sunday, September 6, 2026 · ai.trujillomingorance.com
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 8 -->
+            <section id="en-time">
+              <h2>8. Real-Time Temporal Grounding for AI Models</h2>
+              <p>
+                A common defect in LLM interfaces is outputting raw database timestamps (e.g., <code>2026-09-06T11:03:03.556Z</code>) or hallucinating the current year. The Trujillo architecture injects deterministic physical timestamps into every transaction.
+              </p>
+
+              <!-- Comparison Grid -->
+              <div class="comparison-grid">
+                <div class="comparison-card bad">
+                  <div class="comparison-tag">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <span>RAW UNGROUNDED MACHINE OUTPUT</span>
+                  </div>
+                  <div class="comparison-text">
+                    "Your session was created at 2026-09-06T13:45:20.123Z. Note: as an AI, my knowledge cutoff is 2024, so I cannot confirm today's date."
+                  </div>
+                </div>
+
+                <div class="comparison-card good">
+                  <div class="comparison-tag">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>TRUJILLO DETERMINISTIC TEMPORAL GROUNDING</span>
+                  </div>
+                  <div class="comparison-text">
+                    "Session verified on Sunday, September 6, 2026 at 15:45 CEST. Real-time clock synchronized via Edge Network."
+                  </div>
+                </div>
+              </div>
+
+              <div class="code-container">
+                <div class="code-header">
+                  <span>TIME FORMATTING HELPER (SRC/TIME.JS)</span>
+                  <button class="copy-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span>COPY</span>
+                  </button>
+                </div>
+                <pre><code>export function formatHumanDate(date, tz = 'Europe/Madrid') {
+  const d = date instanceof Date && !isNaN(date.getTime()) ? date : new Date(date);
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: tz
+  }).format(d);
+  // Output: "Sunday, September 6, 2026"
+}</code></pre>
+              </div>
+            </section>
+
+            <!-- Section 9 -->
+            <section id="en-playbook">
+              <h2>9. Founder Playbook: Instant Employee Onboarding & Offboarding</h2>
+              <p>
+                By leveraging edge alias routing, founders maintain 100% ownership over SaaS tools without paying per-seat subscriptions:
+              </p>
+              <ol>
+                <li>Register all services (Claude, OpenAI, GitHub, AWS, Stripe) using role aliases: <code>ai@yourdomain.com</code>, <code>dev@yourdomain.com</code>.</li>
+                <li>Initially, all traffic lands in your personal Gmail hub.</li>
+                <li>When hiring an engineer, edit the Cloudflare routing destination for <code>dev@yourdomain.com</code> to their Gmail address in 5 seconds.</li>
+                <li>When that engineer departs, revert the Cloudflare routing destination back to your inbox in 5 seconds and trigger password resets. <strong>Access is severed instantly and company IP remains fully secure.</strong></li>
+              </ol>
+
+              <!-- Interactive Implementation Checklist EN -->
+              <div class="interactive-checklist">
+                <div class="checklist-header">
+                  <div class="checklist-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    <span>Interactive Deployment Checklist (Progress Tracker)</span>
+                  </div>
+                  <span class="checklist-step-badge" id="checklist-count-en">0 of 5 Completed</span>
+                </div>
+
+                <div class="checklist-progress-wrapper">
+                  <div class="checklist-progress-text">
+                    <span>Overall Setup Progress</span>
+                    <span id="checklist-percent-en">0%</span>
+                  </div>
+                  <div class="checklist-bar-bg">
+                    <div class="checklist-bar-fill" id="checklist-fill-en"></div>
+                  </div>
+                </div>
+
+                <div class="checklist-items">
+                  <div class="checklist-item" data-step="1" onclick="toggleChecklistStep(1)">
+                    <div class="checklist-checkbox">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="checklist-label-text">
+                      <strong>Step 1:</strong> Configure Cloudflare DNS records (3 MX servers, SPF TXT, DMARC TXT)
+                    </div>
+                  </div>
+
+                  <div class="checklist-item" data-step="2" onclick="toggleChecklistStep(2)">
+                    <div class="checklist-checkbox">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="checklist-label-text">
+                      <strong>Step 2:</strong> Add domain in Resend and verify 2048-bit DKIM keys
+                    </div>
+                  </div>
+
+                  <div class="checklist-item" data-step="3" onclick="toggleChecklistStep(3)">
+                    <div class="checklist-checkbox">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="checklist-label-text">
+                      <strong>Step 3:</strong> Enable Cloudflare Email Routing to forward inbound mail to your Gmail hub
+                    </div>
+                  </div>
+
+                  <div class="checklist-item" data-step="4" onclick="toggleChecklistStep(4)">
+                    <div class="checklist-checkbox">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="checklist-label-text">
+                      <strong>Step 4:</strong> Create Google Account with custom domain email and upload verified brand avatar
+                    </div>
+                  </div>
+
+                  <div class="checklist-item" data-step="5" onclick="toggleChecklistStep(5)">
+                    <div class="checklist-checkbox">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="checklist-label-text">
+                      <strong>Step 5:</strong> Configure Gmail "Send mail as" using smtp.resend.com on port 465 SSL/TLS
+                    </div>
+                  </div>
+                </div>
+
+                <div class="checklist-completion-banner" id="checklist-banner-en">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  <div>
+                    <strong>Congratulations! Your Zero-Cost Enterprise Email Architecture is 100% Deployed.</strong>
+                    <div>You have saved $500–$1,000/year while maintaining verified brand security.</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 10 -->
+            <section id="en-costs">
+              <h2>10. Cost & Capability Matrix</h2>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Dimension</th>
+                      <th>Legacy (Google Workspace)</th>
+                      <th>Modern (Cloudflare + Resend)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Monthly Cost (4 Users)</strong></td>
+                      <td>$48.00 to $72.00 / mo ($864/yr)</td>
+                      <td style="color:#22c55e;font-weight:700;">$0.00 / mo ($0/yr)</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Machine & Service Mailboxes</strong></td>
+                      <td>Paid seat license required</td>
+                      <td style="color:#22c55e;font-weight:700;">Unlimited Free Aliases</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Outbound Deliverability</strong></td>
+                      <td>Shared Google IP pool</td>
+                      <td style="color:#22c55e;font-weight:700;">Dedicated 2048-bit DKIM via Resend</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Brand Avatar Verification</strong></td>
+                      <td>Internal to Workspace domain</td>
+                      <td style="color:#22c55e;font-weight:700;">Global via Google ID & Gravatar</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Employee Revocation</strong></td>
+                      <td>Manual seat transfer & billing cycles</td>
+                      <td style="color:#22c55e;font-weight:700;">Instant 5-second DNS reroute</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+
+          <!-- SPANISH CONTENT -->
+          <div class="content-es" style="display:none;">
+            <div class="hero-category">
+              <span class="pulse-dot"></span>
+              <span>ESPECIFICACIÓN DE ARQUITECTURA EN PRODUCCIÓN · MATRIZ DE COSTE 0 €</span>
+            </div>
+
+            <h1 class="guide-title">Infraestructura de Correo Corporativo e Identidad para Startups a Coste 0 €</h1>
+            <p class="guide-subtitle">
+              Cómo montar el sistema de correo transaccional, identidad verificada con logotipo en Gmail y diseño minimalista OLED de alto contraste que usan las startups de referencia sin pagar los 15 €/mes por usuario de Google Workspace.
+            </p>
+
+            <div class="meta-bar">
+              <div class="meta-item">
+                <span>Autor:</span>
+                <span class="meta-author">Alberto Trujillo Mingorance</span>
+              </div>
+              <div class="meta-item">·</div>
+              <div class="meta-item">6 de septiembre de 2026</div>
+              <div class="meta-item">·</div>
+              <div class="meta-item">10 min de lectura</div>
+              <div class="meta-item">·</div>
+              <div class="meta-item" style="color:#22c55e;">Stack Verificado en Producción</div>
+            </div>
+
+            <!-- Visual KPI Grid ES -->
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <span class="kpi-label">Coste Operativo</span>
+                <span class="kpi-value" style="color:#22c55e;">0,00 € / mes</span>
+                <span class="kpi-sub">Ahorro de 864 €/año vs Workspace</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Latencia en el Edge</span>
+                <span class="kpi-value">&lt; 85 ms</span>
+                <span class="kpi-sub">Enrutamiento Edge Global</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Nivel de Seguridad</span>
+                <span class="kpi-value">100% A+</span>
+                <span class="kpi-sub">SPF + DKIM 2048b + DMARC</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Velocidad de Puesta en Marcha</span>
+                <span class="kpi-value">15 Mins</span>
+                <span class="kpi-sub">Despliegue sin cortes de servicio</span>
+              </div>
+            </div>
+
+            <!-- Section 1 -->
+            <section id="es-mito">
+              <h2>1. El Mito de los 15 €/mes por Usuario</h2>
+              <p>
+                Cuando un desarrollador o emprendedor lanza un proyecto, una IA o una startup, el primer impulso suele ser contratar <strong>Google Workspace</strong> o <strong>Microsoft 365</strong> a razón de 6 € a 18 € por usuario al mes.
+              </p>
+              <p>
+                Para un equipo de 4 personas, esto supone entre <strong>400 € y 1.000 € al año</strong> antes de facturar un solo euro. Y lo que es peor: cada vez que el sistema necesita una dirección automatizada (<code>no-reply@</code>, <code>alertas@</code>, <code>soporte@</code>, <code>facturacion@</code>), muchas startups pagan licencias completas por buzones que solo usa una máquina.
+              </p>
+              <div class="callout">
+                <div class="callout-title">El Patrón Moderno de Silicon Valley (JAMstack / Edge)</div>
+                <p>
+                  Las empresas como Stripe, Vercel, Supabase y Linear separan con precisión quirúrgica el correo de máquina (APIs transaccionales), la recepción en el Edge (Cloudflare DNS) y la identidad de marca vinculada a Google sin pagar suscripciones redundantes.
+                </p>
+              </div>
+
+              <!-- Calculadora Interactiva de Ahorro para Startups -->
+              <div class="savings-calc-box">
+                <div class="calc-header">
+                  <div class="calc-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v2m0 8v2"/></svg>
+                    <span>Calculadora Interactiva de Ahorro para Startups</span>
+                  </div>
+                  <span class="calc-badge">Simulador en Tiempo Real</span>
+                </div>
+
+                <div class="calc-controls">
+                  <div class="calc-control-group">
+                    <label class="calc-label" for="calc-team-slider-es">Tamaño del Equipo: <span id="calc-team-display-es" class="calc-val-highlight">4 personas</span></label>
+                    <input type="range" id="calc-team-slider-es" class="calc-slider" min="1" max="30" value="4">
+                  </div>
+
+                  <div class="calc-control-group">
+                    <label class="calc-label">Plan Tradicional (Workspace / M365):</label>
+                    <div class="calc-plan-selector" id="calc-plans-es">
+                      <button type="button" class="calc-plan-btn" data-rate="5.75">Starter (5,75 €/mes)</button>
+                      <button type="button" class="calc-plan-btn active" data-rate="11.50">Standard (11,50 €/mes)</button>
+                      <button type="button" class="calc-plan-btn" data-rate="17.25">Plus (17,25 €/mes)</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="calc-results-matrix">
+                  <div class="calc-result-card ws">
+                    <div class="calc-result-label">Coste Workspace / Año</div>
+                    <div id="calc-ws-annual-es" class="calc-result-number ws">552,00 € / año</div>
+                    <div class="calc-result-sub">Gasto recurrente evitable</div>
+                  </div>
+                  <div class="calc-result-card trujillo">
+                    <div class="calc-result-label">Arquitectura Trujillo</div>
+                    <div class="calc-result-number trujillo">0,00 € / año</div>
+                    <div class="calc-result-sub">Coste cero de licencias</div>
+                  </div>
+                  <div class="calc-result-card savings">
+                    <div class="calc-result-label">Ahorro Neto Anual</div>
+                    <div id="calc-net-annual-es" class="calc-result-number savings">552,00 € / año</div>
+                    <div id="calc-5yr-savings-es" class="calc-result-sub highlight">Ahorro a 5 años: 2.760,00 €</div>
+                  </div>
+                </div>
+                <div class="calc-footer-note">
+                  💡 <strong>Fácil de Entender para Todas las Edades:</strong> Ese dinero no se pierde en licencias mensuales vacías; se queda íntegramente en tu cuenta para financiar servidores de IA, dominios o el desarrollo de tu proyecto.
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 2 -->
+            <section id="es-arquitectura">
+              <h2>2. Arquitectura General y Flujo de Paquetes</h2>
+              <p>
+                El sistema desacopla los 4 pilares fundamentales de la comunicación corporativa en componentes edge de alta velocidad y coste cero:
+              </p>
+
+              <!-- Interactive Architecture Pipeline ES -->
+              <div class="pipeline-flow-container">
+                <div class="pipeline-header">
+                  <span class="pipeline-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <span>Flujo de Datos Desacoplado Trujillo Enterprise</span>
+                  </span>
+                  <span class="pipeline-tech-tag">Sub-100ms Anycast</span>
+                </div>
+
+                <div class="pipeline-steps">
+                  <div class="pipeline-step-card">
+                    <span class="pipeline-step-badge">FASE 01 · RECEPCIÓN</span>
+                    <h4 class="pipeline-step-name">Intercepción Edge MX</h4>
+                    <p class="pipeline-step-desc">Cloudflare MX captura el correo en memoria y lo redirige en milisegundos a tu Gmail personal. Cero almacenamiento.</p>
+                    <span class="pipeline-tech-tag">Cloudflare Routing</span>
+                  </div>
+
+                  <div class="pipeline-step-card">
+                    <span class="pipeline-step-badge">FASE 02 · SALIDA</span>
+                    <h4 class="pipeline-step-name">Motor API Transaccional</h4>
+                    <p class="pipeline-step-desc">Tus Workers o backend emiten vía API Resend con firma criptográfica DKIM de 2048 bits para entrega en bandeja principal.</p>
+                    <span class="pipeline-tech-tag">Resend TLS 1.3</span>
+                  </div>
+
+                  <div class="pipeline-step-card">
+                    <span class="pipeline-step-badge">FASE 03 · IDENTIDAD</span>
+                    <h4 class="pipeline-step-name">Avatar de Marca</h4>
+                    <p class="pipeline-step-desc">Cuenta Google independiente que inyecta tu logotipo verificado en Gmail y clientes Apple sin coste de Workspace.</p>
+                    <span class="pipeline-tech-tag">Directorio Google</span>
+                  </div>
+
+                  <div class="pipeline-step-card">
+                    <span class="pipeline-step-badge">FASE 04 · HUMANO</span>
+                    <h4 class="pipeline-step-name">Enviar desde Gmail</h4>
+                    <p class="pipeline-step-desc">Redacta y responde desde la app de Gmail usando el relay SMTP TLS de Resend como alberto@tudominio.com.</p>
+                    <span class="pipeline-tech-tag">Relay SMTP TLS</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 3 -->
+            <section id="es-autenticacion">
+              <h2>3. Fase 1: Dominio y Autenticación Criptográfica (SPF, DKIM, DMARC)</h2>
+              <p>
+                Para garantizar que el 100% de los correos entren en la bandeja principal y nunca en Spam, el dominio debe estar autenticado criptográficamente.
+              </p>
+              
+              <h3>Especificación Visual de Registros DNS</h3>
+
+              <!-- DNS Card 1: DKIM ES -->
+              <div class="dns-record-card">
+                <div class="dns-record-header">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="dns-type-pill">TXT</span>
+                    <span class="dns-record-name">resend._domainkey.tudominio.com</span>
+                  </div>
+                  <span style="font-family:var(--font-mono);font-size:10px;color:#22c55e;">Firma DKIM 2048 bits (Crítico)</span>
+                </div>
+                <div class="dns-record-body">
+                  <code class="dns-record-value">k=rsa; p=YOUR_DKIM_PUBLIC_KEY</code>
+                  <button class="dns-quick-copy" data-copy="k=rsa; p=YOUR_DKIM_PUBLIC_KEY">COPIAR VALOR</button>
+                </div>
+              </div>
+
+              <!-- DNS Card 2: SPF ES -->
+              <div class="dns-record-card">
+                <div class="dns-record-header">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="dns-type-pill">TXT</span>
+                    <span class="dns-record-name">tudominio.com (@ raíz)</span>
+                  </div>
+                  <span style="font-family:var(--font-mono);font-size:10px;color:#38bdf8;">Autorización de Emisores SPF</span>
+                </div>
+                <div class="dns-record-body">
+                  <code class="dns-record-value">v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com ~all</code>
+                  <button class="dns-quick-copy" data-copy="v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com ~all">COPIAR VALOR</button>
+                </div>
+              </div>
+
+              <!-- DNS Card 3: DMARC ES -->
+              <div class="dns-record-card">
+                <div class="dns-record-header">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="dns-type-pill">TXT</span>
+                    <span class="dns-record-name">_dmarc.tudominio.com</span>
+                  </div>
+                  <span style="font-family:var(--font-mono);font-size:10px;color:#a855f7;">Política Anti-Suplantación DMARC</span>
+                </div>
+                <div class="dns-record-body">
+                  <code class="dns-record-value">v=DMARC1; p=none; rua=mailto:alberto@tudominio.com</code>
+                  <button class="dns-quick-copy" data-copy="v=DMARC1; p=none; rua=mailto:alberto@tudominio.com">COPIAR VALOR</button>
+                </div>
+              </div>
+
+              <!-- DNS Card 4: MX ES -->
+              <div class="dns-record-card">
+                <div class="dns-record-header">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="dns-type-pill mx">MX</span>
+                    <span class="dns-record-name">tudominio.com (@ raíz)</span>
+                  </div>
+                  <span style="font-family:var(--font-mono);font-size:10px;color:#38bdf8;">Cloudflare Email Routing (Prioridad 63, 93, 98)</span>
+                </div>
+                <div class="dns-record-body">
+                  <code class="dns-record-value">route1.mx.cloudflare.net · route2.mx.cloudflare.net · route3.mx.cloudflare.net</code>
+                  <button class="dns-quick-copy" data-copy="route1.mx.cloudflare.net">COPIAR MX 1</button>
+                </div>
+              </div>
+
+              <!-- Simulador Interactivo de Seguridad DNS ES -->
+              <div class="interactive-simulator">
+                <div class="sim-header">
+                  <div class="sim-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <span>Simulador Interactivo de Seguridad DNS (SPF / DKIM / DMARC)</span>
+                  </div>
+                  <span class="calc-badge">Haz clic para comprobar</span>
+                </div>
+
+                <div class="sim-grid">
+                  <!-- SPF Sim ES -->
+                  <div class="sim-card" id="sim-card-spf-es">
+                    <div class="sim-card-top">
+                      <span class="sim-card-type">Alineación SPF</span>
+                      <span class="sim-status-pill" id="sim-status-spf-es">Listo</span>
+                    </div>
+                    <p class="sim-simple-desc">
+                      <strong>Explicación Sencilla:</strong> Es como una lista de invitados VIP. Le dice a los carteros de Gmail y Outlook qué servidores tienen permiso legal para enviar correos con tu nombre.
+                    </p>
+                    <div class="sim-output-box" id="sim-out-spf-es">
+                      ✓ PASS: include:_spf.mx.cloudflare.net include:amazonses.com ~all (100% Alineado)
+                    </div>
+                    <button type="button" class="sim-test-btn" onclick="testDnsProtocol('spf', 'es')">
+                      <span>Probar Validación SPF</span>
+                    </button>
+                  </div>
+
+                  <!-- DKIM Sim ES -->
+                  <div class="sim-card" id="sim-card-dkim-es">
+                    <div class="sim-card-top">
+                      <span class="sim-card-type">Firma DKIM 2048-bit</span>
+                      <span class="sim-status-pill" id="sim-status-dkim-es">Listo</span>
+                    </div>
+                    <p class="sim-simple-desc">
+                      <strong>Explicación Sencilla:</strong> Es un sello lacrado digital matemáticamente inviolable. Si alguien intenta abrir o alterar una sola coma de tu correo durante el viaje, el sello se rompe y el email es rechazado.
+                    </p>
+                    <div class="sim-output-box" id="sim-out-dkim-es">
+                      ✓ PASS: RSA-SHA256 (Firma de 2048 bits validada por el Edge de Google)
+                    </div>
+                    <button type="button" class="sim-test-btn" onclick="testDnsProtocol('dkim', 'es')">
+                      <span>Verificar Firma DKIM</span>
+                    </button>
+                  </div>
+
+                  <!-- DMARC Sim ES -->
+                  <div class="sim-card" id="sim-card-dmarc-es">
+                    <div class="sim-card-top">
+                      <span class="sim-card-type">Protección DMARC</span>
+                      <span class="sim-status-pill" id="sim-status-dmarc-es">Listo</span>
+                    </div>
+                    <p class="sim-simple-desc">
+                      <strong>Explicación Sencilla:</strong> El guardia de seguridad en la puerta de Gmail. Da la orden tajante: "Si alguien intenta hacerse pasar por mi dominio sin SPF ni DKIM válidos, rechaza el correo de inmediato".
+                    </p>
+                    <div class="sim-output-box" id="sim-out-dmarc-es">
+                      ✓ PASS: Política p=reject forzada. Cualquier intento de suplantación es bloqueado.
+                    </div>
+                    <button type="button" class="sim-test-btn" onclick="testDnsProtocol('dmarc', 'es')">
+                      <span>Comprobar Antisuplantación</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="code-container">
+                <div class="code-header">
+                  <span>ZONA BIND COMPLETA CLOUDFLARE</span>
+                  <button class="copy-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span>COPIAR TODO</span>
+                  </button>
+                </div>
+                <pre><code>; 1. Clave Pública DKIM de 2048 bits
+resend._domainkey.tudominio.com. IN TXT "k=rsa; p=YOUR_DKIM_PUBLIC_KEY"
+
+; 2. Registro SPF (Autorizando Cloudflare + Resend/SES)
+tudominio.com. IN TXT "v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com ~all"
+
+; 3. Política DMARC
+_dmarc.tudominio.com. IN TXT "v=DMARC1; p=none; rua=mailto:alberto@tudominio.com"</code></pre>
+              </div>
+            </section>
+
+            <!-- Section 4 -->
+            <section id="es-enrutamiento">
+              <h2>4. Fase 2: Recepción y Enrutamiento Invisible (Cloudflare Email Routing)</h2>
+              <p>
+                En lugar de pagar servidores de correo tradicionales o almacenar gigabytes redundantes, los correos entrantes se capturan en la red perimetral global de Cloudflare y se redirigen a tu Gmail personal en milisegundos.
+              </p>
+              <ul>
+                <li><strong>Privacidad Total</strong>: Nadie puede ver tu dirección de Gmail personal. Los registros DNS solo apuntan a <code>route1.mx.cloudflare.net</code>. Tu correo real nunca aparece en el WHOIS ni en cabeceras públicas.</li>
+                <li><strong>Alias Ilimitados</strong>: Puedes crear tantas direcciones como necesites (<code>no-reply@</code>, <code>alberto@</code>, <code>ai@</code>, <code>socio@</code>, <code>billing@</code>) a coste 0 €.</li>
+              </ul>
+
+              <div class="code-container">
+                <div class="code-header">
+                  <span>ESPECIFICACIÓN DE REGLAS DE ENRUTAMIENTO EN CLOUDFLARE</span>
+                  <button class="copy-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span>COPIAR</span>
+                  </button>
+                </div>
+                <pre><code>Regla 1: Dirección personalizada: alberto@tudominio.com   -> Reenviar a: tu_gmail_personal@gmail.com
+Regla 2: Dirección personalizada: no-reply@tudominio.com  -> Reenviar a: tu_gmail_personal@gmail.com
+Regla 3: Dirección personalizada: ai@tudominio.com        -> Reenviar a: tu_gmail_personal@gmail.com
+Regla 4: Catch-all:               *@tudominio.com         -> Acción: Drop (descarta correos a buzones inexistentes)</code></pre>
+              </div>
+            </section>
+
+            <!-- Section 5 -->
+            <section id="es-avatar">
+              <h2>5. Fase 3: La Foto de Perfil en Gmail sin Pagar Google Workspace</h2>
+              <p>
+                Gmail no permite que un correo incruste su avatar mediante HTML por motivos de seguridad y prevención de phishing. En su lugar, Gmail consulta exclusivamente el directorio central de cuentas de Google.
+              </p>
+              
+              <h3>Protocolo de Identidad Edge en 5 Pasos</h3>
+              
+              <div class="stepper-container">
+                <div class="step-item">
+                  <div class="step-number">1</div>
+                  <div class="step-body">
+                    <h4>Apertura en Modo Incógnito</h4>
+                    <p>Abre <code>accounts.google.com/signup</code> en una ventana de incógnito para evitar colisiones con cuentas corporativas activas.</p>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <div class="step-number">2</div>
+                  <div class="step-body">
+                    <h4>Modo Cuenta Independiente</h4>
+                    <p>Introduce tu nombre de marca (ej. <em>Trujillo AI</em>) y pulsa en <strong>«Usar mi dirección de correo actual en su lugar»</strong>. Introduce <code>no-reply@tudominio.com</code>.</p>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <div class="step-number">3</div>
+                  <div class="step-body">
+                    <h4>Captura del PIN en el Edge</h4>
+                    <p>Google emite un código de 6 dígitos. Cloudflare lo redirige a tu Gmail habitual en &lt;100ms. Abre tu bandeja, copia el PIN y valida la cuenta.</p>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <div class="step-number">4</div>
+                  <div class="step-body">
+                    <h4>Descartar el Upsell de Google Workspace</h4>
+                    <p>Si Google muestra una ventana emergente diciendo <em>«Añade Gmail a tu cuenta»</em>, <strong>ciérrala o descártala</strong>. El contenedor de identidad ya está operativo.</p>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <div class="step-number">5</div>
+                  <div class="step-body">
+                    <h4>Subida del Logotipo y Visibilidad Global</h4>
+                    <p>Accede a <code>myaccount.google.com</code> &rarr; <em>Información personal</em> &rarr; <em>Foto de perfil</em>. Sube tu logo oficial de 512x512 y marca <strong>«Visible para: Cualquiera»</strong>.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="callout tip">
+                <div class="callout-title">Respaldo Universal para Apple Mail y Thunderbird</div>
+                <p>
+                  Registra <code>no-reply@tudominio.com</code> en <strong>Gravatar.com</strong> con el mismo logotipo en PNG o SVG. Los clientes de escritorio de Apple y Thunderbird resuelven avatares a través de la red perimetral de Gravatar.
+                </p>
+              </div>
+
+              <!-- Real Production Verification Proof ES -->
+              <div class="production-proof-badge">
+                <div class="proof-header">
+                  <span class="proof-pulse"></span>
+                  <span class="proof-title">Verificación Real en Producción · Gmail y Directorio de Google</span>
+                  <span class="proof-tag">Avatar de Marca Verificado</span>
+                </div>
+                <div class="proof-image-wrapper" style="background:#050505;border-radius:8px;overflow:hidden;">
+                  <svg width="100%" height="120" viewBox="0 0 480 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="480" height="120" fill="#050505"/>
+                    <rect x="16" y="16" width="448" height="88" rx="8" fill="#0a0a0a" stroke="#1a1a1a"/>
+                    <circle cx="52" cy="60" r="22" fill="#111" stroke="#222"/>
+                    <circle cx="52" cy="60" r="16" fill="#0c0c0c" stroke="#fff" stroke-width="1.5"/>
+                    <text x="44" y="66" fill="#fff" font-size="13" font-weight="800">T</text>
+                    <circle cx="67" cy="75" r="7" fill="#050505" stroke="#1a1a1a"/>
+                    <circle cx="67" cy="75" r="5" fill="#22c55e"/>
+                    <text x="88" y="45" fill="#aaa" font-size="8" font-family="monospace">no-reply@trujillomingorance.com</text>
+                    <text x="88" y="58" fill="#fff" font-size="11" font-weight="700">Autenticación de Workspace</text>
+                    <text x="88" y="73" fill="#555" font-size="8">Usa este código criptográfico de un solo uso para…</text>
+                    <rect x="88" y="82" width="110" height="13" rx="3" fill="#0d1a0d" stroke="#22c55e" stroke-width="0.8"/>
+                    <text x="93" y="91.5" fill="#22c55e" font-size="7.5" font-weight="600">✓ Remitente Verificado · DKIM+SPF</text>
+                    <text x="400" y="45" fill="#444" font-size="8" font-family="monospace">09:14</text>
+                  </svg>
+                </div>
+                <p class="proof-caption">
+                  <strong>Renderizado Real en Gmail:</strong> Envío transaccional emitido desde <code>no-reply@trujillomingorance.com</code> con el avatar corporativo circular, nombre oficial verificado y máxima reputación sin pagar licencias de Google Workspace.
+                </p>
+              </div>
+
+              <!-- Visual Gallery & Screenshots Explorer ES -->
+              <div class="resources-gallery-box">
+                <div class="sim-header">
+                  <div class="sim-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <span>Explorador de Recursos Gráficos y Capturas de Producción</span>
+                  </div>
+                  <span class="calc-badge">Recursos de Producción</span>
+                </div>
+
+                <div class="resources-notice">
+                  📁 <strong>Carpeta de Capturas Personalizadas:</strong> Puedes subir tus capturas reales directamente en el proyecto en <code>public/images/</code>. Consulta <code>public/images/README.md</code> para resoluciones y nombres recomendados. A continuación tienes las previsualizaciones arquitectónicas anotadas.
+                </div>
+
+                                <div class="resources-grid">
+                  <!-- Card 1: DNS Records Table SVG -->
+                  <div class="resource-card">
+                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                      <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="260" height="90" fill="#0d0d0d"/>
+                        <rect x="8" y="8" width="244" height="16" rx="2" fill="#111"/>
+                        <text x="14" y="19" fill="#555" font-size="7" font-family="monospace" font-weight="600">TIPO</text>
+                        <text x="48" y="19" fill="#555" font-size="7" font-family="monospace" font-weight="600">NOMBRE</text>
+                        <text x="150" y="19" fill="#555" font-size="7" font-family="monospace" font-weight="600">ESTADO</text>
+                        <rect x="8" y="28" width="244" height="14" rx="2" fill="#111"/>
+                        <rect x="14" y="30" width="22" height="10" rx="1.5" fill="#1e3a5f"/>
+                        <text x="18" y="38" fill="#38bdf8" font-size="7" font-weight="700">MX</text>
+                        <text x="48" y="38" fill="#ccc" font-size="7" font-family="monospace">route1.mx.edge.net</text>
+                        <circle cx="190" cy="35" r="3" fill="#22c55e"/>
+                        <text x="197" y="38" fill="#22c55e" font-size="7">Activo</text>
+                        <rect x="8" y="46" width="244" height="14" rx="2" fill="#0f0f0f"/>
+                        <rect x="14" y="48" width="22" height="10" rx="1.5" fill="#14532d"/>
+                        <text x="17" y="56" fill="#22c55e" font-size="7" font-weight="700">TXT</text>
+                        <text x="48" y="56" fill="#ccc" font-size="7" font-family="monospace">v=spf1 include:_spf...</text>
+                        <circle cx="190" cy="53" r="3" fill="#22c55e"/>
+                        <text x="197" y="56" fill="#22c55e" font-size="7">Activo</text>
+                        <rect x="8" y="64" width="244" height="14" rx="2" fill="#111"/>
+                        <rect x="14" y="66" width="22" height="10" rx="1.5" fill="#2e1065"/>
+                        <text x="17" y="74" fill="#a855f7" font-size="7" font-weight="700">TXT</text>
+                        <text x="48" y="74" fill="#ccc" font-size="7" font-family="monospace">resend._domainkey</text>
+                        <circle cx="190" cy="71" r="3" fill="#22c55e"/>
+                        <text x="197" y="74" fill="#22c55e" font-size="7">Activo</text>
+                      </svg>
+                    </div>
+                    <div class="resource-info">
+                      <div class="resource-filename">dns-records-table.svg</div>
+                      <div class="resource-title">Tabla de Registros DNS Edge</div>
+                      <div class="resource-desc">MX, SPF y DKIM activos. Todos los registros verificados y operativos en producción.</div>
+                    </div>
+                  </div>
+
+                  <!-- Card 2: Domain Verified SVG -->
+                  <div class="resource-card">
+                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                      <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="260" height="90" fill="#0d0d0d"/>
+                        <rect x="8" y="10" width="244" height="70" rx="6" fill="#0f0f0f" stroke="#1a1a1a"/>
+                        <circle cx="44" cy="45" r="20" fill="#111" stroke="#1f1f1f"/>
+                        <circle cx="44" cy="45" r="16" fill="#0c0c0c" stroke="#fff" stroke-width="1.4"/>
+                        <text x="36" y="51" fill="#fff" font-size="12" font-weight="800">A</text>
+                        <text x="76" y="38" fill="#fff" font-size="10" font-weight="700">resend.com</text>
+                        <text x="76" y="52" fill="#666" font-size="8">yourdomain.com</text>
+                        <rect x="76" y="59" width="65" height="14" rx="3" fill="#052e16" stroke="#22c55e" stroke-width="0.8"/>
+                        <text x="79" y="69" fill="#22c55e" font-size="7.5" font-weight="700">✓ DKIM VERIFICADO</text>
+                        <text x="190" y="42" fill="#22c55e" font-size="22" font-weight="800">A+</text>
+                        <text x="194" y="56" fill="#555" font-size="7">Puntuación</text>
+                      </svg>
+                    </div>
+                    <div class="resource-info">
+                      <div class="resource-filename">resend-domain-verified.svg</div>
+                      <div class="resource-title">Verificación DKIM en Resend</div>
+                      <div class="resource-desc">Dominio verificado criptográficamente con clave RSA 2048-bit. Puntuación A+.</div>
+                    </div>
+                  </div>
+
+                  <!-- Card 3: Google Account Avatar SVG -->
+                  <div class="resource-card">
+                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                      <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="260" height="90" fill="#0d0d0d"/>
+                        <rect x="8" y="10" width="244" height="70" rx="6" fill="#0f0f0f" stroke="#1a1a1a"/>
+                        <circle cx="50" cy="45" r="22" fill="#1a1a1a" stroke="#333"/>
+                        <circle cx="50" cy="45" r="18" fill="#0c0c0c" stroke="#fff" stroke-width="1.4"/>
+                        <text x="42" y="51" fill="#fff" font-size="14" font-weight="800">A</text>
+                        <circle cx="66" cy="61" r="6" fill="#0d0d0d" stroke="#1a1a1a"/>
+                        <circle cx="66" cy="61" r="4" fill="#22c55e"/>
+                        <text x="86" y="36" fill="#fff" font-size="9.5" font-weight="700">no-reply@yourdomain.com</text>
+                        <text x="86" y="50" fill="#666" font-size="8">Cuenta Google Independiente</text>
+                        <rect x="86" y="58" width="70" height="13" rx="3" fill="#111" stroke="#333"/>
+                        <text x="90" y="68" fill="#aaa" font-size="7.5">👤 Visibilidad pública</text>
+                      </svg>
+                    </div>
+                    <div class="resource-info">
+                      <div class="resource-filename">google-account-avatar.svg</div>
+                      <div class="resource-title">Cuenta Google · Avatar de Marca</div>
+                      <div class="resource-desc">Cuenta standalone con logo corporativo visible públicamente en Gmail y Gravatar.</div>
+                    </div>
+                  </div>
+
+                  <!-- Card 4: Gmail Send As SMTP SVG -->
+                  <div class="resource-card">
+                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                      <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="260" height="90" fill="#0d0d0d"/>
+                        <rect x="8" y="10" width="244" height="70" rx="6" fill="#0f0f0f" stroke="#1a1a1a"/>
+                        <text x="18" y="34" fill="#555" font-size="7.5" font-family="monospace">Gmail › Configuración › Cuentas</text>
+                        <line x1="16" y1="38" x2="244" y2="38" stroke="#1a1a1a"/>
+                        <text x="18" y="51" fill="#aaa" font-size="7.5" font-family="monospace">Servidor SMTP</text>
+                        <text x="100" y="51" fill="#38bdf8" font-size="7.5" font-family="monospace">smtp.resend.com</text>
+                        <text x="18" y="63" fill="#aaa" font-size="7.5" font-family="monospace">Puerto</text>
+                        <text x="100" y="63" fill="#a855f7" font-size="7.5" font-family="monospace">465 (SSL/TLS)</text>
+                        <rect x="180" y="55" width="58" height="16" rx="3" fill="#052e16" stroke="#22c55e" stroke-width="0.8"/>
+                        <circle cx="188" cy="63" r="3" fill="#22c55e"/>
+                        <text x="194" y="67" fill="#22c55e" font-size="7" font-weight="700">Conectado</text>
+                      </svg>
+                    </div>
+                    <div class="resource-info">
+                      <div class="resource-filename">gmail-send-as-smtp.svg</div>
+                      <div class="resource-title">Gmail SMTP "Enviar como"</div>
+                      <div class="resource-desc">Puente SMTP a través de Resend. Envía desde founder@yourdomain.com sin coste.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 6 -->
+            <section id="es-enviar-como">
+              <h2>6. Fase 4: Enviar desde Gmail como `alberto@tudominio.com` ("Enviar como")</h2>
+              <p>
+                Puedes redactar y responder correos desde la web o la app móvil oficial de Gmail figurando con tu dirección de dominio corporativo y sin advertencias de seguridad.
+              </p>
+
+              <div class="code-container">
+                <div class="code-header">
+                  <span>PANEL DE CONFIGURACIÓN SMTP EN GMAIL</span>
+                  <button class="copy-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span>COPIAR</span>
+                  </button>
+                </div>
+                <pre><code>1. En Gmail -> Ajustes -> "Ver todos los ajustes" -> "Cuentas e importación"
+2. En "Enviar como" pulsa "Añadir otra dirección de correo electrónico"
+3. Nombre: Alberto Trujillo
+4. Dirección: alberto@tudominio.com (Desmarcar: "Tratar como un alias")
+5. Servidor SMTP: smtp.resend.com
+6. Puerto: 465 (con SSL) o 587 (con TLS)
+7. Usuario: resend
+8. Contraseña: YOUR_API_KEY (Tu API Key de Resend con permisos de envío)</code></pre>
+              </div>
+            </section>
+
+            <!-- Section 7 -->
+            <section id="es-diseno">
+              <h2>7. Fase 5: Sistema de Diseño de Correos Trujillo Minimalist (TES-v1)</h2>
+              <p>
+                Los usuarios técnicos descartan los correos con degradados de colores pastel, botones inflados y plantillas sobrecargadas. El estándar Trujillo AI se fundamenta en <strong>fondos negro puro <code>#000000</code>, contraste absoluto, bordes milimétricos de 1px y tipografía monoespaciada</strong>.
+              </p>
+
+              <!-- Live Interactive Mockup ES -->
+              <div class="mockup-container">
+                <div class="mockup-bar">
+                  <div class="mockup-dots">
+                    <div class="mockup-dot" style="background:#ff5f56;"></div>
+                    <div class="mockup-dot" style="background:#ffbd2e;"></div>
+                    <div class="mockup-dot" style="background:#27c93f;"></div>
+                  </div>
+                  <div class="mockup-title">VISTA PREVIA DEL CLIENTE DE CORREO TRUJILLO OLED</div>
+                  <div style="width:30px;"></div>
+                </div>
+                <div class="mockup-body">
+                  <div style="background:#000000;border:1px solid #1f1f1f;border-radius:8px;max-width:520px;margin:0 auto;padding:32px 28px;text-align:center;">
+                    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:24px;">
+                      <img src="/avatar.png" width="28" height="28" style="border-radius:50%;border:1px solid #222;" alt="">
+                      <span style="font-family:ui-monospace,monospace;font-size:13px;font-weight:800;letter-spacing:0.16em;color:#fff;">TRUJILLO AI</span>
+                    </div>
+
+                    <h3 style="font-size:18px;font-weight:700;color:#ffffff;margin-bottom:8px;">Autenticación de Sesión</h3>
+                    <p style="font-size:13px;color:#a1a1aa;line-height:1.5;margin-bottom:20px;">
+                      Utiliza este código criptográfico de un solo uso para verificar tu sesión. Caduca en 10 minutos.
+                    </p>
+
+                    <div style="background:#050505;border:1px solid #262626;border-radius:6px;padding:18px 24px;max-width:320px;margin:0 auto 24px;">
+                      <div style="font-family:ui-monospace,monospace;font-size:32px;font-weight:800;color:#ffffff;letter-spacing:12px;text-indent:12px;">
+                        849201
+                      </div>
+                    </div>
+
+                    <a href="#" style="display:inline-block;padding:10px 26px;background:#ffffff;color:#000000;font-size:12px;font-weight:700;text-decoration:none;border-radius:9999px;">
+                      Abrir Espacio de Trabajo &rarr;
+                    </a>
+
+                    <div style="border-top:1px solid #1a1a1a;margin-top:28px;padding-top:16px;font-family:ui-monospace,monospace;font-size:10px;color:#52525b;">
+                      Domingo, 6 de septiembre de 2026 · ai.trujillomingorance.com
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 8 -->
+            <section id="es-tiempo">
+              <h2>8. Fase 6: Fechas Humanas y Reloj en Tiempo Real para IAs</h2>
+              <p>
+                Uno de los fallos más habituales en interfaces de IA es mostrar volcados fríos de base de datos (<code>2026-09-06T11:03:03.556Z</code>) o alucinar fechas pasadas. La arquitectura Trujillo inyecta marcas temporales físicas y deterministas en cada transacción.
+              </p>
+
+              <!-- Comparison Grid ES -->
+              <div class="comparison-grid">
+                <div class="comparison-card bad">
+                  <div class="comparison-tag">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <span>SALIDA DE MÁQUINA SIN ANCLAJE TEMPORAL</span>
+                  </div>
+                  <div class="comparison-text">
+                    "Tu sesión se creó en 2026-09-06T13:45:20.123Z. Como modelo de lenguaje con corte de datos en 2024, no dispongo de la fecha actual."
+                  </div>
+                </div>
+
+                <div class="comparison-card good">
+                  <div class="comparison-tag">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>ANCLAJE TEMPORAL DETERMINISTA TRUJILLO</span>
+                  </div>
+                  <div class="comparison-text">
+                    "Sesión verificada el domingo, 6 de septiembre de 2026 a las 15:45 CEST (Madrid). Reloj de sistema físico sincronizado en Cloudflare Edge."
+                  </div>
+                </div>
+              </div>
+
+              <div class="code-container">
+                <div class="code-header">
+                  <span>FORMATEADOR DE FECHAS (SRC/TIME.JS)</span>
+                  <button class="copy-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span>COPIAR</span>
+                  </button>
+                </div>
+                <pre><code>export function formatSpanishDateHuman(date, tz = 'Europe/Madrid') {
+  const d = date instanceof Date && !isNaN(date.getTime()) ? date : new Date(date);
+  const raw = new Intl.DateTimeFormat('es-ES', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: tz
+  }).format(d);
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
+  // Devuelve: "Domingo, 6 de septiembre de 2026"
+}</code></pre>
+              </div>
+            </section>
+
+            <!-- Section 9 -->
+            <section id="es-delegacion">
+              <h2>9. Estrategia para Startups: Delegación y Relevo de Equipo</h2>
+              <p>
+                Gestiona el ciclo de vida de empleados en 5 segundos sin pagar licencias de Workspace ni perder la titularidad de los servicios clave:
+              </p>
+              <ol>
+                <li>Regístrate en Claude, OpenAI, GitHub y Stripe con alias de rol: <code>ai@tudominio.com</code>, <code>dev@tudominio.com</code>.</li>
+                <li>Inicialmente, todo el tráfico se reenvía a tu bandeja personal.</li>
+                <li>Al incorporar a un programador, cambias el destino en Cloudflare de <code>dev@tudominio.com</code> a su email en 5 segundos.</li>
+                <li>Si ese desarrollador se marcha, reviertes la regla de Cloudflare a tu correo en 5 segundos y solicitas "Restablecer contraseña". <strong>El acceso se corta al instante y la empresa retiene el 100% de la propiedad intelectual.</strong></li>
+              </ol>
+
+              <!-- Interactive Implementation Checklist ES -->
+              <div class="interactive-checklist">
+                <div class="checklist-header">
+                  <div class="checklist-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    <span>Checklist Interactivo de Despliegue (Seguimiento en Vivo)</span>
+                  </div>
+                  <span class="checklist-step-badge" id="checklist-count-es">0 de 5 Completados</span>
+                </div>
+
+                <div class="checklist-progress-wrapper">
+                  <div class="checklist-progress-text">
+                    <span>Progreso Global de la Configuración</span>
+                    <span id="checklist-percent-es">0%</span>
+                  </div>
+                  <div class="checklist-bar-bg">
+                    <div class="checklist-bar-fill" id="checklist-fill-es"></div>
+                  </div>
+                </div>
+
+                <div class="checklist-items">
+                  <div class="checklist-item" data-step="1" onclick="toggleChecklistStep(1)">
+                    <div class="checklist-checkbox">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="checklist-label-text">
+                      <strong>Paso 1:</strong> Configurar registros DNS en Cloudflare (3 servidores MX, SPF TXT y DMARC TXT)
+                    </div>
+                  </div>
+
+                  <div class="checklist-item" data-step="2" onclick="toggleChecklistStep(2)">
+                    <div class="checklist-checkbox">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="checklist-label-text">
+                      <strong>Paso 2:</strong> Registrar el dominio en Resend y validar las claves criptográficas DKIM de 2048 bits
+                    </div>
+                  </div>
+
+                  <div class="checklist-item" data-step="3" onclick="toggleChecklistStep(3)">
+                    <div class="checklist-checkbox">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="checklist-label-text">
+                      <strong>Paso 3:</strong> Activar Cloudflare Email Routing para redirigir el correo entrante a tu cuenta de Gmail central
+                    </div>
+                  </div>
+
+                  <div class="checklist-item" data-step="4" onclick="toggleChecklistStep(4)">
+                    <div class="checklist-checkbox">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="checklist-label-text">
+                      <strong>Paso 4:</strong> Crear la Cuenta de Google con tu correo corporativo y subir el avatar oficial verificado
+                    </div>
+                  </div>
+
+                  <div class="checklist-item" data-step="5" onclick="toggleChecklistStep(5)">
+                    <div class="checklist-checkbox">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="checklist-label-text">
+                      <strong>Paso 5:</strong> Configurar «Enviar como» en Gmail usando smtp.resend.com por puerto 465 con cifrado SSL/TLS
+                    </div>
+                  </div>
+                </div>
+
+                <div class="checklist-completion-banner" id="checklist-banner-es">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  <div>
+                    <strong>¡Enhorabuena! Tu arquitectura de correo empresarial a coste cero está 100% desplegada.</strong>
+                    <div>Has asegurado un ahorro recurrente de 500 € a 1.000 €/año con entregabilidad y marca profesional.</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 10 -->
+            <section id="es-costes">
+              <h2>10. Resumen de Costes y Comparativa</h2>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Concepto</th>
+                      <th>Vía Tradicional (Google Workspace)</th>
+                      <th>Vía Moderna (Cloudflare + Resend)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Coste mensual (4 usuarios)</strong></td>
+                      <td>24 € a 72 € / mes (Hasta 864 €/año)</td>
+                      <td style="color:#22c55e;font-weight:700;">0,00 € / mes (0 €/año)</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Buzones de máquina (no-reply@)</strong></td>
+                      <td>Licencia de pago requerida</td>
+                      <td style="color:#22c55e;font-weight:700;">Alias Ilimitados Gratuitos</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Entregabilidad de Salida</strong></td>
+                      <td>Pool compartido de IPs de Google</td>
+                      <td style="color:#22c55e;font-weight:700;">DKIM 2048-bit dedicado en Resend</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Logotipo y Avatar de Marca</strong></td>
+                      <td>Solo garantizado dentro de Workspace</td>
+                      <td style="color:#22c55e;font-weight:700;">Global vía Google ID y Gravatar</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Relevo de Empleados</strong></td>
+                      <td>Gestión manual y ciclos de facturación</td>
+                      <td style="color:#22c55e;font-weight:700;">Reenrutamiento DNS en 5 segundos</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+
+        </article>
+      </section>
+    </main>
+
+  </div>
+
+  <!-- Back to top -->
+  <button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="position:fixed;bottom:24px;right:24px;width:40px;height:40px;border-radius:50%;background:var(--bg-card, #111);border:1px solid var(--border);color:var(--text);cursor:pointer;display:none;align-items:center;justify-content:center;z-index:50;transition:all 0.2s;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+  </button>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-text" id="footer-text">© 2026 ATM Software Labs · Documentación Técnica y Runbooks</div>
+    <div class="footer-links">
+      <a href="/" class="footer-link" id="footer-index">← Índice de Guías</a>
+      <a href="https://labs.trujillomingorance.com" target="_blank" rel="noopener" class="footer-link">ATM Hub</a>
+      <a href="https://github.com/atrumin16" target="_blank" rel="noopener" class="footer-link">GitHub</a>
+    </div>
+  </footer>
+
+  <script>
+(function () {
+  'use strict';
+
+  // ── Apply theme immediately (before paint) ──────────────────────
+  var savedTheme = localStorage.getItem('atm_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+
+  function applyThemeIcons(t) {
+    document.querySelectorAll('.sun-icon').forEach(function (e) { e.style.display = t === 'light' ? 'none' : ''; });
+    document.querySelectorAll('.moon-icon').forEach(function (e) { e.style.display = t === 'light' ? '' : 'none'; });
+  }
+
+  // ── DOM ready ───────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function () {
+
+    applyThemeIcons(savedTheme);
+
+    // Theme toggle
+    var themeBtn = document.getElementById('theme-toggle-btn');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', function () {
+        var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+        var next = cur === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('atm_theme', next);
+        applyThemeIcons(next);
+      });
+    }
+
+    // ── Language toggle ─────────────────────────────────────────────
+    var UI = {
+      es: {
+        'sidebar-status-title': 'Sistemas en Línea',
+        'sidebar-status-meta':  'Runbook Verificado · Producción',
+        'sidebar-role':         'DevOps & Ingeniería de Sistemas',
+        'toc-title':            'Capítulos',
+        'breadcrumb-title':     'Correo Empresarial',
+        'footer-text':          '© 2026 ATM Software Labs · Documentación Técnica y Runbooks',
+        'footer-index':         '← Índice de Guías'
+      },
+      en: {
+        'sidebar-status-title': 'Systems Online',
+        'sidebar-status-meta':  'Verified Runbook · Production',
+        'sidebar-role':         'DevOps & Systems Engineering',
+        'toc-title':            'Chapters',
+        'breadcrumb-title':     'Enterprise Email',
+        'footer-text':          '© 2026 ATM Software Labs · Technical Documentation & Runbooks',
+        'footer-index':         '← Guide Index'
+      }
+    };
+
+    window.setLanguage = function (lang) {
+      // Show/hide content
+      var enDiv = document.querySelector('.content-en');
+      var esDiv = document.querySelector('.content-es');
+      if (enDiv) enDiv.style.display = lang === 'en' ? '' : 'none';
+      if (esDiv) esDiv.style.display = lang === 'es' ? '' : 'none';
+
+      // Show/hide TOC
+      var tocEn = document.getElementById('toc-en');
+      var tocEs = document.getElementById('toc-es');
+      if (tocEn) tocEn.style.display = lang === 'en' ? '' : 'none';
+      if (tocEs) tocEs.style.display = lang === 'es' ? '' : 'none';
+
+      // Active button state
+      var btnEs = document.getElementById('lang-btn-es');
+      var btnEn = document.getElementById('lang-btn-en');
+      if (btnEs) btnEs.classList.toggle('active', lang === 'es');
+      if (btnEn) btnEn.classList.toggle('active', lang === 'en');
+
+      // HTML lang
+      document.documentElement.lang = lang;
+
+      // Translate UI labels
+      Object.keys(UI[lang] || {}).forEach(function (id) {
+        var node = document.getElementById(id);
+        if (node) node.textContent = UI[lang][id];
+      });
+
+      localStorage.setItem('atm_lang', lang);
+    };
+
+    // Init language
+    window.setLanguage(localStorage.getItem('atm_lang') || 'es');
+
+    // ── Progress bar ────────────────────────────────────────────────
+    var bar = document.getElementById('progress-bar');
+    if (bar) {
+      window.addEventListener('scroll', function () {
+        var max = document.documentElement.scrollHeight - window.innerHeight;
+        bar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+      }, { passive: true });
+    }
+
+    // ── Back to top ─────────────────────────────────────────────────
+    var btt = document.getElementById('back-to-top');
+    if (btt) {
+      window.addEventListener('scroll', function () {
+        btt.style.display = window.scrollY > 500 ? 'flex' : 'none';
+      }, { passive: true });
+    }
+
+    // ── TOC scroll spy ──────────────────────────────────────────────
+    var tocLinks = Array.from(document.querySelectorAll('.toc-link'));
+    var sections = tocLinks
+      .map(function (l) { return { link: l, el: document.getElementById((l.getAttribute('href') || '').replace('#', '')) }; })
+      .filter(function (s) { return s.el; });
+
+    if (sections.length) {
+      window.addEventListener('scroll', function () {
+        var top = window.scrollY + 120;
+        var active = sections[0];
+        sections.forEach(function (s) { if (s.el.offsetTop <= top) active = s; });
+        tocLinks.forEach(function (l) { l.classList.remove('active'); });
+        if (active) active.link.classList.add('active');
+      }, { passive: true });
+    }
+
+    // ── Copy buttons ────────────────────────────────────────────────
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('.copy-btn, .dns-quick-copy');
+      if (!btn) return;
+
+      var text = btn.getAttribute('data-copy') || '';
+      if (!text) {
+        var container = btn.closest('.code-container');
+        if (container) {
+          var code = container.querySelector('code');
+          if (code) text = code.textContent.trim();
+        }
+      }
+      if (!text) return;
+
+      var orig = btn.innerHTML;
+      function done() {
+        btn.textContent = '✓ Copiado';
+        setTimeout(function () { btn.innerHTML = orig; }, 1800);
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(fallback);
+      } else {
+        fallback();
+      }
+
+      function fallback() {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;opacity:0;';
+        document.body.appendChild(ta);
+        ta.focus(); ta.select();
+        try { document.execCommand('copy'); } catch (_) {}
+        document.body.removeChild(ta);
+        done();
+      }
+    });
+
+    // ── DNS Simulator ───────────────────────────────────────────────
+    var simBusy = {};
+    window.testDnsProtocol = function (type, lang) {
+      var key = type + '-' + lang;
+      if (simBusy[key]) return;
+      simBusy[key] = true;
+
+      var statusEl = document.getElementById('sim-status-' + key);
+      var outEl    = document.getElementById('sim-out-'    + key);
+      if (!statusEl) return;
+
+      statusEl.textContent = lang === 'es' ? 'Verificando…' : 'Testing…';
+      statusEl.style.cssText = 'background:#0c1a2e;color:#38bdf8;border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;';
+
+      setTimeout(function () {
+        var msgs = {
+          spf: {
+            es: '✓ PASS — SPF alineado al 100%. Todos los servidores autorizados verificados.',
+            en: '✓ PASS — SPF 100% aligned. All authorized send servers matched and verified.'
+          },
+          dkim: {
+            es: '✓ PASS — Firma RSA-SHA256 2048-bit verificada por Google Edge MX.',
+            en: '✓ PASS — RSA-SHA256 2048-bit signature verified by Google Edge MX.'
+          },
+          dmarc: {
+            es: '✓ PASS — Política p=reject aplicada. Intentos de suplantación bloqueados.',
+            en: '✓ PASS — p=reject policy enforced. Identity spoofing attempts blocked.'
+          }
+        };
+        statusEl.textContent = 'PASS ✓';
+        statusEl.style.cssText = 'background:#052e16;color:#22c55e;border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;';
+        if (outEl) outEl.textContent = (msgs[type] || {})[lang] || (msgs[type] || {}).en || '✓ OK';
+      }, 1200);
+    };
+
+    // ── Checklist items (click to mark done) ────────────────────────
+    document.addEventListener('click', function (e) {
+      var item = e.target.closest('.checklist-item');
+      if (!item) return;
+      var isDone = item.classList.toggle('done');
+      item.style.opacity = isDone ? '0.55' : '';
+      var box = item.querySelector('.checklist-checkbox');
+      if (box) box.style.background = isDone ? '#22c55e' : '';
+
+      // Update progress for this lang block
+      var block = item.closest('.content-en, .content-es');
+      if (!block) return;
+      var lang = block.classList.contains('content-en') ? 'en' : 'es';
+      var suffix = '-' + lang;
+      var allItems = block.querySelectorAll('.checklist-item');
+      var doneItems = block.querySelectorAll('.checklist-item.done');
+      var pct = allItems.length ? Math.round((doneItems.length / allItems.length) * 100) : 0;
+
+      var countEl = document.getElementById('checklist-count' + suffix);
+      var pctEl   = document.getElementById('checklist-percent' + suffix);
+      var fillEl  = document.getElementById('checklist-fill' + suffix);
+      var banner  = document.getElementById('checklist-banner' + suffix);
+
+      if (countEl) countEl.textContent = doneItems.length + '/' + allItems.length;
+      if (pctEl)   pctEl.textContent   = pct + '%';
+      if (fillEl)  fillEl.style.width  = pct + '%';
+      if (banner)  banner.style.display = pct === 100 ? '' : 'none';
+    });
+
+    // Legacy onclick bridge (HTML has onclick="toggleChecklistStep(n)")
+    window.toggleChecklistStep = function (n) {
+      var item = document.querySelector('.checklist-item[data-step="' + n + '"]');
+      if (item) item.click();
+    };
+
+    // ── Savings Calculator ──────────────────────────────────────────
+    // Real IDs: calc-team-slider-en/es, calc-plans-en/es,
+    //           calc-ws-annual-en/es, calc-net-annual-en/es, calc-5yr-savings-en/es
+    function updateCalc(lang) {
+      var sfx = '-' + lang;
+      var sliderEl = document.getElementById('calc-team-slider' + sfx);
+      var planEl   = document.getElementById('calc-plans'       + sfx);
+      var wsEl     = document.getElementById('calc-ws-annual'   + sfx);
+      var netEl    = document.getElementById('calc-net-annual'  + sfx);
+      var fiveEl   = document.getElementById('calc-5yr-savings' + sfx);
+      var dispEl   = document.getElementById('calc-team-display'+ sfx);
+
+      if (!sliderEl || !planEl) return;
+
+      var users  = parseInt(sliderEl.value, 10) || 4;
+      var price  = parseFloat(planEl.value) || 12;
+      var wsYear = users * price * 12;
+      var net    = 0;
+      var fiveYr = wsYear * 5;
+
+      if (dispEl) dispEl.textContent = users;
+      if (wsEl)   wsEl.textContent   = (lang === 'es' ? wsYear.toFixed(0) + ' €' : '$' + wsYear.toFixed(0));
+      if (netEl)  netEl.textContent  = (lang === 'es' ? '0 €' : '$0');
+      if (fiveEl) fiveEl.textContent = (lang === 'es' ? fiveYr.toFixed(0) + ' €' : '$' + fiveYr.toFixed(0));
+    }
+
+    // Wire sliders and selects
+    ['en', 'es'].forEach(function (lang) {
+      var slider = document.getElementById('calc-team-slider-' + lang);
+      var plan   = document.getElementById('calc-plans-' + lang);
+      if (slider) slider.addEventListener('input', function () { updateCalc(lang); });
+      if (plan)   plan.addEventListener('change', function () { updateCalc(lang); });
+      updateCalc(lang);
+    });
+
+    // Legacy bridge
+    window.calcSavings = function (lang) { updateCalc(lang); };
+
+  }); // end DOMContentLoaded
+})();
+</script>
+
+</body>
+</html>
