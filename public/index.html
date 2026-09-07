@@ -427,7 +427,7 @@
     <h1 class="hero-title" id="hero-title">Guías de Ingeniería<br>&amp; Runbooks de Producción</h1>
     <p class="hero-sub" id="hero-sub">Arquitecturas reales, especificaciones técnicas y runbooks operativos. Todo verificado y desplegado en producción.</p>
     <div class="hero-stats">
-      <div class="hero-stat"><span id="stat-guides">1</span><span id="stat-guides-label">guía publicada</span></div>
+      <div class="hero-stat"><span id="stat-guides">6</span><span id="stat-guides-label">guías publicadas</span></div>
       <div class="hero-stat"><span>·</span></div>
       <div class="hero-stat"><span>100%</span><span id="stat-verified">verificado en producción</span></div>
       <div class="hero-stat"><span>·</span></div>
@@ -490,51 +490,113 @@
         <svg class="guide-card-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </a>
 
-      <!-- Guide 3: Coming Soon -->
-      <div class="guide-card soon">
+      <!-- Guide 3: Open-Sentinel Host Telemetry -->
+      <a href="/guides/open-sentinel/" class="guide-card">
+        <div class="guide-card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <circle cx="12" cy="11" r="3"/>
+          </svg>
+        </div>
+        <div class="guide-card-body">
+          <div class="guide-card-badge badge-live">
+            <span>●</span>
+            <span id="badge-sentinel">Open Source · Host Forensics</span>
+          </div>
+          <div class="guide-card-title" id="title-sentinel">Telemetría Host y Detección de Intrusión en el Arranque (Open-Sentinel)</div>
+          <div class="guide-card-desc" id="desc-sentinel">Monitorización forense de endpoints en sub-500ms, captura diferencial de hardware, integridad de red y despacho de alertas cifradas a Discord, Telegram y WhatsApp.</div>
+          <div class="guide-card-meta">
+            <span class="meta-tag">Open-Sentinel</span>
+            <span class="meta-tag">Python 3.11+</span>
+            <span class="meta-tag">Systemd &amp; Tasks</span>
+            <span class="meta-tag">EDR Lite</span>
+          </div>
+        </div>
+        <svg class="guide-card-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+
+      <!-- Guide 4: Edge AI Architecture -->
+      <a href="/guides/edge-ai-architecture/" class="guide-card">
+        <div class="guide-card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="16" height="16" rx="2"/>
+            <rect x="9" y="9" width="6" height="6"/>
+            <line x1="9" y1="1" x2="9" y2="4"/>
+            <line x1="15" y1="1" x2="15" y2="4"/>
+            <line x1="9" y1="20" x2="9" y2="23"/>
+            <line x1="15" y1="20" x2="15" y2="23"/>
+            <line x1="20" y1="9" x2="23" y2="9"/>
+            <line x1="20" y1="14" x2="23" y2="14"/>
+            <line x1="1" y1="9" x2="4" y2="9"/>
+            <line x1="1" y1="14" x2="4" y2="14"/>
+          </svg>
+        </div>
+        <div class="guide-card-body">
+          <div class="guide-card-badge badge-live">
+            <span>●</span>
+            <span id="badge-edgeai">Applied AI · Edge Architecture</span>
+          </div>
+          <div class="guide-card-title" id="title-edgeai">Inferencia Multimodal Sub-100ms con Groq LPU y Cloudflare Edge</div>
+          <div class="guide-card-desc" id="desc-edgeai">Arquitectura serverless de latencia ultrabaja para LLMs y visión. Desacoplamiento de V8 Isolates en el edge, streaming SSE en tiempo real y memoria persistente a coste cero.</div>
+          <div class="guide-card-meta">
+            <span class="meta-tag">AI Studio</span>
+            <span class="meta-tag">Groq LPU</span>
+            <span class="meta-tag">Cloudflare Workers</span>
+            <span class="meta-tag">&lt; 100ms</span>
+          </div>
+        </div>
+        <svg class="guide-card-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+
+      <!-- Guide 5: DNS Zero-Trust -->
+      <a href="/guides/dns-zero-trust/" class="guide-card">
         <div class="guide-card-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
           </svg>
         </div>
         <div class="guide-card-body">
-          <div class="guide-card-badge badge-draft">
-            <span id="badge-2">Próximamente</span>
+          <div class="guide-card-badge badge-live">
+            <span>●</span>
+            <span id="badge-dns">Seguridad &amp; Redes · Zero-Trust</span>
           </div>
-          <div class="guide-card-title" id="title-2">Anclaje Temporal Determinista en LLMs</div>
-          <div class="guide-card-desc" id="desc-2">Inyección de relojes de sistema y resolución IANA en motores de inferencia para eliminar alucinaciones de fecha sin degradar el prompt.</div>
+          <div class="guide-card-title" id="title-dns">Filtrado DNS Cifrado DoH de Alta Capacidad y Zero-Trust (AdShield)</div>
+          <div class="guide-card-desc" id="desc-dns">Despliegue de un resolver DNS sobre HTTPS (DoH) de alto rendimiento para mitigación de telemetría publicitaria invasiva, prevención de phishing y seguridad perimetral.</div>
           <div class="guide-card-meta">
-            <span class="meta-tag">Applied AI</span>
-            <span class="meta-tag">RFC-2026-04</span>
+            <span class="meta-tag">AdShield</span>
+            <span class="meta-tag">DoH RFC 8484</span>
+            <span class="meta-tag">Zero-Trust</span>
+            <span class="meta-tag">Anti-Tracking</span>
           </div>
         </div>
         <svg class="guide-card-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </div>
+      </a>
 
-      <!-- Guide 3: Coming Soon -->
-      <div class="guide-card soon">
+      <!-- Guide 6: Crypto Telemetry -->
+      <a href="/guides/crypto-telemetry/" class="guide-card">
         <div class="guide-card-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="3" width="20" height="14" rx="2"/>
-            <line x1="8" y1="21" x2="16" y2="21"/>
-            <line x1="12" y1="17" x2="12" y2="21"/>
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
           </svg>
         </div>
         <div class="guide-card-body">
-          <div class="guide-card-badge badge-draft">
-            <span id="badge-3">Próximamente</span>
+          <div class="guide-card-badge badge-live">
+            <span>●</span>
+            <span id="badge-crypto">Fintech &amp; Sistemas Distribuidos</span>
           </div>
-          <div class="guide-card-title" id="title-3">Pipelines Serverless Sub-10ms con Edge Workers</div>
-          <div class="guide-card-desc" id="desc-3">Zero cold-start, sharding de memoria distribuida y streaming WebSocket para herramientas de alta concurrencia en el edge global.</div>
+          <div class="guide-card-title" id="title-crypto">Telemetría On-Chain en Tiempo Real y Análisis de Mempool (BitPulse)</div>
+          <div class="guide-card-desc" id="desc-crypto">Ingesta distribuida de eventos en blockchains EVM/Solana, monitorización en streaming de transacciones no confirmadas y cálculo reactivo de tarifas de gas dinámicas.</div>
           <div class="guide-card-meta">
-            <span class="meta-tag">Edge Compute</span>
-            <span class="meta-tag">RFC-2026-07</span>
+            <span class="meta-tag">BitPulse</span>
+            <span class="meta-tag">WebSockets</span>
+            <span class="meta-tag">EVM / Solana</span>
+            <span class="meta-tag">Live Mempool</span>
           </div>
         </div>
         <svg class="guide-card-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </div>
+      </a>
 
     </div>
 
@@ -581,7 +643,7 @@
         'eyebrow-text': 'Documentación Técnica · ATM Software Labs',
         'hero-title': 'Guías de Ingeniería<br>&amp; Runbooks de Producción',
         'hero-sub': 'Arquitecturas reales, especificaciones técnicas y runbooks operativos. Todo verificado y desplegado en producción.',
-        'stat-guides': '2', 'stat-guides-label': 'guías publicadas',
+        'stat-guides': '6', 'stat-guides-label': 'guías publicadas',
         'stat-verified': 'verificado en producción', 'stat-cost': 'coste de infraestructura',
         'section-label': 'GUÍAS DISPONIBLES',
         'badge-1': 'Masterclass · Producción',
@@ -591,17 +653,25 @@
         'badge-glossary': 'Interactivo · Flashcards',
         'title-glossary': 'Glosario Interactivo de Sistemas e Informática',
         'desc-glossary': 'Plataforma didáctica con tarjetas mnemotécnicas multinivel (Básico, Intermedio, Avanzado), modo Quiz con puntuación y buscador de términos para conceptos clave de computación.',
-        'badge-2': 'Próximamente', 'title-2': 'Anclaje Temporal Determinista en LLMs',
-        'desc-2': 'Inyección de relojes de sistema y resolución IANA en motores de inferencia para eliminar alucinaciones de fecha sin degradar el prompt.',
-        'badge-3': 'Próximamente', 'title-3': 'Pipelines Serverless Sub-10ms con Edge Workers',
-        'desc-3': 'Zero cold-start, sharding de memoria distribuida y streaming WebSocket para herramientas de alta concurrencia en el edge global.'
+        'badge-sentinel': 'Open Source · Host Forensics',
+        'title-sentinel': 'Telemetría Host y Detección de Intrusión en el Arranque (Open-Sentinel)',
+        'desc-sentinel': 'Monitorización forense de endpoints en sub-500ms, captura diferencial de hardware, integridad de red y despacho de alertas cifradas a Discord, Telegram y WhatsApp.',
+        'badge-edgeai': 'Applied AI · Edge Architecture',
+        'title-edgeai': 'Inferencia Multimodal Sub-100ms con Groq LPU y Cloudflare Edge',
+        'desc-edgeai': 'Arquitectura serverless de latencia ultrabaja para LLMs y visión. Desacoplamiento de V8 Isolates en el edge, streaming SSE en tiempo real y memoria persistente a coste cero.',
+        'badge-dns': 'Seguridad &amp; Redes · Zero-Trust',
+        'title-dns': 'Filtrado DNS Cifrado DoH de Alta Capacidad y Zero-Trust (AdShield)',
+        'desc-dns': 'Despliegue de un resolver DNS sobre HTTPS (DoH) de alto rendimiento para mitigación de telemetría publicitaria invasiva, prevención de phishing y seguridad perimetral.',
+        'badge-crypto': 'Fintech &amp; Sistemas Distribuidos',
+        'title-crypto': 'Telemetría On-Chain en Tiempo Real y Análisis de Mempool (BitPulse)',
+        'desc-crypto': 'Ingesta distribuida de eventos en blockchains EVM/Solana, monitorización en streaming de transacciones no confirmadas y cálculo reactivo de tarifas de gas dinámicas.'
       },
       en: {
         'brand-badge': 'RUNBOOKS & SPECS',
         'eyebrow-text': 'Technical Documentation · ATM Software Labs',
         'hero-title': 'Engineering Guides<br>&amp; Production Runbooks',
         'hero-sub': 'Real architectures, technical specifications and operational runbooks. Everything verified and running in production.',
-        'stat-guides': '2', 'stat-guides-label': 'guides published',
+        'stat-guides': '6', 'stat-guides-label': 'guides published',
         'stat-verified': 'verified in production', 'stat-cost': 'infrastructure cost',
         'section-label': 'AVAILABLE GUIDES',
         'badge-1': 'Masterclass · Production',
@@ -611,10 +681,18 @@
         'badge-glossary': 'Interactive · Flashcards',
         'title-glossary': 'Interactive Computer Science & Systems Glossary',
         'desc-glossary': 'Multilevel interactive flashcards (Basic, Intermediate, Advanced), scored Quiz mode, and fast search engine for core systems and computer science concepts.',
-        'badge-2': 'Coming Soon', 'title-2': 'Deterministic Temporal Grounding in LLMs',
-        'desc-2': 'Injecting system clocks and IANA timezone resolution into inference engines to eliminate date hallucinations without degrading the prompt.',
-        'badge-3': 'Coming Soon', 'title-3': 'Sub-10ms Serverless Pipelines with Edge Workers',
-        'desc-3': 'Zero cold-start, distributed memory sharding and WebSocket streaming for high-concurrency tools on the global edge.'
+        'badge-sentinel': 'Open Source · Host Forensics',
+        'title-sentinel': 'Host Telemetry & Boot Intrusion Detection (Open-Sentinel)',
+        'desc-sentinel': 'Sub-500ms endpoint forensic telemetry, hardware diff capture, network integrity, and cryptographic alert dispatch to Discord, Telegram, and WhatsApp.',
+        'badge-edgeai': 'Applied AI · Edge Architecture',
+        'title-edgeai': 'Sub-100ms Multimodal Inference with Groq LPU & Cloudflare Edge',
+        'desc-edgeai': 'Ultra-low latency serverless architecture for LLMs and multimodal vision. V8 Isolate edge routing, real-time SSE streaming, and persistent memory at zero cost.',
+        'badge-dns': 'Security &amp; Networking · Zero-Trust',
+        'title-dns': 'High-Capacity DoH Encrypted DNS Filtering & Zero-Trust (AdShield)',
+        'desc-dns': 'High-throughput DNS over HTTPS (DoH) resolver deployment for invasive telemetry mitigation, anti-phishing, and perimeter defense.',
+        'badge-crypto': 'Fintech &amp; Distributed Systems',
+        'title-crypto': 'Real-Time On-Chain Telemetry & Mempool Analysis (BitPulse)',
+        'desc-crypto': 'High-speed event ingestion across EVM and Solana blockchains, live mempool transaction streaming, and reactive dynamic gas fee estimation.'
       }
     };
 

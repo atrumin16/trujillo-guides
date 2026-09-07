@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telemetría On-Chain y Análisis de Mempool sin Backend (BitPulse) · ATM Guides</title>
+  <meta name="description" content="Especificación técnica de arquitectura Zero-Backend para monitorizar el estado de la red Bitcoin, comisiones sat/vB y altura de bloque.">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <meta name="theme-color" content="#080c14">
+  <script>
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem('trujillo_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .guide-container { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
+    .back-nav { display: inline-flex; align-items: center; gap: 8px; color: #94a3b8; text-decoration: none; font-size: 13px; font-weight: 600; margin-bottom: 24px; transition: color 0.15s; }
+    .back-nav:hover { color: #ffffff; }
+    .hero-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #f59e0b; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); padding: 4px 10px; border-radius: 9999px; margin-bottom: 14px; }
+    .page-title { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; color: #ffffff; margin-bottom: 12px; line-height: 1.25; }
+    .page-subtitle { font-size: 15px; color: #94a3b8; line-height: 1.6; margin-bottom: 36px; }
+    .step-card { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 28px; margin-bottom: 32px; backdrop-filter: blur(12px); }
+    .step-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+    .step-num { width: 32px; height: 32px; border-radius: 8px; background: #f59e0b; color: #ffffff; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+    .step-title { font-size: 19px; font-weight: 700; color: #ffffff; }
+    .step-desc { font-size: 14px; color: #cbd5e1; line-height: 1.65; margin-bottom: 20px; }
+    .settings-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 16px; }
+    .settings-table th { text-align: left; padding: 10px 14px; color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.02); }
+    .settings-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #cbd5e1; }
+    .field-name { font-weight: 600; color: #ffffff; }
+    .field-val { font-family: monospace; color: #f59e0b; background: rgba(245, 158, 11, 0.1); padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="guide-container">
+    <a href="/" class="back-nav">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Volver al Hub de Guías
+    </a>
+
+    <span class="hero-badge">● TELEMETRÍA DE RED · ON-CHAIN ANALYTICS</span>
+    <h1 class="page-title">Telemetría On-Chain en Tiempo Real y Análisis de Mempool sin Backend (BitPulse)</h1>
+    <p class="page-subtitle">Arquitectura de alto rendimiento para recolectar métricas de la red Bitcoin sin servidores intermedios, calculando saturación del mempool, estimación dinámica de tarifas y confirmación de bloques en tiempo real.</p>
+
+    <!-- STEP 1 -->
+    <section class="step-card">
+      <div class="step-header">
+        <span class="step-num">1</span>
+        <h2 class="step-title">Fase 1: Arquitectura Zero-Backend en Cliente</h2>
+      </div>
+      <p class="step-desc">A diferencia de los paneles cripto tradicionales que requieren servidores dedicados para sincronizar un nodo completo, BitPulse consulta directamente endpoints públicos y descentralizados (Mempool.space, Blockchain.info, Alternative.me) manteniendo la privacidad total del usuario en <code>localStorage</code>.</p>
+      <table class="settings-table">
+        <thead>
+          <tr>
+            <th>Flujo</th>
+            <th>Endpoint</th>
+            <th>Propósito</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="field-name">Mempool Fees</td>
+            <td><span class="field-val">/api/v1/fees/recommended</span></td>
+            <td>Tarifas sat/vB en tiempo real para prioridad baja, media y alta.</td>
+          </tr>
+          <tr>
+            <td class="field-name">Altura de Bloque</td>
+            <td><span class="field-val">/api/blocks/tip/height</span></td>
+            <td>Seguimiento en directo del último bloque minado y cálculo de halving.</td>
+          </tr>
+          <tr>
+            <td class="field-name">Sentimiento</td>
+            <td><span class="field-val">/fng/</span></td>
+            <td>Índice de miedo y codicia (Fear & Greed Index) histórico.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- STEP 2 -->
+    <section class="step-card">
+      <div class="step-header">
+        <span class="step-num">2</span>
+        <h2 class="step-title">Fase 2: Motor de Estimación Dinámica de Tarifas</h2>
+      </div>
+      <p class="step-desc">Permite a los usuarios optimizar transacciones transfronterizas identificando valles de congestión en la mempool, reduciendo el coste de comisiones mineras hasta en un 80%.</p>
+    </section>
+  </div>
+</body>
+</html>

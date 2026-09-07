@@ -2019,37 +2019,60 @@ Regla 4: Catch-all:               *@tudominio.com         -> Acción: Drop (desc
     };
 
     // ── Savings Calculator ──────────────────────────────────────────
-    // Real IDs: calc-team-slider-en/es, calc-plans-en/es,
-    //           calc-ws-annual-en/es, calc-net-annual-en/es, calc-5yr-savings-en/es
+    var planRates = {
+      en: 12,
+      es: 11.50
+    };
+
     function updateCalc(lang) {
       var sfx = '-' + lang;
       var sliderEl = document.getElementById('calc-team-slider' + sfx);
-      var planEl   = document.getElementById('calc-plans'       + sfx);
       var wsEl     = document.getElementById('calc-ws-annual'   + sfx);
       var netEl    = document.getElementById('calc-net-annual'  + sfx);
       var fiveEl   = document.getElementById('calc-5yr-savings' + sfx);
       var dispEl   = document.getElementById('calc-team-display'+ sfx);
 
-      if (!sliderEl || !planEl) return;
+      if (!sliderEl) return;
 
       var users  = parseInt(sliderEl.value, 10) || 4;
-      var price  = parseFloat(planEl.value) || 12;
+      var price  = planRates[lang] || (lang === 'es' ? 11.50 : 12);
       var wsYear = users * price * 12;
-      var net    = 0;
       var fiveYr = wsYear * 5;
 
-      if (dispEl) dispEl.textContent = users;
-      if (wsEl)   wsEl.textContent   = (lang === 'es' ? wsYear.toFixed(0) + ' €' : '$' + wsYear.toFixed(0));
-      if (netEl)  netEl.textContent  = (lang === 'es' ? '0 €' : '$0');
-      if (fiveEl) fiveEl.textContent = (lang === 'es' ? fiveYr.toFixed(0) + ' €' : '$' + fiveYr.toFixed(0));
+      if (dispEl) {
+        dispEl.textContent = (lang === 'es' ? users + (users === 1 ? ' persona' : ' personas') : users + (users === 1 ? ' founder' : ' founders'));
+      }
+      if (wsEl) {
+        wsEl.textContent = (lang === 'es' ? wsYear.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' € / año' : '$' + wsYear.toLocaleString() + ' / yr');
+      }
+      if (netEl) {
+        netEl.textContent = (lang === 'es' ? wsYear.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' € / año' : '$' + wsYear.toLocaleString() + ' / yr');
+      }
+      if (fiveEl) {
+        fiveEl.textContent = (lang === 'es' ? 'Ahorro a 5 años: ' + fiveYr.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €' : '5-Year Savings: $' + fiveYr.toLocaleString());
+      }
     }
 
-    // Wire sliders and selects
+    // Wire sliders and plan selector buttons
     ['en', 'es'].forEach(function (lang) {
       var slider = document.getElementById('calc-team-slider-' + lang);
-      var plan   = document.getElementById('calc-plans-' + lang);
-      if (slider) slider.addEventListener('input', function () { updateCalc(lang); });
-      if (plan)   plan.addEventListener('change', function () { updateCalc(lang); });
+      if (slider) {
+        slider.addEventListener('input', function () { updateCalc(lang); });
+      }
+
+      var planContainer = document.getElementById('calc-plans-' + lang);
+      if (planContainer) {
+        var buttons = planContainer.querySelectorAll('.calc-plan-btn');
+        buttons.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            buttons.forEach(function (b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            planRates[lang] = parseFloat(btn.getAttribute('data-rate')) || (lang === 'es' ? 11.50 : 12);
+            updateCalc(lang);
+          });
+        });
+      }
+
       updateCalc(lang);
     });
 
