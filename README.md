@@ -41,13 +41,16 @@ Topics covered:
 
 ```
 trujillo-guides/
-├── public/                  # Static assets and HTML pages deployed to Cloudflare Pages
-│   ├── guides/              # Technical deep-dives and production runbooks
+├── .github/
+│   └── workflows/
+│       └── ci.yml       # Documentation integrity and asset verification
+├── public/              # Static assets and HTML pages deployed to Cloudflare Pages
+│   ├── guides/          # Technical deep-dives and production runbooks
 │   │   └── enterprise-email/# Enterprise email architecture article and diagrams
-│   ├── index.html           # Guides directory homepage with live search
-│   └── 404.html             # Corporate 404 error handler
-├── package.json             # Deployment scripts
-└── wrangler.toml            # Cloudflare Pages deployment configuration
+│   ├── index.html       # Guides directory homepage with live search
+│   └── 404.html         # Corporate 404 error handler
+├── package.json         # Deployment scripts
+└── wrangler.toml        # Cloudflare Pages deployment configuration
 ```
 
 ---

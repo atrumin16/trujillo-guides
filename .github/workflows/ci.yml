@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  verify:
+    name: Asset Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify Documentation Structure
+        run: |
+          test -f public/index.html || exit 1
+          test -f public/404.html || exit 1
+          test -d public/guides || exit 1
+          echo "All technical guide assets verified successfully."
