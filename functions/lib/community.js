@@ -150,7 +150,7 @@ function shell(title, inner) {
 <script src="/js/theme-boot.js?v=shell1"></script>
 <link rel="stylesheet" href="/css/tokens.css?v=shell1">
 <link rel="stylesheet" href="/style.css?v=shell1">
-<link rel="stylesheet" href="/css/community.css?v=c1">
+<link rel="stylesheet" href="/css/community.css?v=c2">
 </head>
 <body class="docs-body community-body">
 <header class="docs-topbar">
@@ -165,7 +165,7 @@ function shell(title, inner) {
 </header>
 ${inner}
 <script src="/js/guides.js?v=shell1"></script>
-<script src="/js/community.js?v=c1"></script>
+<script src="/js/community.js?v=c2"></script>
 </body>
 </html>`;
 }
@@ -183,7 +183,8 @@ function poster(item) {
     <div class="by-handle">by ${handle ? `<a href="${board}">@${esc(handle)}</a>` : 'autor'} · Guides</div>
   </div>
   <button type="button" class="copy-link" id="copy-link">Copiar enlace</button>
-</div>`;
+</div>
+${(item && item.title) ? `<h1 class="page-title">${esc(item.title)}</h1>` : ''}`;
 }
 
 export function renderGuidePage(item) {
@@ -207,8 +208,45 @@ export function renderGuidePage(item) {
   } else {
     stage = `<pre class="code">${esc(raw)}</pre>`;
   }
-  const inner = poster(item) + `<main class="community-main">${stage}</main>`;
+  const inner = poster(item) + `<main class="community-main">${stage}</main>` + extrasHtml(item);
   return shell(item.title || 'Guía', inner);
+}
+
+function extrasHtml(item) {
+  const extra = (item && item.extras) || {};
+  const sources = Array.isArray(extra.sources) ? extra.sources : [];
+  const resources = Array.isArray(extra.resources) ? extra.resources : [];
+  const widgets = Array.isArray(extra.widgets) ? extra.widgets : [];
+  if (!sources.length && !resources.length && !widgets.length) return '';
+  let html = '<aside class="extras"><div class="extras-grid">';
+  if (sources.length) {
+    html += '<div><h2>Fuentes</h2>' + sources.map((s) =>
+      s.url ? `<p><a href="${esc(s.url)}" rel="noopener" target="_blank">${esc(s.title || s.url)}</a></p>` : `<p>${esc(s.title || '')}</p>`
+    ).join('') + '</div>';
+  }
+  if (resources.length) {
+    html += '<div><h2>Recursos</h2>' + resources.map((s) => {
+      const note = s.note ? ` — ${esc(s.note)}` : '';
+      return s.url
+        ? `<p><a href="${esc(s.url)}" rel="noopener" target="_blank">${esc(s.title || s.url)}</a>${note}</p>`
+        : `<p>${esc(s.title || '')}${note}</p>`;
+    }).join('') + '</div>';
+  }
+  if (widgets.length) {
+    html += '<div><h2>Widgets</h2>' + widgets.map((w) => {
+      if ((w.type === 'quote' || w.type === 'chart') && w.symbol) {
+        return `<div class="widget"><p>${esc(w.label || w.symbol)}</p><p><a href="https://www.tradingview.com/symbols/${esc(w.symbol)}/" rel="noopener" target="_blank">$${esc(w.symbol)}</a></p></div>`;
+      }
+      if (w.type === 'embed' && w.url) {
+        return `<div class="widget"><iframe sandbox="allow-scripts allow-forms" src="${esc(w.url)}" title="${esc(w.label || 'widget')}"></iframe></div>`;
+      }
+      if (w.url) return `<div class="widget"><a href="${esc(w.url)}" rel="noopener" target="_blank">${esc(w.label || w.url)}</a></div>`;
+      if (w.text) return `<div class="widget"><p>${esc(w.text)}</p></div>`;
+      return '';
+    }).join('') + '</div>';
+  }
+  html += '</div></aside>';
+  return html;
 }
 
 export function renderGuideIndex(items, opts) {
