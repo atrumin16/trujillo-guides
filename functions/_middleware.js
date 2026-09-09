@@ -7,10 +7,17 @@ const SECURITY_HEADERS = {
   'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
 };
 
+const COMMUNITY_CSP = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests";
+
 export async function onRequest(context) {
   const response = await context.next();
   const headers = new Headers(response.headers);
-  for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+  const path = context.request && context.request.url ? new URL(context.request.url).pathname : '';
+  const isCommunity = path === '/u' || path.startsWith('/u/');
+  const headersToApply = isCommunity
+    ? { ...SECURITY_HEADERS, 'Content-Security-Policy': COMMUNITY_CSP }
+    : SECURITY_HEADERS;
+  for (const [name, value] of Object.entries(headersToApply)) {
     if (!headers.has(name)) headers.set(name, value);
   }
   return new Response(response.body, {

@@ -8,7 +8,8 @@
     { href: '/guides/open-sentinel/', label: 'Open-Sentinel' },
     { href: '/guides/edge-ai-architecture/', label: 'Edge AI' },
     { href: '/guides/dns-zero-trust/', label: 'DNS Zero-Trust' },
-    { href: '/guides/crypto-telemetry/', label: 'Telemetría on-chain' }
+    { href: '/guides/crypto-telemetry/', label: 'Telemetría on-chain' },
+    { href: '/u', label: 'Comunidad' }
   ];
 
   function $(id) { return document.getElementById(id); }
