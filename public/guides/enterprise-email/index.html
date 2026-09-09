@@ -10,11 +10,11 @@
   <meta name="theme-color" content="#080c14">
   <script src="/js/theme-boot.js?v=shell1"></script>
   <link rel="stylesheet" href="/css/tokens.css?v=shell1">
-  <link rel="stylesheet" href="/style.css?v=shell1">
+  <link rel="stylesheet" href="/style.css?v=ee-csp1">
 </head>
 <body>
 
-  <div id="progress-bar"></div>
+  <progress id="progress-bar" max="100" value="0"></progress>
 
   <!-- Header -->
   <header class="site-header">
@@ -30,10 +30,10 @@
     </a>
 
     <!-- Breadcrumb -->
-    <nav style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary, #71717a);">
-      <a href="/" style="color:var(--text-secondary, #71717a);text-decoration:none;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-secondary, #71717a)'">Índice</a>
-      <span style="opacity:0.4;">/</span>
-      <span style="color:#e5e5e5;" id="breadcrumb-title">Correo Empresarial</span>
+    <nav class="ee-crumb">
+      <a class="ee-crumb-link" href="/">Índice</a>
+      <span class="ee-crumb-sep">/</span>
+      <span class="ee-crumb-current" id="breadcrumb-title">Correo Empresarial</span>
     </nav>
 
     <div class="header-right">
@@ -99,7 +99,7 @@
         <li><a href="#es-costes" class="toc-link">10. Comparativa de Costes</a></li>
       </ul>
 
-      <ul id="toc-en" class="toc-list" style="display:none;">
+      <ul id="toc-en" class="toc-list hidden">
         <li><a href="#en-fallacy" class="toc-link">1. The $15/User Fallacy</a></li>
         <li><a href="#en-architecture" class="toc-link">2. System Architecture</a></li>
         <li><a href="#en-deliverability" class="toc-link">3. Cryptographic Deliverability</a></li>
@@ -140,14 +140,14 @@
               <div class="meta-item">·</div>
               <div class="meta-item">10 min read</div>
               <div class="meta-item">·</div>
-              <div class="meta-item" style="color:#22c55e;">Verified Production Stack</div>
+              <div class="meta-item text-ok">Verified Production Stack</div>
             </div>
 
             <!-- Visual KPI Grid -->
             <div class="kpi-grid">
               <div class="kpi-card">
                 <span class="kpi-label">Cost Runrate</span>
-                <span class="kpi-value" style="color:#22c55e;">$0.00 / mo</span>
+                <span class="kpi-value text-ok">$0.00 / mo</span>
                 <span class="kpi-sub">Save $864/yr vs Workspace</span>
               </div>
               <div class="kpi-card">
@@ -293,11 +293,11 @@
               <!-- DNS Card 1: DKIM -->
               <div class="dns-record-card">
                 <div class="dns-record-header">
-                  <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="ee-row">
                     <span class="dns-type-pill">TXT</span>
                     <span class="dns-record-name">resend._domainkey.yourdomain.com</span>
                   </div>
-                  <span style="font-family:var(--font-mono);font-size:10px;color:#22c55e;">DKIM 2048-bit (Essential)</span>
+                  <span class="ee-label ee-label-ok">DKIM 2048-bit (Essential)</span>
                 </div>
                 <div class="dns-record-body">
                   <code class="dns-record-value">k=rsa; p=YOUR_DKIM_PUBLIC_KEY</code>
@@ -308,11 +308,11 @@
               <!-- DNS Card 2: SPF -->
               <div class="dns-record-card">
                 <div class="dns-record-header">
-                  <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="ee-row">
                     <span class="dns-type-pill">TXT</span>
                     <span class="dns-record-name">yourdomain.com (@ root)</span>
                   </div>
-                  <span style="font-family:var(--font-mono);font-size:10px;color:#38bdf8;">SPF Sender Authorization</span>
+                  <span class="ee-label ee-label-sky">SPF Sender Authorization</span>
                 </div>
                 <div class="dns-record-body">
                   <code class="dns-record-value">v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com ~all</code>
@@ -323,11 +323,11 @@
               <!-- DNS Card 3: DMARC -->
               <div class="dns-record-card">
                 <div class="dns-record-header">
-                  <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="ee-row">
                     <span class="dns-type-pill">TXT</span>
                     <span class="dns-record-name">_dmarc.yourdomain.com</span>
                   </div>
-                  <span style="font-family:var(--font-mono);font-size:10px;color:#a855f7;">DMARC Anti-Spoofing</span>
+                  <span class="ee-label ee-label-violet">DMARC Anti-Spoofing</span>
                 </div>
                 <div class="dns-record-body">
                   <code class="dns-record-value">v=DMARC1; p=none; rua=mailto:founder@yourdomain.com</code>
@@ -338,11 +338,11 @@
               <!-- DNS Card 4: Cloudflare MX -->
               <div class="dns-record-card">
                 <div class="dns-record-header">
-                  <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="ee-row">
                     <span class="dns-type-pill mx">MX</span>
                     <span class="dns-record-name">yourdomain.com (@ root)</span>
                   </div>
-                  <span style="font-family:var(--font-mono);font-size:10px;color:#38bdf8;">Cloudflare Inbound Edge (Priority 63, 93, 98)</span>
+                  <span class="ee-label ee-label-sky">Cloudflare Inbound Edge (Priority 63, 93, 98)</span>
                 </div>
                 <div class="dns-record-body">
                   <code class="dns-record-value">route1.mx.cloudflare.net · route2.mx.cloudflare.net · route3.mx.cloudflare.net</code>
@@ -524,7 +524,7 @@ Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid 
                   <span class="proof-title">Live Production Verification · Gmail & Google Directory</span>
                   <span class="proof-tag">Verified Brand Avatar</span>
                 </div>
-                <div class="proof-image-wrapper" style="background:#050505;border-radius:8px;overflow:hidden;">
+                <div class="proof-image-wrapper ee-proof">
                   <svg width="100%" height="120" viewBox="0 0 480 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect width="480" height="120" fill="#050505"/>
                     <!-- Gmail inbox row -->
@@ -569,7 +569,7 @@ Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid 
                 <div class="resources-grid">
                   <!-- Card 1: DNS Records Table SVG -->
                   <div class="resource-card">
-                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                    <div class="resource-preview-container ee-preview">
                       <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect width="260" height="90" fill="#0d0d0d"/>
                         <!-- Header row -->
@@ -609,7 +609,7 @@ Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid 
 
                   <!-- Card 2: Domain Verified SVG -->
                   <div class="resource-card">
-                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                    <div class="resource-preview-container ee-preview">
                       <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect width="260" height="90" fill="#0d0d0d"/>
                         <!-- Domain panel -->
@@ -639,7 +639,7 @@ Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid 
 
                   <!-- Card 3: Google Account Avatar SVG -->
                   <div class="resource-card">
-                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                    <div class="resource-preview-container ee-preview">
                       <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect width="260" height="90" fill="#0d0d0d"/>
                         <!-- myaccount.google.com panel -->
@@ -668,7 +668,7 @@ Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid 
 
                   <!-- Card 4: Gmail Send As SMTP SVG -->
                   <div class="resource-card">
-                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                    <div class="resource-preview-container ee-preview">
                       <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect width="260" height="90" fill="#0d0d0d"/>
                         <rect x="8" y="10" width="244" height="70" rx="6" fill="#0f0f0f" stroke="#1a1a1a"/>
@@ -733,36 +733,36 @@ Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid 
               <div class="mockup-container">
                 <div class="mockup-bar">
                   <div class="mockup-dots">
-                    <div class="mockup-dot" style="background:#ff5f56;"></div>
-                    <div class="mockup-dot" style="background:#ffbd2e;"></div>
-                    <div class="mockup-dot" style="background:#27c93f;"></div>
+                    <div class="mockup-dot mockup-dot-r"></div>
+                    <div class="mockup-dot mockup-dot-y"></div>
+                    <div class="mockup-dot mockup-dot-g"></div>
                   </div>
                   <div class="mockup-title">TRUJILLO OLED EMAIL CLIENT PREVIEW</div>
-                  <div style="width:30px;"></div>
+                  <div class="ee-spacer"></div>
                 </div>
                 <div class="mockup-body">
-                  <div style="background:#000000;border:1px solid #1f1f1f;border-radius:8px;max-width:520px;margin:0 auto;padding:32px 28px;text-align:center;">
-                    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:24px;">
-                      <img src="/avatar.png" width="28" height="28" style="border-radius:50%;border:1px solid #222;" alt="">
-                      <span style="font-family:ui-monospace,monospace;font-size:13px;font-weight:800;letter-spacing:0.16em;color:#fff;">TRUJILLO AI</span>
+                  <div class="ee-mail-card">
+                    <div class="ee-mail-brand">
+                      <img class="ee-mail-avatar" src="/avatar.png" width="28" height="28" alt="">
+                      <span class="ee-mail-wordmark">TRUJILLO AI</span>
                     </div>
 
-                    <h3 style="font-size:18px;font-weight:700;color:#ffffff;margin-bottom:8px;">Workspace Authentication</h3>
-                    <p style="font-size:13px;color:#a1a1aa;line-height:1.5;margin-bottom:20px;">
+                    <h3 class="ee-mail-title">Workspace Authentication</h3>
+                    <p class="ee-mail-copy">
                       Use this single-use cryptographic security code to verify your session. Code expires in 10 minutes.
                     </p>
 
-                    <div style="background:#050505;border:1px solid #262626;border-radius:6px;padding:18px 24px;max-width:320px;margin:0 auto 24px;">
-                      <div style="font-family:ui-monospace,monospace;font-size:32px;font-weight:800;color:#ffffff;letter-spacing:12px;text-indent:12px;">
+                    <div class="ee-mail-code">
+                      <div class="ee-mail-otp">
                         849201
                       </div>
                     </div>
 
-                    <a href="#" style="display:inline-block;padding:10px 26px;background:#ffffff;color:#000000;font-size:12px;font-weight:700;text-decoration:none;border-radius:9999px;">
+                    <a class="ee-mail-cta" href="#">
                       Open Workspace &rarr;
                     </a>
 
-                    <div style="border-top:1px solid #1a1a1a;margin-top:28px;padding-top:16px;font-family:ui-monospace,monospace;font-size:10px;color:#52525b;">
+                    <div class="ee-mail-foot">
                       Sunday, September 6, 2026 · ai.trujillomingorance.com
                     </div>
                   </div>
@@ -851,7 +851,7 @@ Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid 
                     <span id="checklist-percent-en">0%</span>
                   </div>
                   <div class="checklist-bar-bg">
-                    <div class="checklist-bar-fill" id="checklist-fill-en"></div>
+                    <progress class="checklist-bar-fill" id="checklist-fill-en" max="100" value="0"></progress>
                   </div>
                 </div>
 
@@ -902,7 +902,7 @@ Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid 
                   </div>
                 </div>
 
-                <div class="checklist-completion-banner" id="checklist-banner-en">
+                <div class="checklist-completion-banner hidden" id="checklist-banner-en">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                   <div>
                     <strong>Congratulations! Your Zero-Cost Enterprise Email Architecture is 100% Deployed.</strong>
@@ -928,27 +928,27 @@ Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid 
                     <tr>
                       <td><strong>Monthly Cost (4 Users)</strong></td>
                       <td>$48.00 to $72.00 / mo ($864/yr)</td>
-                      <td style="color:#22c55e;font-weight:700;">$0.00 / mo ($0/yr)</td>
+                      <td class="text-ok">$0.00 / mo ($0/yr)</td>
                     </tr>
                     <tr>
                       <td><strong>Machine & Service Mailboxes</strong></td>
                       <td>Paid seat license required</td>
-                      <td style="color:#22c55e;font-weight:700;">Unlimited Free Aliases</td>
+                      <td class="text-ok">Unlimited Free Aliases</td>
                     </tr>
                     <tr>
                       <td><strong>Outbound Deliverability</strong></td>
                       <td>Shared Google IP pool</td>
-                      <td style="color:#22c55e;font-weight:700;">Dedicated 2048-bit DKIM via Resend</td>
+                      <td class="text-ok">Dedicated 2048-bit DKIM via Resend</td>
                     </tr>
                     <tr>
                       <td><strong>Brand Avatar Verification</strong></td>
                       <td>Internal to Workspace domain</td>
-                      <td style="color:#22c55e;font-weight:700;">Global via Google ID & Gravatar</td>
+                      <td class="text-ok">Global via Google ID & Gravatar</td>
                     </tr>
                     <tr>
                       <td><strong>Employee Revocation</strong></td>
                       <td>Manual seat transfer & billing cycles</td>
-                      <td style="color:#22c55e;font-weight:700;">Instant 5-second DNS reroute</td>
+                      <td class="text-ok">Instant 5-second DNS reroute</td>
                     </tr>
                   </tbody>
                 </table>
@@ -957,7 +957,7 @@ Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid 
           </div>
 
           <!-- SPANISH CONTENT -->
-          <div class="content-es" style="display:none;">
+          <div class="content-es hidden">
             <div class="hero-category">
               <span class="pulse-dot"></span>
               <span>ESPECIFICACIÓN DE ARQUITECTURA EN PRODUCCIÓN · MATRIZ DE COSTE 0 €</span>
@@ -978,14 +978,14 @@ Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid 
               <div class="meta-item">·</div>
               <div class="meta-item">10 min de lectura</div>
               <div class="meta-item">·</div>
-              <div class="meta-item" style="color:#22c55e;">Stack Verificado en Producción</div>
+              <div class="meta-item text-ok">Stack Verificado en Producción</div>
             </div>
 
             <!-- Visual KPI Grid ES -->
             <div class="kpi-grid">
               <div class="kpi-card">
                 <span class="kpi-label">Coste Operativo</span>
-                <span class="kpi-value" style="color:#22c55e;">0,00 € / mes</span>
+                <span class="kpi-value text-ok">0,00 € / mes</span>
                 <span class="kpi-sub">Ahorro de 864 €/año vs Workspace</span>
               </div>
               <div class="kpi-card">
@@ -1131,11 +1131,11 @@ Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid 
               <!-- DNS Card 1: DKIM ES -->
               <div class="dns-record-card">
                 <div class="dns-record-header">
-                  <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="ee-row">
                     <span class="dns-type-pill">TXT</span>
                     <span class="dns-record-name">resend._domainkey.tudominio.com</span>
                   </div>
-                  <span style="font-family:var(--font-mono);font-size:10px;color:#22c55e;">Firma DKIM 2048 bits (Crítico)</span>
+                  <span class="ee-label ee-label-ok">Firma DKIM 2048 bits (Crítico)</span>
                 </div>
                 <div class="dns-record-body">
                   <code class="dns-record-value">k=rsa; p=YOUR_DKIM_PUBLIC_KEY</code>
@@ -1146,11 +1146,11 @@ Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid 
               <!-- DNS Card 2: SPF ES -->
               <div class="dns-record-card">
                 <div class="dns-record-header">
-                  <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="ee-row">
                     <span class="dns-type-pill">TXT</span>
                     <span class="dns-record-name">tudominio.com (@ raíz)</span>
                   </div>
-                  <span style="font-family:var(--font-mono);font-size:10px;color:#38bdf8;">Autorización de Emisores SPF</span>
+                  <span class="ee-label ee-label-sky">Autorización de Emisores SPF</span>
                 </div>
                 <div class="dns-record-body">
                   <code class="dns-record-value">v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com ~all</code>
@@ -1161,11 +1161,11 @@ Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid 
               <!-- DNS Card 3: DMARC ES -->
               <div class="dns-record-card">
                 <div class="dns-record-header">
-                  <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="ee-row">
                     <span class="dns-type-pill">TXT</span>
                     <span class="dns-record-name">_dmarc.tudominio.com</span>
                   </div>
-                  <span style="font-family:var(--font-mono);font-size:10px;color:#a855f7;">Política Anti-Suplantación DMARC</span>
+                  <span class="ee-label ee-label-violet">Política Anti-Suplantación DMARC</span>
                 </div>
                 <div class="dns-record-body">
                   <code class="dns-record-value">v=DMARC1; p=none; rua=mailto:alberto@tudominio.com</code>
@@ -1176,11 +1176,11 @@ Rule 4: Catch-all:      *@yourdomain.com         -> Action: Drop (block invalid 
               <!-- DNS Card 4: MX ES -->
               <div class="dns-record-card">
                 <div class="dns-record-header">
-                  <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="ee-row">
                     <span class="dns-type-pill mx">MX</span>
                     <span class="dns-record-name">tudominio.com (@ raíz)</span>
                   </div>
-                  <span style="font-family:var(--font-mono);font-size:10px;color:#38bdf8;">Cloudflare Email Routing (Prioridad 63, 93, 98)</span>
+                  <span class="ee-label ee-label-sky">Cloudflare Email Routing (Prioridad 63, 93, 98)</span>
                 </div>
                 <div class="dns-record-body">
                   <code class="dns-record-value">route1.mx.cloudflare.net · route2.mx.cloudflare.net · route3.mx.cloudflare.net</code>
@@ -1362,7 +1362,7 @@ Regla 4: Catch-all:               *@tudominio.com         -> Acción: Drop (desc
                   <span class="proof-title">Verificación Real en Producción · Gmail y Directorio de Google</span>
                   <span class="proof-tag">Avatar de Marca Verificado</span>
                 </div>
-                <div class="proof-image-wrapper" style="background:#050505;border-radius:8px;overflow:hidden;">
+                <div class="proof-image-wrapper ee-proof">
                   <svg width="100%" height="120" viewBox="0 0 480 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect width="480" height="120" fill="#050505"/>
                     <rect x="16" y="16" width="448" height="88" rx="8" fill="#0a0a0a" stroke="#1a1a1a"/>
@@ -1401,7 +1401,7 @@ Regla 4: Catch-all:               *@tudominio.com         -> Acción: Drop (desc
                                 <div class="resources-grid">
                   <!-- Card 1: DNS Records Table SVG -->
                   <div class="resource-card">
-                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                    <div class="resource-preview-container ee-preview">
                       <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect width="260" height="90" fill="#0d0d0d"/>
                         <rect x="8" y="8" width="244" height="16" rx="2" fill="#111"/>
@@ -1437,7 +1437,7 @@ Regla 4: Catch-all:               *@tudominio.com         -> Acción: Drop (desc
 
                   <!-- Card 2: Domain Verified SVG -->
                   <div class="resource-card">
-                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                    <div class="resource-preview-container ee-preview">
                       <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect width="260" height="90" fill="#0d0d0d"/>
                         <rect x="8" y="10" width="244" height="70" rx="6" fill="#0f0f0f" stroke="#1a1a1a"/>
@@ -1461,7 +1461,7 @@ Regla 4: Catch-all:               *@tudominio.com         -> Acción: Drop (desc
 
                   <!-- Card 3: Google Account Avatar SVG -->
                   <div class="resource-card">
-                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                    <div class="resource-preview-container ee-preview">
                       <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect width="260" height="90" fill="#0d0d0d"/>
                         <rect x="8" y="10" width="244" height="70" rx="6" fill="#0f0f0f" stroke="#1a1a1a"/>
@@ -1485,7 +1485,7 @@ Regla 4: Catch-all:               *@tudominio.com         -> Acción: Drop (desc
 
                   <!-- Card 4: Gmail Send As SMTP SVG -->
                   <div class="resource-card">
-                    <div class="resource-preview-container" style="background:#0d0d0d;border-bottom:1px solid #1a1a1a;">
+                    <div class="resource-preview-container ee-preview">
                       <svg width="100%" height="90" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect width="260" height="90" fill="#0d0d0d"/>
                         <rect x="8" y="10" width="244" height="70" rx="6" fill="#0f0f0f" stroke="#1a1a1a"/>
@@ -1547,36 +1547,36 @@ Regla 4: Catch-all:               *@tudominio.com         -> Acción: Drop (desc
               <div class="mockup-container">
                 <div class="mockup-bar">
                   <div class="mockup-dots">
-                    <div class="mockup-dot" style="background:#ff5f56;"></div>
-                    <div class="mockup-dot" style="background:#ffbd2e;"></div>
-                    <div class="mockup-dot" style="background:#27c93f;"></div>
+                    <div class="mockup-dot mockup-dot-r"></div>
+                    <div class="mockup-dot mockup-dot-y"></div>
+                    <div class="mockup-dot mockup-dot-g"></div>
                   </div>
                   <div class="mockup-title">VISTA PREVIA DEL CLIENTE DE CORREO TRUJILLO OLED</div>
-                  <div style="width:30px;"></div>
+                  <div class="ee-spacer"></div>
                 </div>
                 <div class="mockup-body">
-                  <div style="background:#000000;border:1px solid #1f1f1f;border-radius:8px;max-width:520px;margin:0 auto;padding:32px 28px;text-align:center;">
-                    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:24px;">
-                      <img src="/avatar.png" width="28" height="28" style="border-radius:50%;border:1px solid #222;" alt="">
-                      <span style="font-family:ui-monospace,monospace;font-size:13px;font-weight:800;letter-spacing:0.16em;color:#fff;">TRUJILLO AI</span>
+                  <div class="ee-mail-card">
+                    <div class="ee-mail-brand">
+                      <img class="ee-mail-avatar" src="/avatar.png" width="28" height="28" alt="">
+                      <span class="ee-mail-wordmark">TRUJILLO AI</span>
                     </div>
 
-                    <h3 style="font-size:18px;font-weight:700;color:#ffffff;margin-bottom:8px;">Autenticación de Sesión</h3>
-                    <p style="font-size:13px;color:#a1a1aa;line-height:1.5;margin-bottom:20px;">
+                    <h3 class="ee-mail-title">Autenticación de Sesión</h3>
+                    <p class="ee-mail-copy">
                       Utiliza este código criptográfico de un solo uso para verificar tu sesión. Caduca en 10 minutos.
                     </p>
 
-                    <div style="background:#050505;border:1px solid #262626;border-radius:6px;padding:18px 24px;max-width:320px;margin:0 auto 24px;">
-                      <div style="font-family:ui-monospace,monospace;font-size:32px;font-weight:800;color:#ffffff;letter-spacing:12px;text-indent:12px;">
+                    <div class="ee-mail-code">
+                      <div class="ee-mail-otp">
                         849201
                       </div>
                     </div>
 
-                    <a href="#" style="display:inline-block;padding:10px 26px;background:#ffffff;color:#000000;font-size:12px;font-weight:700;text-decoration:none;border-radius:9999px;">
+                    <a class="ee-mail-cta" href="#">
                       Abrir Espacio de Trabajo &rarr;
                     </a>
 
-                    <div style="border-top:1px solid #1a1a1a;margin-top:28px;padding-top:16px;font-family:ui-monospace,monospace;font-size:10px;color:#52525b;">
+                    <div class="ee-mail-foot">
                       Domingo, 6 de septiembre de 2026 · ai.trujillomingorance.com
                     </div>
                   </div>
@@ -1666,7 +1666,7 @@ Regla 4: Catch-all:               *@tudominio.com         -> Acción: Drop (desc
                     <span id="checklist-percent-es">0%</span>
                   </div>
                   <div class="checklist-bar-bg">
-                    <div class="checklist-bar-fill" id="checklist-fill-es"></div>
+                    <progress class="checklist-bar-fill" id="checklist-fill-es" max="100" value="0"></progress>
                   </div>
                 </div>
 
@@ -1717,7 +1717,7 @@ Regla 4: Catch-all:               *@tudominio.com         -> Acción: Drop (desc
                   </div>
                 </div>
 
-                <div class="checklist-completion-banner" id="checklist-banner-es">
+                <div class="checklist-completion-banner hidden" id="checklist-banner-es">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                   <div>
                     <strong>¡Enhorabuena! Tu arquitectura de correo empresarial a coste cero está 100% desplegada.</strong>
@@ -1743,27 +1743,27 @@ Regla 4: Catch-all:               *@tudominio.com         -> Acción: Drop (desc
                     <tr>
                       <td><strong>Coste mensual (4 usuarios)</strong></td>
                       <td>24 € a 72 € / mes (Hasta 864 €/año)</td>
-                      <td style="color:#22c55e;font-weight:700;">0,00 € / mes (0 €/año)</td>
+                      <td class="text-ok">0,00 € / mes (0 €/año)</td>
                     </tr>
                     <tr>
                       <td><strong>Buzones de máquina (no-reply@)</strong></td>
                       <td>Licencia de pago requerida</td>
-                      <td style="color:#22c55e;font-weight:700;">Alias Ilimitados Gratuitos</td>
+                      <td class="text-ok">Alias Ilimitados Gratuitos</td>
                     </tr>
                     <tr>
                       <td><strong>Entregabilidad de Salida</strong></td>
                       <td>Pool compartido de IPs de Google</td>
-                      <td style="color:#22c55e;font-weight:700;">DKIM 2048-bit dedicado en Resend</td>
+                      <td class="text-ok">DKIM 2048-bit dedicado en Resend</td>
                     </tr>
                     <tr>
                       <td><strong>Logotipo y Avatar de Marca</strong></td>
                       <td>Solo garantizado dentro de Workspace</td>
-                      <td style="color:#22c55e;font-weight:700;">Global vía Google ID y Gravatar</td>
+                      <td class="text-ok">Global vía Google ID y Gravatar</td>
                     </tr>
                     <tr>
                       <td><strong>Relevo de Empleados</strong></td>
                       <td>Gestión manual y ciclos de facturación</td>
-                      <td style="color:#22c55e;font-weight:700;">Reenrutamiento DNS en 5 segundos</td>
+                      <td class="text-ok">Reenrutamiento DNS en 5 segundos</td>
                     </tr>
                   </tbody>
                 </table>
@@ -1794,8 +1794,8 @@ Regla 4: Catch-all:               *@tudominio.com         -> Acción: Drop (desc
 
   
 
-  <script src="/js/guides.js?v=shell1"></script>
-  <script src="/js/enterprise-email.js?v=shell1"></script>
+  <script src="/js/guides.js?v=ee-csp1"></script>
+  <script src="/js/enterprise-email.js?v=ee-csp1"></script>
 </body>
 </html>
 

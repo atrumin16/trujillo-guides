@@ -183,7 +183,7 @@
       var move = [];
       Array.prototype.forEach.call(document.body.childNodes, function (n) {
         if (n === topbar || n === shell) return;
-        if (n.nodeType === 1 && (n.tagName === 'SCRIPT' || n.id === 'userModal' || n.id === 'docs-topbar' || n.classList.contains('docs-topbar'))) return;
+        if (n.nodeType === 1 && (n.tagName === 'SCRIPT' || n.id === 'userModal' || n.id === 'docs-topbar' || n.id === 'progress-bar' || n.id === 'back-to-top' || n.classList.contains('docs-topbar'))) return;
         move.push(n);
       });
       document.body.appendChild(shell);
@@ -194,6 +194,14 @@
 
     var glossaryTheme = $('darkModeToggle') || $('darkModeToggleBind');
     if (glossaryTheme) glossaryTheme.classList.add('hidden');
+
+    var actions = topbar.querySelector('.topbar-actions');
+    var langEs = $('lang-btn-es');
+    var langEn = $('lang-btn-en');
+    if (actions && langEs && langEn && !topbar.querySelector('#lang-btn-es')) {
+      actions.insertBefore(langEn, actions.firstChild);
+      actions.insertBefore(langEs, actions.firstChild);
+    }
   }
 
   function attachCopyButtons() {

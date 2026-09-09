@@ -2,18 +2,11 @@
   'use strict';
 
   // ── Apply theme immediately (before paint) ──────────────────────
-  var savedTheme = localStorage.getItem('atm_theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-
-  function applyThemeIcons(t) {
-    document.querySelectorAll('.sun-icon').forEach(function (e) { e.style.display = t === 'light' ? 'none' : ''; });
-    document.querySelectorAll('.moon-icon').forEach(function (e) { e.style.display = t === 'light' ? '' : 'none'; });
-  }
+  var savedTheme = localStorage.getItem('trujillo_theme') || localStorage.getItem('atm_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme === 'light' ? 'light' : 'dark');
 
   // ── DOM ready ───────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', function () {
-
-    applyThemeIcons(savedTheme);
 
     // Theme toggle
     var themeBtn = document.getElementById('theme-toggle-btn');
@@ -22,8 +15,7 @@
         var cur = document.documentElement.getAttribute('data-theme') || 'dark';
         var next = cur === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('atm_theme', next);
-        applyThemeIcons(next);
+        try { localStorage.setItem('trujillo_theme', next); localStorage.setItem('atm_theme', next); } catch (e) {}
       });
     }
 
@@ -53,14 +45,14 @@
       // Show/hide content
       var enDiv = document.querySelector('.content-en');
       var esDiv = document.querySelector('.content-es');
-      if (enDiv) enDiv.style.display = lang === 'en' ? '' : 'none';
-      if (esDiv) esDiv.style.display = lang === 'es' ? '' : 'none';
+      if (enDiv) enDiv.classList.toggle('hidden', lang !== 'en');
+      if (esDiv) esDiv.classList.toggle('hidden', lang !== 'es');
 
       // Show/hide TOC
       var tocEn = document.getElementById('toc-en');
       var tocEs = document.getElementById('toc-es');
-      if (tocEn) tocEn.style.display = lang === 'en' ? '' : 'none';
-      if (tocEs) tocEs.style.display = lang === 'es' ? '' : 'none';
+      if (tocEn) tocEn.classList.toggle('hidden', lang !== 'en');
+      if (tocEs) tocEs.classList.toggle('hidden', lang !== 'es');
 
       // Active button state
       var btnEs = document.getElementById('lang-btn-es');
@@ -88,7 +80,7 @@
     if (bar) {
       window.addEventListener('scroll', function () {
         var max = document.documentElement.scrollHeight - window.innerHeight;
-        bar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+        bar.value = max > 0 ? Math.round((window.scrollY / max) * 100) : 0;
       }, { passive: true });
     }
 
@@ -96,7 +88,7 @@
     var btt = document.getElementById('back-to-top');
     if (btt) {
       window.addEventListener('scroll', function () {
-        btt.style.display = window.scrollY > 500 ? 'flex' : 'none';
+        btt.classList.toggle('visible', window.scrollY > 500);
       }, { passive: true });
     }
 
@@ -146,7 +138,7 @@
       function fallback() {
         var ta = document.createElement('textarea');
         ta.value = text;
-        ta.style.cssText = 'position:fixed;opacity:0;';
+        ta.className = 'offscreen-copy';
         document.body.appendChild(ta);
         ta.focus(); ta.select();
         try { document.execCommand('copy'); } catch (_) {}
@@ -167,7 +159,8 @@
       if (!statusEl) return;
 
       statusEl.textContent = lang === 'es' ? 'Verificando…' : 'Testing…';
-      statusEl.style.cssText = 'background:#0c1a2e;color:#38bdf8;border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;';
+      statusEl.classList.remove('sim-ok');
+      statusEl.classList.add('sim-wait');
 
       setTimeout(function () {
         var msgs = {
@@ -184,8 +177,9 @@
             en: '✓ PASS — p=reject policy enforced. Identity spoofing attempts blocked.'
           }
         };
-        statusEl.textContent = 'PASS ✓';
-        statusEl.style.cssText = 'background:#052e16;color:#22c55e;border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;';
+        statusEl.textContent = 'PASS';
+        statusEl.classList.remove('sim-wait');
+        statusEl.classList.add('sim-ok');
         if (outEl) outEl.textContent = (msgs[type] || {})[lang] || (msgs[type] || {}).en || '✓ OK';
       }, 1200);
     };
@@ -194,10 +188,7 @@
     document.addEventListener('click', function (e) {
       var item = e.target.closest('.checklist-item');
       if (!item) return;
-      var isDone = item.classList.toggle('done');
-      item.style.opacity = isDone ? '0.55' : '';
-      var box = item.querySelector('.checklist-checkbox');
-      if (box) box.style.background = isDone ? '#22c55e' : '';
+      item.classList.toggle('done');
 
       // Update progress for this lang block
       var block = item.closest('.content-en, .content-es');
@@ -215,8 +206,8 @@
 
       if (countEl) countEl.textContent = doneItems.length + '/' + allItems.length;
       if (pctEl)   pctEl.textContent   = pct + '%';
-      if (fillEl)  fillEl.style.width  = pct + '%';
-      if (banner)  banner.style.display = pct === 100 ? '' : 'none';
+      if (fillEl)  fillEl.value = pct;
+      if (banner)  banner.classList.toggle('hidden', pct !== 100);
     });
 
     // Legacy onclick bridge (HTML has onclick="toggleChecklistStep(n)")

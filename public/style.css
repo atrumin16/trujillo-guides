@@ -102,12 +102,16 @@ body { top: 0px !important; }
   position: fixed;
   top: 0;
   left: 0;
-  height: 2.5px;
-  background: var(--accent-pill);
-  width: 0%;
+  width: 100%;
+  height: 3px;
   z-index: 1000;
-  transition: width 0.1s ease;
+  border: 0;
+  background: transparent;
+  appearance: none;
 }
+#progress-bar::-webkit-progress-bar { background: transparent; }
+#progress-bar::-webkit-progress-value { background: var(--accent-pill); }
+#progress-bar::-moz-progress-bar { background: var(--accent-pill); }
 
 /* Site Header */
 header.site-header {
@@ -2258,7 +2262,44 @@ footer.site-footer {
 .docs-main .main-wrapper { display: block !important; width: 100%; max-width: none; margin: 0; padding: 0; }
 .docs-main aside.sidebar { display: none !important; }
 .docs-main .guide-container { max-width: none; margin: 0; padding: 0 0 48px; }
-.docs-main #progress-bar { display: none; }
+.ee-crumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+.ee-crumb-link { color: var(--text-secondary); text-decoration: none; }
+.ee-crumb-link:hover { color: var(--text-primary); }
+.ee-crumb-sep { opacity: 0.4; }
+.ee-crumb-current { color: var(--text-primary); }
+.text-ok { color: #22c55e; font-weight: 700; }
+.ee-row { display: flex; align-items: center; gap: 10px; }
+.ee-label { font-family: var(--font-mono); font-size: 10px; }
+.ee-label-ok { color: #22c55e; }
+.ee-label-sky { color: #38bdf8; }
+.ee-label-violet { color: #a855f7; }
+.ee-proof { background: #050505; border-radius: 8px; overflow: hidden; }
+.ee-preview { background: #0d0d0d; border-bottom: 1px solid #1a1a1a; }
+.mockup-dot-r { background: #ff5f56; }
+.mockup-dot-y { background: #ffbd2e; }
+.mockup-dot-g { background: #27c93f; }
+.ee-spacer { width: 30px; flex-shrink: 0; }
+.ee-mail-card {
+  background: #000; border: 1px solid #1f1f1f; border-radius: 8px;
+  max-width: 520px; margin: 0 auto; padding: 32px 28px; text-align: center;
+}
+.ee-mail-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 24px; }
+.ee-mail-avatar { border-radius: 50%; border: 1px solid #222; }
+.ee-mail-wordmark { font-family: ui-monospace, monospace; font-size: 13px; font-weight: 800; letter-spacing: 0.16em; color: #fff; }
+.ee-mail-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.ee-mail-copy { font-size: 13px; color: #a1a1aa; line-height: 1.5; margin-bottom: 20px; }
+.ee-mail-code { background: #050505; border: 1px solid #262626; border-radius: 6px; padding: 18px 24px; max-width: 320px; margin: 0 auto 24px; }
+.ee-mail-otp { font-family: ui-monospace, monospace; font-size: 32px; font-weight: 800; color: #fff; letter-spacing: 12px; text-indent: 12px; }
+.ee-mail-cta { display: inline-block; padding: 10px 26px; background: #fff; color: #000; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 9999px; }
+.ee-mail-foot { border-top: 1px solid #1a1a1a; margin-top: 28px; padding-top: 16px; font-family: ui-monospace, monospace; font-size: 10px; color: #52525b; }
+.checklist-item.done { opacity: 0.55; }
+.checklist-item.done .checklist-checkbox { background: #22c55e; }
+progress.checklist-bar-fill {
+  appearance: none; width: 100%; height: 6px; border: 0; display: block;
+}
+progress.checklist-bar-fill::-webkit-progress-bar { background: var(--border); border-radius: 999px; }
+progress.checklist-bar-fill::-webkit-progress-value { background: #22c55e; border-radius: 999px; }
+progress.checklist-bar-fill::-moz-progress-bar { background: #22c55e; }
 
 .settings-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
 .settings-table th {
