@@ -2165,16 +2165,75 @@ footer.site-footer {
 .sim-ok { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
 .sim-wait { background: #0284c7; color: #ffffff; }
 .pass-label { color: #22c55e; font-weight: 700; }
-.flip-card { perspective: 1000px; height: 280px; cursor: pointer; }
-.flip-card-inner { transition: transform 0.6s; transform-style: preserve-3d; height: 100%; position: relative; }
-.flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
-.flip-card-front, .flip-card-back {
-  backface-visibility: hidden; position: absolute; inset: 0;
-  border-radius: 18px; padding: 22px; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; border: 1px solid var(--border);
-  background: var(--bg-card);
+.glossary-shell { padding-top: 8px; }
+.glossary-toolbar {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  margin: 8px 0 22px;
 }
-.flip-card-back { transform: rotateY(180deg); }
+.glossary-toolbar input[type="search"],
+.glossary-toolbar select {
+  background: var(--bg-code); border: 1px solid var(--border); color: var(--text-primary);
+  border-radius: 10px; padding: 10px 12px; font-size: 0.88rem; font-family: inherit;
+}
+.glossary-toolbar input[type="search"] { flex: 1 1 220px; min-width: 180px; }
+.glossary-toolbar button {
+  background: var(--bg-elev, var(--bg-card)); border: 1px solid var(--border);
+  color: var(--text-secondary); border-radius: 999px; padding: 8px 14px;
+  font-size: 0.82rem; cursor: pointer; font-family: inherit;
+}
+.glossary-toolbar button:hover, .glossary-toolbar button.is-active {
+  color: var(--text-primary); border-color: var(--line-strong, var(--border-focus));
+}
+.glossary-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px;
+}
+.glossary-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 18px 18px 16px; cursor: pointer; text-align: left; min-height: 132px;
+}
+.glossary-card:hover { border-color: var(--line-strong, var(--border-focus)); }
+.glossary-card h3 {
+  font-size: 1.05rem; letter-spacing: -0.02em; margin: 0 0 6px; color: var(--text-primary);
+}
+.glossary-lead { font-size: 0.84rem; color: var(--text-secondary); margin: 0 0 8px; }
+.glossary-hint { font-size: 0.72rem; color: var(--dim, var(--text-muted)); margin: 0; }
+.glossary-def { display: none; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.55; margin: 10px 0 0; }
+.glossary-card.open { min-height: 0; }
+.glossary-card.open .glossary-hint { display: none; }
+.glossary-card.open .glossary-def { display: block; }
+.glossary-quiz {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 22px;
+}
+.quiz-prompt { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 8px; }
+.quiz-term h3 { font-size: 1.6rem; letter-spacing: -0.03em; margin-bottom: 16px; }
+.quiz-answers { display: grid; gap: 8px; }
+.quiz-answers button {
+  text-align: left; padding: 12px 14px; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--bg-elev, var(--bg-code));
+  color: var(--text-primary); font-family: inherit;
+}
+.quiz-score { margin-top: 16px; color: var(--text-secondary); font-size: 0.9rem; }
+.glossary-modal {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.glossary-modal.hidden { display: none !important; }
+.glossary-modal-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 18px; padding: 28px; max-width: 560px; width: 100%;
+}
+.glossary-modal-card h2 { font-size: 1.25rem; margin-bottom: 8px; }
+.glossary-modal-card > p { color: var(--text-secondary); margin-bottom: 16px; }
+.glossary-level-row { display: grid; gap: 8px; }
+@media (min-width: 700px) { .glossary-level-row { grid-template-columns: repeat(3, 1fr); } }
+.glossary-level-row button {
+  display: flex; flex-direction: column; gap: 4px; text-align: left;
+  padding: 14px; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--bg-elev, var(--bg-code));
+  color: var(--text-primary); font-family: inherit;
+}
+.glossary-level-row button span { color: var(--text-secondary); font-size: 0.8rem; }
 .quiz-option, .glossary-grid { display: grid; gap: 10px; }
 .quiz-option button, .answers-grid button {
   width: 100%; text-align: left; padding: 12px 14px; border-radius: 12px;
@@ -2225,40 +2284,8 @@ footer.site-footer {
 .step-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
 .step-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 12px; }
 
-#userModal {
-  position: fixed; inset: 0; z-index: 200;
-  background: rgba(0, 0, 0, 0.55);
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px;
-}
-#userModal.hidden { display: none !important; }
-#userModal > div {
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: 18px; padding: 28px; max-width: 640px; width: 100%;
-}
-#userModal h2, #userModal h3 { color: var(--text-primary); margin-bottom: 8px; }
-#userModal p { color: var(--text-secondary); }
-#userModal [data-level] {
-  display: block; width: 100%; margin: 8px 0; padding: 14px;
-  border-radius: 12px; border: 1px solid var(--border);
-  background: var(--bg-elev); color: var(--text-primary); cursor: pointer; text-align: left;
-}
-#gridView {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;
-}
-.docs-main > header:not(.docs-topbar):not(.site-header) {
-  position: static;
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: 16px; padding: 16px; margin-bottom: 20px;
-}
-.docs-main #searchInput, .docs-main #languageSelect {
-  width: 100%; max-width: 420px; background: var(--bg-code);
-  border: 1px solid var(--border); color: var(--text-primary);
-  border-radius: 10px; padding: 10px 12px; margin: 8px 0;
-}
-.docs-main [data-view], .docs-main [data-action="shuffle"], .docs-main [data-action="show-user-modal"] {
-  background: var(--bg-elev); border: 1px solid var(--border); color: var(--text-primary);
-  border-radius: 999px; padding: 8px 14px; cursor: pointer; margin: 4px 6px 4px 0;
+#gridView.glossary-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px;
 }
 .theme-toggle-btn .sun-icon, .theme-toggle-btn .moon-icon { display: none; }
 [data-theme="dark"] .theme-toggle-btn .sun-icon { display: block; }

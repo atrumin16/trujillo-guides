@@ -11,16 +11,16 @@
                 advanced: "Avanzado",
                 advancedDesc: "Tengo conocimientos técnicos",
                 changeLevel: "Cambiar Nivel",
-                searchPlaceholder: "🔍 Buscar término...",
-                viewAll: "Ver Todo",
-                quizMode: "Modo Quiz",
+                searchPlaceholder: "Buscar término…",
+                viewAll: "Términos",
+                quizMode: "Quiz",
                 shuffle: "Mezclar",
                 whatMeans: "¿Qué significa este término?",
                 score: "Puntuación",
-                footer: "✨ Aprende informática de forma fácil y divertida ✨",
-                clickToSee: "Haz click para ver",
-                correct: "¡Muy bien! 🎉",
-                wrong: "¡Casi! 😊",
+                footer: "",
+                clickToSee: "Pulsa para ver la definición",
+                correct: "Correcto",
+                wrong: "No es esa",
                 theAnswerWas: "La respuesta correcta era:"
             },
             en: {
@@ -34,16 +34,16 @@
                 advanced: "Advanced",
                 advancedDesc: "I have technical knowledge",
                 changeLevel: "Change Level",
-                searchPlaceholder: "🔍 Search term...",
-                viewAll: "View All",
-                quizMode: "Quiz Mode",
+                searchPlaceholder: "Search term…",
+                viewAll: "Terms",
+                quizMode: "Quiz",
                 shuffle: "Shuffle",
                 whatMeans: "What does this term mean?",
                 score: "Score",
-                footer: "✨ Learn computing easily and fun ✨",
-                clickToSee: "Click to see",
-                correct: "Very good! 🎉",
-                wrong: "Almost! 😊",
+                footer: "",
+                clickToSee: "Tap to read the definition",
+                correct: "Correct",
+                wrong: "Not that one",
                 theAnswerWas: "The correct answer was:"
             },
             ca: {
@@ -57,16 +57,16 @@
                 advanced: "Avançat",
                 advancedDesc: "Tinc coneixements tècnics",
                 changeLevel: "Canviar Nivell",
-                searchPlaceholder: "🔍 Cercar terme...",
-                viewAll: "Veure Tot",
-                quizMode: "Mode Quiz",
+                searchPlaceholder: "Cercar terme…",
+                viewAll: "Termes",
+                quizMode: "Quiz",
                 shuffle: "Barrejar",
                 whatMeans: "Què significa aquest terme?",
                 score: "Puntuació",
-                footer: "✨ Aprèn informàtica de forma fàcil i divertida ✨",
-                clickToSee: "Fes clic per veure",
-                correct: "Molt bé! 🎉",
-                wrong: "Gairebé! 😊",
+                footer: "",
+                clickToSee: "Toca per veure la definició",
+                correct: "Correcte",
+                wrong: "No és aquesta",
                 theAnswerWas: "La resposta correcta era:"
             }
         };
@@ -699,29 +699,29 @@
 
         // Renderizar tarjetas
         function renderCard(item) {
-            const card = document.createElement('div');
-            card.className = 'flip-card';
-            card.addEventListener('click', function () { card.classList.toggle('flipped'); });
-            const inner = document.createElement('div');
-            inner.className = 'flip-card-inner';
-            const front = document.createElement('div');
-            front.className = 'flip-card-front';
-            const emoji = document.createElement('div');
-            emoji.textContent = item.emoji;
+            const card = document.createElement('article');
+            card.className = 'glossary-card';
+            card.tabIndex = 0;
             const term = document.createElement('h3');
             term.textContent = item.term;
+            const lead = document.createElement('p');
+            lead.className = 'glossary-lead';
+            lead.textContent = item.title[currentLanguage] || '';
             const hint = document.createElement('p');
+            hint.className = 'glossary-hint';
             hint.textContent = translations[currentLanguage].clickToSee;
-            front.appendChild(emoji); front.appendChild(term); front.appendChild(hint);
-            const back = document.createElement('div');
-            back.className = 'flip-card-back';
-            const title = document.createElement('h4');
-            title.textContent = item.title[currentLanguage];
             const def = document.createElement('p');
-            def.textContent = item.definition[currentLanguage];
-            back.appendChild(title); back.appendChild(def);
-            inner.appendChild(front); inner.appendChild(back);
-            card.appendChild(inner);
+            def.className = 'glossary-def';
+            def.textContent = item.definition[currentLanguage] || '';
+            card.appendChild(term);
+            card.appendChild(lead);
+            card.appendChild(hint);
+            card.appendChild(def);
+            function toggle() { card.classList.toggle('open'); }
+            card.addEventListener('click', toggle);
+            card.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+            });
             return card;
         }
 
@@ -758,17 +758,13 @@
             if (view === 'grid') {
                 gridView.classList.remove('hidden');
                 quizView.classList.add('hidden');
-                btnGrid.classList.add('bg-blue-500', 'text-white');
-                btnGrid.classList.remove('bg-gray-300', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
-                btnQuiz.classList.remove('bg-purple-500', 'text-white');
-                btnQuiz.classList.add('bg-gray-300', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
+                if (btnGrid) btnGrid.classList.add('is-active');
+                if (btnQuiz) btnQuiz.classList.remove('is-active');
             } else {
                 gridView.classList.add('hidden');
                 quizView.classList.remove('hidden');
-                btnQuiz.classList.add('bg-purple-500', 'text-white');
-                btnQuiz.classList.remove('bg-gray-300', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
-                btnGrid.classList.remove('bg-blue-500', 'text-white');
-                btnGrid.classList.add('bg-gray-300', 'dark:bg-gray-700', 'text-gray-600', 'dark:text-gray-300');
+                if (btnQuiz) btnQuiz.classList.add('is-active');
+                if (btnGrid) btnGrid.classList.remove('is-active');
                 startQuiz();
             }
         }
@@ -801,13 +797,9 @@
 
             const qCard = document.getElementById('questionCard');
             while (qCard.firstChild) qCard.removeChild(qCard.firstChild);
-            const qEmoji = document.createElement('div');
-            qEmoji.textContent = currentQuestion.emoji;
             const qTerm = document.createElement('h3');
             qTerm.textContent = currentQuestion.term;
-            const qHint = document.createElement('p');
-            qHint.textContent = translations[currentLanguage].whatMeans;
-            qCard.appendChild(qEmoji); qCard.appendChild(qTerm); qCard.appendChild(qHint);
+            qCard.appendChild(qTerm);
 
             const answers = document.getElementById('answersGrid');
             while (answers.firstChild) answers.removeChild(answers.firstChild);
