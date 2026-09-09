@@ -379,15 +379,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!codeBlock) return;
       
       try {
-        await navigator.clipboard.writeText(codeBlock.innerText.trim());
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = `
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>COPIED</span>
-        `;
+        await navigator.clipboard.writeText(codeBlock.textContent.trim());
+        const originalText = btn.textContent;
+        btn.textContent = 'COPIED';
         btn.classList.add('copied');
         setTimeout(() => {
-          btn.innerHTML = originalHtml;
+          btn.textContent = originalText;
           btn.classList.remove('copied');
         }, 2000);
       } catch (err) {
@@ -494,9 +491,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {}
       } else {
         await navigator.clipboard.writeText(url);
-        const original = shareBtn.innerHTML;
-        shareBtn.innerHTML = '<span>Link Copied!</span>';
-        setTimeout(() => shareBtn.innerHTML = original, 2000);
+        const original = shareBtn.textContent;
+        shareBtn.textContent = 'Link Copied!';
+        setTimeout(() => { shareBtn.textContent = original; }, 2000);
       }
     });
   }
@@ -594,35 +591,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!statusEl || !outEl) return;
 
-    statusEl.innerText = isEs ? 'Comprobando...' : 'Verifying...';
-    statusEl.style.background = '#0284c7';
-    statusEl.style.color = '#ffffff';
+    statusEl.textContent = isEs ? 'Comprobando...' : 'Verifying...';
+    statusEl.classList.add('sim-wait');
+    statusEl.classList.remove('sim-ok');
 
     setTimeout(() => {
-      statusEl.innerText = isEs ? '✓ Validado' : '✓ Verified';
-      statusEl.style.background = 'rgba(34, 197, 94, 0.15)';
-      statusEl.style.color = '#22c55e';
-      statusEl.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+      statusEl.textContent = isEs ? 'Validado' : 'Verified';
+      statusEl.classList.remove('sim-wait');
+      statusEl.classList.add('sim-ok');
 
-      if (proto === 'spf') {
-        outEl.innerHTML = isEs
-          ? '<span style="color:#22c55e;font-weight:700;">✓ PASS</span>: Consulta DNS 1.1.1.1 resuelta en 12ms. Registro SPF contiene <code>_spf.mx.cloudflare.net</code> y <code>amazonses.com</code>. Alineación SPF 100% estricta.'
-          : '<span style="color:#22c55e;font-weight:700;">✓ PASS</span>: 1.1.1.1 query resolved in 12ms. SPF record contains <code>_spf.mx.cloudflare.net</code> and <code>amazonses.com</code>. SPF alignment 100% strict.';
-      } else if (proto === 'dkim') {
-        outEl.innerHTML = isEs
-          ? '<span style="color:#22c55e;font-weight:700;">✓ PASS</span>: Firma criptográfica RSA-SHA256 validada con selector <code>resend._domainkey</code>. Clave pública de 2048 bits intacta en el edge.'
-          : '<span style="color:#22c55e;font-weight:700;">✓ PASS</span>: RSA-SHA256 cryptographic signature validated with selector <code>resend._domainkey</code>. 2048-bit public key intact at edge.';
-      } else if (proto === 'dmarc') {
-        outEl.innerHTML = isEs
-          ? '<span style="color:#22c55e;font-weight:700;">✓ PASS</span>: Registro DMARC activo con política forzada. Servidores de correo de Google y Microsoft tienen orden de auditar y rechazar suplantaciones.'
-          : '<span style="color:#22c55e;font-weight:700;">✓ PASS</span>: DMARC record active with enforcement policy. Google and Microsoft inbox filters instructed to audit and shield your domain.';
+      function setPass(text, codeA, codeB) {
+        while (outEl.firstChild) outEl.removeChild(outEl.firstChild);
+        var pass = document.createElement('span');
+        pass.className = 'pass-label';
+        pass.textContent = 'PASS ';
+        outEl.appendChild(pass);
+        outEl.appendChild(document.createTextNode(text));
+        if (codeA) {
+          var c1 = document.createElement('code');
+          c1.textContent = codeA;
+          outEl.appendChild(c1);
+        }
+        if (codeB) {
+          outEl.appendChild(document.createTextNode(' / '));
+          var c2 = document.createElement('code');
+          c2.textContent = codeB;
+          outEl.appendChild(c2);
+        }
       }
-
-      if (cardEl) {
-        cardEl.style.borderColor = 'rgba(34, 197, 94, 0.4)';
-        setTimeout(() => {
-          cardEl.style.borderColor = '';
-        }, 1500);
+      if (proto === 'spf') {
+        setPass(isEs ? 'Consulta DNS 1.1.1.1 resuelta. SPF contiene ' : '1.1.1.1 query resolved. SPF contains ', '_spf.mx.cloudflare.net', 'amazonses.com');
+      } else if (proto === 'dkim') {
+        setPass(isEs ? 'Firma RSA-SHA256 validada con selector ' : 'RSA-SHA256 signature validated with selector ', 'resend._domainkey', null);
+      } else if (proto === 'dmarc') {
+        setPass(isEs ? 'Registro DMARC activo con política forzada.' : 'DMARC record active with enforcement policy.', null, null);
       }
     }, 350);
   };

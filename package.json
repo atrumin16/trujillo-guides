@@ -1,9 +1,11 @@
 {
   "name": "trujillo-guides",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Technical engineering guides and production architectures by Trujillo AI",
   "scripts": {
-    "deploy": "npx wrangler pages deploy public --project-name trujillo-guides --branch main"
-  }
+    "deploy": "npx wrangler pages deploy public --project-name trujillo-guides --branch main --commit-dirty=true"
+  },
+  "author": "Alberto Trujillo Mingorance",
+  "license": "MIT"
 }

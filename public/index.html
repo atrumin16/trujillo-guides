@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,708 +10,79 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="ATM Docs · Engineering Guides &amp; Runbooks">
   <meta property="og:description" content="Guías técnicas de producción: arquitectura email, Edge AI, Zero-Trust e ingeniería de sistemas.">
-  <meta property="og:image" content="/favicon.svg">
   <meta property="og:url" content="https://guides.trujillomingorance.com/">
   <meta name="theme-color" content="#080c14">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #080c14;
-      --bg2: rgba(15, 22, 36, 0.78);
-      --bg3: rgba(22, 32, 52, 0.9);
-      --border: rgba(255, 255, 255, 0.08);
-      --border2: rgba(255, 255, 255, 0.16);
-      --text: #f8fafc;
-      --text2: #94a3b8;
-      --text3: #64748b;
-      --white: #ffffff;
-      --accent: #0078d4;
-      --green: #107c41;
-      --blue: #0078d4;
-      --cyan: #38bdf8;
-      --purple: #818cf8;
-      --font-mono: 'Cascadia Code', 'Consolas', 'JetBrains Mono', monospace;
-      --radius: 8px;
-    }
-
-    [data-theme="light"] {
-      --bg: #fafafa;
-      --bg2: #f4f4f5;
-      --bg3: #e4e4e7;
-      --border: #d4d4d8;
-      --border2: #a1a1aa;
-      --text: #18181b;
-      --text2: #52525b;
-      --text3: #a1a1aa;
-      --white: #000;
-    }
-
-    html { scroll-behavior: smooth; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      font-size: 14px;
-      line-height: 1.6;
-      min-height: 100vh;
-      position: relative;
-    }
-
-    /* Ambient Corporate Mica Backdrop */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      background:
-        radial-gradient(circle at 50% 15%, rgba(0, 120, 212, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 85% 75%, rgba(16, 124, 65, 0.05) 0%, transparent 45%),
-        radial-gradient(circle at 15% 85%, rgba(56, 189, 248, 0.05) 0%, transparent 45%);
-      pointer-events: none;
-    }
-
-    /* HEADER */
-    .header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(8, 12, 20, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-      height: 54px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    [data-theme="light"] .header { background: rgba(250,250,250,0.9); }
-
-    .header-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
-      color: var(--white);
-      font-weight: 700;
-      font-size: 13px;
-      letter-spacing: 0.06em;
-    }
-    .brand-name { letter-spacing: 0.1em; font-size: 12px; }
-    .brand-badge {
-      font-size: 9px;
-      font-family: var(--font-mono);
-      color: var(--text3);
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      padding: 2px 6px;
-      border-radius: 4px;
-      letter-spacing: 0.08em;
-    }
-
-    .header-right {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .lang-group {
-      display: flex;
-      align-items: center;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      overflow: hidden;
-    }
-    .lang-btn {
-      background: none;
-      border: none;
-      color: var(--text2);
-      font-size: 11px;
-      font-weight: 600;
-      font-family: var(--font-mono);
-      padding: 4px 10px;
-      cursor: pointer;
-      transition: all 0.15s;
-      letter-spacing: 0.05em;
-    }
-    .lang-btn.active {
-      background: var(--white);
-      color: var(--bg);
-    }
-    .lang-btn:hover:not(.active) { color: var(--text); }
-
-    .theme-btn {
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text2);
-      cursor: pointer;
-      padding: 6px 8px;
-      display: flex;
-      align-items: center;
-      transition: all 0.15s;
-    }
-    .theme-btn:hover { border-color: var(--border2); color: var(--text); }
-
-    .hub-link {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text2);
-      font-size: 11px;
-      font-weight: 600;
-      padding: 5px 10px;
-      text-decoration: none;
-      transition: all 0.15s;
-    }
-    .hub-link:hover { border-color: var(--border2); color: var(--text); }
-
-    /* HERO */
-    .hero {
-      padding: 72px 24px 48px;
-      text-align: center;
-      background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 70%);
-      border-bottom: 1px solid var(--border);
-    }
-    .hero-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 10px;
-      font-family: var(--font-mono);
-      color: var(--text3);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      margin-bottom: 20px;
-    }
-    .hero-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 8px var(--green);
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--green); }
-      50% { opacity: 0.6; box-shadow: 0 0 4px var(--green); }
-    }
-    .hero-title {
-      font-size: clamp(24px, 4vw, 40px);
-      font-weight: 800;
-      color: var(--white);
-      letter-spacing: -0.02em;
-      margin-bottom: 14px;
-      line-height: 1.15;
-    }
-    .hero-sub {
-      font-size: 15px;
-      color: var(--text2);
-      max-width: 560px;
-      margin: 0 auto 32px;
-      line-height: 1.65;
-    }
-    .hero-stats {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-    .hero-stat {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: var(--text3);
-      font-family: var(--font-mono);
-    }
-    .hero-stat span:first-child { color: var(--white); font-weight: 700; }
-
-    /* MAIN CONTENT */
-    .main {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 48px 24px 80px;
-    }
-
-    .section-label {
-      font-size: 10px;
-      font-family: var(--font-mono);
-      color: var(--text3);
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      margin-bottom: 20px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    /* GUIDE CARDS */
-    .guides-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      margin-bottom: 48px;
-    }
-
-    .guide-card {
-      background: var(--bg);
-      padding: 28px 32px;
-      display: flex;
-      align-items: flex-start;
-      gap: 24px;
-      text-decoration: none;
-      transition: background 0.15s;
-      cursor: pointer;
-    }
-    .guide-card:hover { background: var(--bg2); }
-
-    .guide-card-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      background: var(--bg3);
-      border: 1px solid var(--border2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    .guide-card-body { flex: 1; min-width: 0; }
-
-    .guide-card-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 9px;
-      font-family: var(--font-mono);
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      padding: 3px 8px;
-      border-radius: 4px;
-    }
-    .badge-live {
-      background: #052e16;
-      color: var(--green);
-      border: 1px solid rgba(34,197,94,0.25);
-    }
-    .badge-research {
-      background: #0c1421;
-      color: var(--blue);
-      border: 1px solid rgba(56,189,248,0.2);
-    }
-    .badge-draft {
-      background: var(--bg3);
-      color: var(--text3);
-      border: 1px solid var(--border);
-    }
-
-    .guide-card-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--white);
-      line-height: 1.35;
-      margin-bottom: 6px;
-    }
-    .guide-card-desc {
-      font-size: 13px;
-      color: var(--text2);
-      line-height: 1.55;
-      margin-bottom: 14px;
-    }
-    .guide-card-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      font-size: 11px;
-      color: var(--text3);
-      font-family: var(--font-mono);
-    }
-    .meta-tag {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      padding: 2px 7px;
-      border-radius: 4px;
-      font-size: 10px;
-    }
-
-    .guide-card-arrow {
-      color: var(--text3);
-      transition: transform 0.15s, color 0.15s;
-      flex-shrink: 0;
-      margin-top: 20px;
-    }
-    .guide-card:hover .guide-card-arrow { color: var(--white); transform: translateX(4px); }
-
-    /* COMING SOON card */
-    .guide-card.soon {
-      opacity: 0.5;
-      cursor: default;
-      pointer-events: none;
-    }
-
-    /* FOOTER */
-    .footer {
-      border-top: 1px solid var(--border);
-      padding: 24px;
-      text-align: center;
-      font-size: 11px;
-      color: var(--text3);
-      font-family: var(--font-mono);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    .footer a {
-      color: var(--text3);
-      text-decoration: none;
-      transition: color 0.15s;
-    }
-    .footer a:hover { color: var(--text2); }
-    .footer-sep { opacity: 0.3; }
-  </style>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/style.css">
 </head>
-<body>
-
-  <header class="header">
-    <a href="/" class="header-brand">
-      <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
-        <rect width="32" height="32" rx="7" fill="#000" stroke="#fff" stroke-width="1.2"/>
-        <path d="M8 6.5C8 5.67157 8.67157 5 9.5 5H18L24 11V25.5C24 26.3284 23.3284 27 22.5 27H9.5C8.67157 27 8 26.3284 8 25.5V6.5Z" fill="#0c0c0c" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>
-        <path d="M18 5V11H24" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-        <line x1="12" y1="15" x2="20" y2="15" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
-        <line x1="12" y1="19" x2="18" y2="19" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
-      </svg>
-      <span class="brand-name">ATM DOCS</span>
-      <span class="brand-badge" id="brand-badge">RUNBOOKS &amp; SPECS</span>
+<body class="docs-body">
+  <header class="docs-topbar">
+    <a href="/" class="brand">
+      <img src="/avatar.png" alt="" class="brand-avatar" width="28" height="28">
+      <span>ATM Docs</span>
     </a>
-
-    <div class="header-right">
-      <button class="theme-btn" id="theme-btn" title="Toggle theme" aria-label="Toggle theme">
-        <svg class="sun-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        <svg class="moon-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
-      <div class="lang-group">
-        <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
-        <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
-      </div>
-      <a href="https://labs.trujillomingorance.com" target="_blank" rel="noopener" class="hub-link">
-        ATM Hub
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-      </a>
+    <div class="topbar-actions">
+      <button type="button" class="lang-btn active" data-lang="es">ES</button>
+      <button type="button" class="lang-btn" data-lang="en">EN</button>
+      <button type="button" class="theme-btn" id="theme-btn" title="Tema">Tema</button>
+      <a class="hub-link" href="https://labs.trujillomingorance.com" rel="noopener">Labs Hub</a>
     </div>
   </header>
 
-  <section class="hero">
-    <div class="hero-eyebrow">
-      <span class="hero-dot"></span>
-      <span id="eyebrow-text">Documentación Técnica · ATM Software Labs</span>
-    </div>
-    <h1 class="hero-title" id="hero-title">Guías de Ingeniería<br>&amp; Runbooks de Producción</h1>
-    <p class="hero-sub" id="hero-sub">Arquitecturas reales, especificaciones técnicas y runbooks operativos. Todo verificado y desplegado en producción.</p>
-    <div class="hero-stats">
-      <div class="hero-stat"><span id="stat-guides">6</span><span id="stat-guides-label">guías publicadas</span></div>
-      <div class="hero-stat"><span>·</span></div>
-      <div class="hero-stat"><span>100%</span><span id="stat-verified">verificado en producción</span></div>
-      <div class="hero-stat"><span>·</span></div>
-      <div class="hero-stat"><span>0 €</span><span id="stat-cost">coste de infraestructura</span></div>
-    </div>
-  </section>
+  <div class="docs-shell">
+    <aside class="docs-sidebar">
+      <label class="sidebar-search">
+        <span class="sidebar-label">Buscar</span>
+        <input type="search" id="guide-search" placeholder="Buscar guías…" autocomplete="off" spellcheck="false">
+      </label>
+      <nav class="sidebar-nav" aria-label="Guías">
+        <a href="/guides/enterprise-email/">Correo empresarial 0 €</a>
+        <a href="/guides/it-glossary/">Glosario de sistemas</a>
+        <a href="/guides/open-sentinel/">Open-Sentinel</a>
+        <a href="/guides/edge-ai-architecture/">Edge AI</a>
+        <a href="/guides/dns-zero-trust/">DNS Zero-Trust</a>
+        <a href="/guides/crypto-telemetry/">Telemetría on-chain</a>
+      </nav>
+      <p class="sidebar-note">Búsqueda local. Sin llamadas de red.</p>
+    </aside>
 
-  <main class="main">
-    <div class="section-label" id="section-label">GUÍAS DISPONIBLES</div>
+    <main class="docs-main">
+      <section class="hero">
+        <p class="kicker" data-i18n="eyebrow">Documentación técnica · ATM Software Labs</p>
+        <h1 data-i18n="hero-title">Guías de ingeniería y runbooks de producción</h1>
+        <p class="lede" data-i18n="hero-sub">Arquitecturas reales, especificaciones y runbooks verificados en producción.</p>
+      </section>
 
-    <div class="guides-grid">
+      <div class="guides-grid">
+        <a href="/guides/enterprise-email/" class="guide-card">
+          <h2 data-i18n="title-1">Arquitectura de Correo Empresarial a Coste 0 €</h2>
+          <p data-i18n="desc-1">Pipelines transaccionales, MX en el edge, DKIM/SPF/DMARC y avatares verificados sin Google Workspace.</p>
+        </a>
+        <a href="/guides/it-glossary/" class="guide-card">
+          <h2 data-i18n="title-glossary">Glosario Interactivo de Sistemas e Informática</h2>
+          <p data-i18n="desc-glossary">Flashcards, quiz y buscador local de términos de computación.</p>
+        </a>
+        <a href="/guides/open-sentinel/" class="guide-card">
+          <h2 data-i18n="title-sentinel">Telemetría Host y Detección de Intrusión (Open-Sentinel)</h2>
+          <p data-i18n="desc-sentinel">Forense de arranque, integridad de red y alertas cifradas a Discord, Telegram y WhatsApp.</p>
+        </a>
+        <a href="/guides/edge-ai-architecture/" class="guide-card">
+          <h2 data-i18n="title-edgeai">Inferencia multimodal sub-100ms en Groq LPU y Cloudflare</h2>
+          <p data-i18n="desc-edgeai">Workers, streaming SSE y memoria persistente a coste cero.</p>
+        </a>
+        <a href="/guides/dns-zero-trust/" class="guide-card">
+          <h2 data-i18n="title-dns">Filtrado DNS DoH y Zero-Trust (AdShield)</h2>
+          <p data-i18n="desc-dns">Resolver cifrado para telemetría publicitaria, phishing y perímetro.</p>
+        </a>
+        <a href="/guides/crypto-telemetry/" class="guide-card">
+          <h2 data-i18n="title-crypto">Telemetría On-Chain y Mempool (BitPulse)</h2>
+          <p data-i18n="desc-crypto">Ingesta EVM/Solana, mempool en vivo y tarifas dinámicas.</p>
+        </a>
+      </div>
+    </main>
+  </div>
 
-      <!-- Guide 1: Enterprise Email Architecture -->
-      <a href="/guides/enterprise-email/" class="guide-card">
-        <div class="guide-card-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-            <polyline points="22,6 12,13 2,6"/>
-          </svg>
-        </div>
-        <div class="guide-card-body">
-          <div class="guide-card-badge badge-live">
-            <span>●</span>
-            <span id="badge-1">Masterclass · Producción</span>
-          </div>
-          <div class="guide-card-title" id="title-1">Arquitectura de Correo Empresarial a Coste 0 €</div>
-          <div class="guide-card-desc" id="desc-1">Cómo desacoplar pipelines transaccionales, interceptar MX en el edge, configurar avatares de marca verificados en Google y construir infraestructura de email de nivel enterprise sin pagar $15/usuario/mes.</div>
-          <div class="guide-card-meta">
-            <span class="meta-tag" id="meta-author-1">Alberto Trujillo</span>
-            <span class="meta-tag">Sep 2026</span>
-            <span class="meta-tag">10 min</span>
-            <span class="meta-tag" id="meta-chapters-1">10 capítulos</span>
-          </div>
-        </div>
-        <svg class="guide-card-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-
-      <!-- Guide 2: IT Glossary -->
-      <a href="/guides/it-glossary/" class="guide-card">
-        <div class="guide-card-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-          </svg>
-        </div>
-        <div class="guide-card-body">
-          <div class="guide-card-badge badge-live">
-            <span>●</span>
-            <span id="badge-glossary">Interactivo · Flashcards</span>
-          </div>
-          <div class="guide-card-title" id="title-glossary">Glosario Interactivo de Sistemas e Informática</div>
-          <div class="guide-card-desc" id="desc-glossary">Plataforma didáctica con tarjetas mnemotécnicas multinivel (Básico, Intermedio, Avanzado), modo Quiz con puntuación y buscador de términos para conceptos clave de computación.</div>
-          <div class="guide-card-meta">
-            <span class="meta-tag">ATM Labs</span>
-            <span class="meta-tag">ES / EN / CA</span>
-            <span class="meta-tag">Quiz Mode</span>
-            <span class="meta-tag">100+ términos</span>
-          </div>
-        </div>
-        <svg class="guide-card-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-
-      <!-- Guide 3: Open-Sentinel Host Telemetry -->
-      <a href="/guides/open-sentinel/" class="guide-card">
-        <div class="guide-card-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            <circle cx="12" cy="11" r="3"/>
-          </svg>
-        </div>
-        <div class="guide-card-body">
-          <div class="guide-card-badge badge-live">
-            <span>●</span>
-            <span id="badge-sentinel">Open Source · Host Forensics</span>
-          </div>
-          <div class="guide-card-title" id="title-sentinel">Telemetría Host y Detección de Intrusión en el Arranque (Open-Sentinel)</div>
-          <div class="guide-card-desc" id="desc-sentinel">Monitorización forense de endpoints en sub-500ms, captura diferencial de hardware, integridad de red y despacho de alertas cifradas a Discord, Telegram y WhatsApp.</div>
-          <div class="guide-card-meta">
-            <span class="meta-tag">Open-Sentinel</span>
-            <span class="meta-tag">Python 3.11+</span>
-            <span class="meta-tag">Systemd &amp; Tasks</span>
-            <span class="meta-tag">EDR Lite</span>
-          </div>
-        </div>
-        <svg class="guide-card-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-
-      <!-- Guide 4: Edge AI Architecture -->
-      <a href="/guides/edge-ai-architecture/" class="guide-card">
-        <div class="guide-card-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="4" y="4" width="16" height="16" rx="2"/>
-            <rect x="9" y="9" width="6" height="6"/>
-            <line x1="9" y1="1" x2="9" y2="4"/>
-            <line x1="15" y1="1" x2="15" y2="4"/>
-            <line x1="9" y1="20" x2="9" y2="23"/>
-            <line x1="15" y1="20" x2="15" y2="23"/>
-            <line x1="20" y1="9" x2="23" y2="9"/>
-            <line x1="20" y1="14" x2="23" y2="14"/>
-            <line x1="1" y1="9" x2="4" y2="9"/>
-            <line x1="1" y1="14" x2="4" y2="14"/>
-          </svg>
-        </div>
-        <div class="guide-card-body">
-          <div class="guide-card-badge badge-live">
-            <span>●</span>
-            <span id="badge-edgeai">Applied AI · Edge Architecture</span>
-          </div>
-          <div class="guide-card-title" id="title-edgeai">Inferencia Multimodal Sub-100ms con Groq LPU y Cloudflare Edge</div>
-          <div class="guide-card-desc" id="desc-edgeai">Arquitectura serverless de latencia ultrabaja para LLMs y visión. Desacoplamiento de V8 Isolates en el edge, streaming SSE en tiempo real y memoria persistente a coste cero.</div>
-          <div class="guide-card-meta">
-            <span class="meta-tag">AI Studio</span>
-            <span class="meta-tag">Groq LPU</span>
-            <span class="meta-tag">Cloudflare Workers</span>
-            <span class="meta-tag">&lt; 100ms</span>
-          </div>
-        </div>
-        <svg class="guide-card-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-
-      <!-- Guide 5: DNS Zero-Trust -->
-      <a href="/guides/dns-zero-trust/" class="guide-card">
-        <div class="guide-card-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="2" y1="12" x2="22" y2="12"/>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-          </svg>
-        </div>
-        <div class="guide-card-body">
-          <div class="guide-card-badge badge-live">
-            <span>●</span>
-            <span id="badge-dns">Seguridad &amp; Redes · Zero-Trust</span>
-          </div>
-          <div class="guide-card-title" id="title-dns">Filtrado DNS Cifrado DoH de Alta Capacidad y Zero-Trust (AdShield)</div>
-          <div class="guide-card-desc" id="desc-dns">Despliegue de un resolver DNS sobre HTTPS (DoH) de alto rendimiento para mitigación de telemetría publicitaria invasiva, prevención de phishing y seguridad perimetral.</div>
-          <div class="guide-card-meta">
-            <span class="meta-tag">AdShield</span>
-            <span class="meta-tag">DoH RFC 8484</span>
-            <span class="meta-tag">Zero-Trust</span>
-            <span class="meta-tag">Anti-Tracking</span>
-          </div>
-        </div>
-        <svg class="guide-card-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-
-      <!-- Guide 6: Crypto Telemetry -->
-      <a href="/guides/crypto-telemetry/" class="guide-card">
-        <div class="guide-card-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-          </svg>
-        </div>
-        <div class="guide-card-body">
-          <div class="guide-card-badge badge-live">
-            <span>●</span>
-            <span id="badge-crypto">Fintech &amp; Sistemas Distribuidos</span>
-          </div>
-          <div class="guide-card-title" id="title-crypto">Telemetría On-Chain en Tiempo Real y Análisis de Mempool (BitPulse)</div>
-          <div class="guide-card-desc" id="desc-crypto">Ingesta distribuida de eventos en blockchains EVM/Solana, monitorización en streaming de transacciones no confirmadas y cálculo reactivo de tarifas de gas dinámicas.</div>
-          <div class="guide-card-meta">
-            <span class="meta-tag">BitPulse</span>
-            <span class="meta-tag">WebSockets</span>
-            <span class="meta-tag">EVM / Solana</span>
-            <span class="meta-tag">Live Mempool</span>
-          </div>
-        </div>
-        <svg class="guide-card-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-
-    </div>
-
-  </main>
-
-  <footer class="footer">
-    <span>© 2026 ATM Software Labs</span>
-    <span class="footer-sep">·</span>
-    <a href="https://labs.trujillomingorance.com" target="_blank" rel="noopener">ATM Hub</a>
-    <span class="footer-sep">·</span>
-    <a href="https://alberto.trujillomingorance.com" target="_blank" rel="noopener">Alberto Trujillo</a>
-    <span class="footer-sep">·</span>
-    <a href="https://github.com/atrumin16" target="_blank" rel="noopener">GitHub</a>
-  </footer>
-
-  <script>
-    // ── Theme ──────────────────────────────────────────────────────
-    (function() {
-      var saved = localStorage.getItem('atm_theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', saved);
-      updateThemeIcon(saved);
-    })();
-
-    function updateThemeIcon(t) {
-      var sun = document.querySelector('.sun-ico');
-      var moon = document.querySelector('.moon-ico');
-      if (!sun || !moon) return;
-      if (t === 'light') { sun.style.display = 'none'; moon.style.display = ''; }
-      else { sun.style.display = ''; moon.style.display = 'none'; }
-    }
-
-    document.getElementById('theme-btn').addEventListener('click', function() {
-      var cur = document.documentElement.getAttribute('data-theme') || 'dark';
-      var next = cur === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('atm_theme', next);
-      updateThemeIcon(next);
-    });
-
-    // ── Language ───────────────────────────────────────────────────
-    var STRINGS = {
-      es: {
-        'brand-badge': 'RUNBOOKS & SPECS',
-        'eyebrow-text': 'Documentación Técnica · ATM Software Labs',
-        'hero-title': 'Guías de Ingeniería<br>&amp; Runbooks de Producción',
-        'hero-sub': 'Arquitecturas reales, especificaciones técnicas y runbooks operativos. Todo verificado y desplegado en producción.',
-        'stat-guides': '6', 'stat-guides-label': 'guías publicadas',
-        'stat-verified': 'verificado en producción', 'stat-cost': 'coste de infraestructura',
-        'section-label': 'GUÍAS DISPONIBLES',
-        'badge-1': 'Masterclass · Producción',
-        'title-1': 'Arquitectura de Correo Empresarial a Coste 0 €',
-        'desc-1': 'Cómo desacoplar pipelines transaccionales, interceptar MX en el edge, configurar avatares de marca verificados en Google y construir infraestructura de email de nivel enterprise sin pagar $15/usuario/mes.',
-        'meta-author-1': 'Alberto Trujillo', 'meta-chapters-1': '10 capítulos',
-        'badge-glossary': 'Interactivo · Flashcards',
-        'title-glossary': 'Glosario Interactivo de Sistemas e Informática',
-        'desc-glossary': 'Plataforma didáctica con tarjetas mnemotécnicas multinivel (Básico, Intermedio, Avanzado), modo Quiz con puntuación y buscador de términos para conceptos clave de computación.',
-        'badge-sentinel': 'Open Source · Host Forensics',
-        'title-sentinel': 'Telemetría Host y Detección de Intrusión en el Arranque (Open-Sentinel)',
-        'desc-sentinel': 'Monitorización forense de endpoints en sub-500ms, captura diferencial de hardware, integridad de red y despacho de alertas cifradas a Discord, Telegram y WhatsApp.',
-        'badge-edgeai': 'Applied AI · Edge Architecture',
-        'title-edgeai': 'Inferencia Multimodal Sub-100ms con Groq LPU y Cloudflare Edge',
-        'desc-edgeai': 'Arquitectura serverless de latencia ultrabaja para LLMs y visión. Desacoplamiento de V8 Isolates en el edge, streaming SSE en tiempo real y memoria persistente a coste cero.',
-        'badge-dns': 'Seguridad &amp; Redes · Zero-Trust',
-        'title-dns': 'Filtrado DNS Cifrado DoH de Alta Capacidad y Zero-Trust (AdShield)',
-        'desc-dns': 'Despliegue de un resolver DNS sobre HTTPS (DoH) de alto rendimiento para mitigación de telemetría publicitaria invasiva, prevención de phishing y seguridad perimetral.',
-        'badge-crypto': 'Fintech &amp; Sistemas Distribuidos',
-        'title-crypto': 'Telemetría On-Chain en Tiempo Real y Análisis de Mempool (BitPulse)',
-        'desc-crypto': 'Ingesta distribuida de eventos en blockchains EVM/Solana, monitorización en streaming de transacciones no confirmadas y cálculo reactivo de tarifas de gas dinámicas.'
-      },
-      en: {
-        'brand-badge': 'RUNBOOKS & SPECS',
-        'eyebrow-text': 'Technical Documentation · ATM Software Labs',
-        'hero-title': 'Engineering Guides<br>&amp; Production Runbooks',
-        'hero-sub': 'Real architectures, technical specifications and operational runbooks. Everything verified and running in production.',
-        'stat-guides': '6', 'stat-guides-label': 'guides published',
-        'stat-verified': 'verified in production', 'stat-cost': 'infrastructure cost',
-        'section-label': 'AVAILABLE GUIDES',
-        'badge-1': 'Masterclass · Production',
-        'title-1': 'Zero-Cost Enterprise Email Architecture for AI Startups',
-        'desc-1': 'How to decouple transactional pipelines, intercept MX at the edge, configure verified Google brand avatars, and build enterprise-grade email infrastructure without paying $15/user/month.',
-        'meta-author-1': 'Alberto Trujillo', 'meta-chapters-1': '10 chapters',
-        'badge-glossary': 'Interactive · Flashcards',
-        'title-glossary': 'Interactive Computer Science & Systems Glossary',
-        'desc-glossary': 'Multilevel interactive flashcards (Basic, Intermediate, Advanced), scored Quiz mode, and fast search engine for core systems and computer science concepts.',
-        'badge-sentinel': 'Open Source · Host Forensics',
-        'title-sentinel': 'Host Telemetry & Boot Intrusion Detection (Open-Sentinel)',
-        'desc-sentinel': 'Sub-500ms endpoint forensic telemetry, hardware diff capture, network integrity, and cryptographic alert dispatch to Discord, Telegram, and WhatsApp.',
-        'badge-edgeai': 'Applied AI · Edge Architecture',
-        'title-edgeai': 'Sub-100ms Multimodal Inference with Groq LPU & Cloudflare Edge',
-        'desc-edgeai': 'Ultra-low latency serverless architecture for LLMs and multimodal vision. V8 Isolate edge routing, real-time SSE streaming, and persistent memory at zero cost.',
-        'badge-dns': 'Security &amp; Networking · Zero-Trust',
-        'title-dns': 'High-Capacity DoH Encrypted DNS Filtering & Zero-Trust (AdShield)',
-        'desc-dns': 'High-throughput DNS over HTTPS (DoH) resolver deployment for invasive telemetry mitigation, anti-phishing, and perimeter defense.',
-        'badge-crypto': 'Fintech &amp; Distributed Systems',
-        'title-crypto': 'Real-Time On-Chain Telemetry & Mempool Analysis (BitPulse)',
-        'desc-crypto': 'High-speed event ingestion across EVM and Solana blockchains, live mempool transaction streaming, and reactive dynamic gas fee estimation.'
-      }
-    };
-
-    function setLang(lang) {
-      var s = STRINGS[lang];
-      Object.keys(s).forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el) el.innerHTML = s[id];
-      });
-      document.getElementById('btn-es').classList.toggle('active', lang === 'es');
-      document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-      document.documentElement.lang = lang;
-      localStorage.setItem('atm_lang', lang);
-    }
-
-    (function() {
-      var saved = localStorage.getItem('atm_lang') || 'es';
-      setLang(saved);
-    })();
-  </script>
+  <script src="/js/i18n-home.js"></script>
+  <script src="/js/guides.js"></script>
 </body>
 </html>

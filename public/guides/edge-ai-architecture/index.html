@@ -7,35 +7,9 @@
   <meta name="description" content="Especificación técnica para construir estudios de IA generativa con streaming SSE, latencia sub-100ms y memoria distribuida sin coste mensual.">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <meta name="theme-color" content="#080c14">
-  <script>
-    (function() {
-      try {
-        var savedTheme = localStorage.getItem('trujillo_theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-      } catch (e) {}
-    })();
-  </script>
+  <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/style.css">
-  <style>
-    .guide-container { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
-    .back-nav { display: inline-flex; align-items: center; gap: 8px; color: #94a3b8; text-decoration: none; font-size: 13px; font-weight: 600; margin-bottom: 24px; transition: color 0.15s; }
-    .back-nav:hover { color: #ffffff; }
-    .hero-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); padding: 4px 10px; border-radius: 9999px; margin-bottom: 14px; }
-    .page-title { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; color: #ffffff; margin-bottom: 12px; line-height: 1.25; }
-    .page-subtitle { font-size: 15px; color: #94a3b8; line-height: 1.6; margin-bottom: 36px; }
-    .step-card { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 28px; margin-bottom: 32px; backdrop-filter: blur(12px); }
-    .step-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
-    .step-num { width: 32px; height: 32px; border-radius: 8px; background: #10b981; color: #ffffff; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
-    .step-title { font-size: 19px; font-weight: 700; color: #ffffff; }
-    .step-desc { font-size: 14px; color: #cbd5e1; line-height: 1.65; margin-bottom: 20px; }
-    .code-box { background: #050811; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 16px; font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 13px; color: #38bdf8; overflow-x: auto; margin-bottom: 20px; }
-    .settings-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 16px; }
-    .settings-table th { text-align: left; padding: 10px 14px; color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.02); }
-    .settings-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #cbd5e1; }
-    .field-name { font-weight: 600; color: #ffffff; }
-    .field-val { font-family: monospace; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 4px; }
-  </style>
-</head>
+  </head>
 <body>
   <div class="guide-container">
     <a href="/" class="back-nav">
@@ -110,5 +84,7 @@ return new Response(stream, { headers: { "Content-Type": "text/event-stream" } }
       <p class="step-desc">La arquitectura incorpora un clasificador heurístico en memoria que detecta contratos, cláusulas abusivas, acuerdos de confidencialidad y RGPD/GDPR, aplicando una matriz de severidad de 4 etapas antes de emitir el informe legal.</p>
     </section>
   </div>
+  <script src="/js/guides.js"></script>
 </body>
 </html>
+
