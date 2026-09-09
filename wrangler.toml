@@ -1,3 +1,7 @@
 name = "trujillo-guides"
 compatibility_date = "2026-09-09"
 pages_build_output_dir = "public"
+
+[[kv_namespaces]]
+binding = "BOT_MEMORY"
+id = "bab271312bfa4c84a483c6ee7b7a1756"
