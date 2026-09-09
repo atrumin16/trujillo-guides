@@ -3,7 +3,6 @@
 
   var GUIDES = [
     { href: '/', label: 'Índice' },
-    { href: '/a/', label: 'Publicados' },
     { href: '/guides/enterprise-email/', label: 'Correo empresarial 0 €' },
     { href: '/guides/it-glossary/', label: 'Glosario de sistemas' },
     { href: '/guides/open-sentinel/', label: 'Open-Sentinel' },
