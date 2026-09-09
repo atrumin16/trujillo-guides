@@ -632,13 +632,8 @@
             // Cargar preferencias guardadas
             const savedLang = localStorage.getItem('language') || 'es';
             const savedLevel = localStorage.getItem('userLevel');
-            const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-
-            // Aplicar modo oscuro
-            if (savedDarkMode) {
-                document.documentElement.classList.add('dark');
-                updateDarkModeIcon();
-            }
+            const savedTheme = localStorage.getItem('trujillo_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme === 'light' ? 'light' : 'dark');
 
             // Aplicar idioma
             currentLanguage = savedLang;
@@ -695,17 +690,11 @@
             });
         }
 
-        // Modo oscuro
         function toggleDarkMode() {
-            document.documentElement.classList.toggle('dark');
-            const isDark = document.documentElement.classList.contains('dark');
-            localStorage.setItem('darkMode', isDark);
-            updateDarkModeIcon();
-        }
-
-        function updateDarkModeIcon() {
-            const isDark = document.documentElement.classList.contains('dark');
-            document.getElementById('darkModeIcon').textContent = isDark ? '☀️' : '🌙';
+            var cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+            var next = cur === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            try { localStorage.setItem('trujillo_theme', next); } catch (e) {}
         }
 
         // Renderizar tarjetas
@@ -873,4 +862,6 @@
             });
             var darkBtn = document.getElementById('darkModeToggle') || document.getElementById('darkModeToggleBind');
             if (darkBtn) darkBtn.addEventListener('click', toggleDarkMode);
+            var langSelect = document.getElementById('languageSelect');
+            if (langSelect) langSelect.addEventListener('change', function () { changeLanguage(langSelect.value); });
         });
