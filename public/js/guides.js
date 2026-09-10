@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   'use strict';
 
   var GUIDES = [
@@ -281,5 +281,37 @@
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
+  else 
+  // --- Auto-injected: Author Bar & Tables ---
+  function injectAuthorBar() {
+    var h1 = document.querySelector('main h1, .docs-main h1, h1');
+    if (h1 && !document.getElementById('author-meta-bar')) {
+      var bar = document.createElement('div');
+      bar.id = 'author-meta-bar';
+      bar.className = 'flex items-center gap-2 text-xs text-slate-400 font-mono mt-2 mb-6 border-b border-slate-800/80 pb-3';
+      bar.innerHTML = '<span class="text-white font-medium">Alberto Trujillo Mingorance</span><span class="text-slate-600">·</span><span class="text-cyan-400">@atrumin16</span><span class="text-slate-600">·</span><span class="px-2 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-800/80 text-cyan-300 text-[10px] uppercase tracking-wider">Guides</span><span class="text-slate-600">·</span><button class="hover:text-white transition-colors" onclick="navigator.clipboard.writeText(window.location.href)">Copiar enlace</button>';
+      h1.parentNode.insertBefore(bar, h1.nextSibling);
+    }
+  }
+
+  function styleTables() {
+    document.querySelectorAll('table').forEach(function(tbl) {
+      if (tbl.parentElement && tbl.parentElement.classList.contains('overflow-x-auto')) return;
+      var wrap = document.createElement('div');
+      wrap.className = 'overflow-x-auto my-6';
+      tbl.className = (tbl.className + ' border border-slate-700/60 rounded-xl overflow-hidden w-full text-sm border-collapse').trim();
+      tbl.querySelectorAll('th').forEach(function(th) {
+        th.className = (th.className + ' bg-slate-800/80 px-4 py-3 text-left font-semibold text-slate-200 border-b border-slate-700/60').trim();
+      });
+      tbl.querySelectorAll('td').forEach(function(td) {
+        td.className = (td.className + ' px-4 py-3 border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors').trim();
+      });
+      tbl.parentNode.insertBefore(wrap, tbl);
+      wrap.appendChild(tbl);
+    });
+  }
+    injectAuthorBar();
+    styleTables();
+    boot();
 })();
+
