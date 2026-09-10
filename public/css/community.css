@@ -164,3 +164,60 @@ article.doc h1:first-of-type code {
 .table-wrapper tr:hover td {
   background: rgba(30, 41, 59, 0.3);
 }
+
+/* --- Author Meta Line --- */
+.guide-meta-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  margin: 0.75rem 0 2rem 0 !important;
+  padding: 0.75rem 0 !important;
+  border-top: 1px solid rgba(148, 163, 184, 0.12) !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: 0.8125rem !important;
+  line-height: 1 !important;
+}
+
+.guide-meta-left, .guide-meta-right {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.guide-avatar {
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 9999px !important;
+  object-fit: cover !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.guide-badge {
+  background: rgba(56, 189, 248, 0.12) !important;
+  color: #38bdf8 !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+}
+
+.guide-copy-btn {
+  background: rgba(30, 41, 59, 0.7) !important;
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  border-radius: 5px !important;
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+  transition: all 0.15s ease !important;
+}
+
+.guide-copy-btn:hover {
+  background: rgba(51, 65, 85, 0.8) !important;
+  color: #ffffff !important;
+}
