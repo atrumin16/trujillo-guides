@@ -281,37 +281,79 @@
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else 
-  // --- Auto-injected: Author Bar & Tables ---
-  function injectAuthorBar() {
-    var h1 = document.querySelector('main h1, .docs-main h1, h1');
-    if (h1 && !document.getElementById('author-meta-bar')) {
-      var bar = document.createElement('div');
-      bar.id = 'author-meta-bar';
-      bar.className = 'flex items-center gap-2 text-xs text-slate-400 font-mono mt-2 mb-6 border-b border-slate-800/80 pb-3';
-      bar.innerHTML = '<span class="text-white font-medium">Alberto Trujillo Mingorance</span><span class="text-slate-600">·</span><span class="text-cyan-400">@atrumin16</span><span class="text-slate-600">·</span><span class="px-2 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-800/80 text-cyan-300 text-[10px] uppercase tracking-wider">Guides</span><span class="text-slate-600">·</span><button class="hover:text-white transition-colors" onclick="navigator.clipboard.writeText(window.location.href)">Copiar enlace</button>';
-      h1.parentNode.insertBefore(bar, h1.nextSibling);
+  else
+
+// --- Auto-injected: Markdown Tables Parser & Minimalist Header ---
+(function() {
+  function parseMarkdownTables(container) {
+    var html = container.innerHTML;
+    var tableRegex = /(?:\|[^\n]+\|\r?\n)((?:\|(?:\s*:?-+:?\s*\|)+\r?\n))((\|([^\n]+)\|\r?\n?)+)/g;
+    
+    var newHtml = html.replace(tableRegex, function(match, headerLine, alignLine, bodyLines) {
+      var parseRow = function(row, isHeader) {
+        var tag = isHeader ? 'th' : 'td';
+        var cls = isHeader 
+          ? 'px-4 py-2.5 bg-slate-900/80 text-left font-semibold text-xs text-slate-300 border-b border-slate-700/60 uppercase tracking-wider' 
+          : 'px-4 py-2.5 border-b border-slate-800/40 text-slate-300 text-sm hover:bg-slate-800/20 transition-colors';
+        var cells = row.trim().replace(/^\||\|$/g, '').split('|');
+        return '<tr>' + cells.map(function(c) { return '<' + tag + ' class="' + cls + '">' + c.trim() + '</' + tag + '>'; }).join('') + '</tr>';
+      };
+
+      var headerHtml = parseRow(headerLine, true);
+      var bodyHtml = bodyLines.trim().split(/\r?\n/).map(function(r) { return parseRow(r, false); }).join('');
+
+      return '<div class="overflow-x-auto my-6 border border-slate-800 rounded-lg">' +
+             '<table class="w-full border-collapse">' +
+             '<thead>' + headerHtml + '</thead>' +
+             '<tbody>' + bodyHtml + '</tbody>' +
+             '</table></div>';
+    });
+
+    if (newHtml !== html) {
+      container.innerHTML = newHtml;
     }
   }
 
-  function styleTables() {
-    document.querySelectorAll('table').forEach(function(tbl) {
-      if (tbl.parentElement && tbl.parentElement.classList.contains('overflow-x-auto')) return;
-      var wrap = document.createElement('div');
-      wrap.className = 'overflow-x-auto my-6';
-      tbl.className = (tbl.className + ' border border-slate-700/60 rounded-xl overflow-hidden w-full text-sm border-collapse').trim();
-      tbl.querySelectorAll('th').forEach(function(th) {
-        th.className = (th.className + ' bg-slate-800/80 px-4 py-3 text-left font-semibold text-slate-200 border-b border-slate-700/60').trim();
-      });
-      tbl.querySelectorAll('td').forEach(function(td) {
-        td.className = (td.className + ' px-4 py-3 border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors').trim();
-      });
-      tbl.parentNode.insertBefore(wrap, tbl);
-      wrap.appendChild(tbl);
-    });
-  }
-    injectAuthorBar();
-    styleTables();
-    boot();
-})();
+  function applyLayout() {
+    var main = document.querySelector('main, .docs-main') || document.body;
+    var h1 = main.querySelector('h1');
+    if (!h1) return;
 
+    // 1. Línea sutil de metadatos (Autor, fecha, enlace)
+    if (!document.getElementById('meta-info-line')) {
+      var meta = document.createElement('div');
+      meta.id = 'meta-info-line';
+      meta.className = 'text-xs text-slate-500 font-mono flex items-center gap-2 mt-2 mb-8 border-b border-slate-800/70 pb-3';
+      meta.innerHTML = '<span class="text-slate-300 font-medium">Alberto Trujillo</span>' +
+                       '<span>·</span>' +
+                       '<span class="text-slate-400">@atrumin16</span>' +
+                       '<span>·</span>' +
+                       '<span>Guides</span>' +
+                       '<span>·</span>' +
+                       '<button id="btn-copy" class="hover:text-slate-300 transition-colors cursor-pointer">Copiar enlace</button>';
+      
+      h1.parentNode.insertBefore(meta, h1.nextSibling);
+
+      var btn = document.getElementById('btn-copy');
+      if (btn) {
+        btn.onclick = function() {
+          navigator.clipboard.writeText(window.location.href);
+          btn.textContent = '¡Copiado!';
+          setTimeout(function() { btn.textContent = 'Copiar enlace'; }, 1500);
+        };
+      }
+    }
+
+    // 2. Parsear tablas Markdown que se hayan quedado en texto plano
+    parseMarkdownTables(main);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyLayout);
+  } else {
+    applyLayout();
+  }
+
+  var obs = new MutationObserver(function() { applyLayout(); });
+  obs.observe(document.body, { childList: true, subtree: true });
+})();
