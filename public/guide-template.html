@@ -16,21 +16,79 @@
       } catch (e) {}
     })();
   </script>
-  <link rel="stylesheet" href="/style.css?v=shell1">
+  <link rel="stylesheet" href="/style.css?v=gfm2">
   <style>
     .guide-container { max-width: 920px; margin: 0 auto; padding: 32px 20px 80px; }
     .back-nav { display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; font-size: 13px; font-weight: 500; margin-bottom: 24px; transition: color 0.15s; }
     .back-nav:hover { color: var(--text-primary); }
     .hero-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); padding: 4px 10px; border-radius: 9999px; margin-bottom: 14px; }
-    .page-title { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-primary); margin-bottom: 12px; line-height: 1.2; }
+    .page-title { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-primary); margin-bottom: 0; line-height: 1.2; }
+    
+    /* Compact Metadata Header */
+    .guide-meta-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      margin-top: 8px;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .guide-meta-line .meta-author { color: var(--text-primary); font-weight: 500; }
+    .guide-meta-line .meta-sep { color: var(--text-muted); opacity: 0.5; }
+    .guide-meta-line .meta-handle { color: #22d3ee; }
+    .guide-meta-line .meta-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: rgba(8, 145, 178, 0.12);
+      border: 1px solid rgba(8, 145, 178, 0.35);
+      color: #67e8f9;
+    }
+    [data-theme="light"] .guide-meta-line .meta-badge {
+      background: rgba(8, 145, 178, 0.08);
+      border-color: rgba(8, 145, 178, 0.25);
+      color: #0e7490;
+    }
+    .guide-meta-line .meta-copy-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .guide-meta-line .meta-copy-btn:hover { color: var(--text-primary); }
+
     .page-subtitle { font-size: 15px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 32px; }
     .step-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 28px; transition: border-color 0.2s; }
     .step-card:hover { border-color: var(--border-focus); }
     .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border-subtle); }
     .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--text-primary); color: var(--bg); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
     .step-title { font-size: 18px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
+    
+    /* GFM Table Styling */
     .settings-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .settings-table th { text-align: left; padding: 10px 12px; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+    .settings-table th { 
+      text-align: left; 
+      padding: 10px 12px; 
+      color: var(--text-muted); 
+      font-size: 11px; 
+      text-transform: uppercase; 
+      letter-spacing: 0.05em; 
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card-subtle);
+    }
     .settings-table td { padding: 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-secondary); }
     .settings-table tr:last-child td { border-bottom: none; }
     .field-name { font-weight: 600; color: var(--text-primary); }
@@ -67,6 +125,18 @@
 
     <span class="hero-badge">● Configuración Verificada</span>
     <h1 class="page-title">{{TITLE}}</h1>
+    
+    <!-- Minimalist Metadata Header -->
+    <div class="guide-meta-line">
+      <span class="meta-author">Alberto Trujillo Mingorance</span>
+      <span class="meta-sep">·</span>
+      <span class="meta-handle">@atrumin16</span>
+      <span class="meta-sep">·</span>
+      <span class="meta-badge">Guides</span>
+      <span class="meta-sep">·</span>
+      <button class="meta-copy-btn" onclick="navigator.clipboard.writeText(window.location.href)">Copiar enlace</button>
+    </div>
+
     <p class="page-subtitle">{{DESCRIPTION}}</p>
 
     <!-- STEP 1 -->
@@ -105,4 +175,3 @@
   </script>
 </body>
 </html>
-
