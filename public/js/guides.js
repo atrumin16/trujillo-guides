@@ -1,368 +1,80 @@
 ﻿(function () {
   'use strict';
 
-  var GUIDES = [
-    { href: '/', label: 'Índice' },
-    { href: '/guides/enterprise-email/', label: 'Correo empresarial 0 €' },
-    { href: '/guides/it-glossary/', label: 'Glosario de sistemas' },
-    { href: '/guides/open-sentinel/', label: 'Open-Sentinel' },
-    { href: '/guides/edge-ai-architecture/', label: 'Edge AI' },
-    { href: '/guides/dns-zero-trust/', label: 'DNS Zero-Trust' },
-    { href: '/guides/crypto-telemetry/', label: 'Telemetría on-chain' },
-    { href: '/u', label: 'Comunidad' }
-  ];
+  function applyCleanThemeAndTables() {
+    // 1. Eliminar el bloque 'poster' superior y el page-title huérfano
+    var poster = document.querySelector('.poster');
+    if (poster) poster.remove();
 
-  function $(id) { return document.getElementById(id); }
+    var pageTitle = document.querySelector('h1.page-title');
+    if (pageTitle) pageTitle.remove();
 
-  function h(tag, className, text) {
-    var n = document.createElement(tag);
-    if (className) n.className = className;
-    if (text != null && text !== '') n.textContent = text;
-    return n;
-  }
+    var article = document.querySelector('article.doc') || document.querySelector('main');
+    if (!article) return;
 
-  function clearNode(node) {
-    while (node.firstChild) node.removeChild(node.firstChild);
-  }
-
-  function svgIcon(paths, extra) {
-    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', '16');
-    svg.setAttribute('height', '16');
-    svg.setAttribute('viewBox', '0 0 24 24');
-    svg.setAttribute('fill', 'none');
-    svg.setAttribute('stroke', 'currentColor');
-    svg.setAttribute('stroke-width', '2');
-    svg.setAttribute('stroke-linecap', 'round');
-    svg.setAttribute('stroke-linejoin', 'round');
-    svg.setAttribute('aria-hidden', 'true');
-    if (extra) svg.setAttribute('class', extra);
-    paths.forEach(function (p) {
-      var el = document.createElementNS('http://www.w3.org/2000/svg', p.tag);
-      Object.keys(p.attrs).forEach(function (k) { el.setAttribute(k, p.attrs[k]); });
-      svg.appendChild(el);
-    });
-    return svg;
-  }
-
-  function iconSun() {
-    return svgIcon([
-      { tag: 'circle', attrs: { cx: '12', cy: '12', r: '5' } },
-      { tag: 'line', attrs: { x1: '12', y1: '1', x2: '12', y2: '3' } },
-      { tag: 'line', attrs: { x1: '12', y1: '21', x2: '12', y2: '23' } },
-      { tag: 'line', attrs: { x1: '4.22', y1: '4.22', x2: '5.64', y2: '5.64' } },
-      { tag: 'line', attrs: { x1: '18.36', y1: '18.36', x2: '19.78', y2: '19.78' } },
-      { tag: 'line', attrs: { x1: '1', y1: '12', x2: '3', y2: '12' } },
-      { tag: 'line', attrs: { x1: '21', y1: '12', x2: '23', y2: '12' } },
-      { tag: 'line', attrs: { x1: '4.22', y1: '19.78', x2: '5.64', y2: '18.36' } },
-      { tag: 'line', attrs: { x1: '18.36', y1: '5.64', x2: '19.78', y2: '4.22' } }
-    ], 'sun-icon');
-  }
-
-  function iconMoon() {
-    return svgIcon([
-      { tag: 'path', attrs: { d: 'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z' } }
-    ], 'moon-icon');
-  }
-
-  function currentTheme() {
-    return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-  }
-
-  function applyTheme(theme) {
-    var next = theme === 'light' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    try { localStorage.setItem('trujillo_theme', next); } catch (e) {}
-    var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', next === 'light' ? '#ffffff' : '#080c14');
-    document.querySelectorAll('.theme-toggle-btn').forEach(function (btn) {
-      btn.setAttribute('aria-label', next === 'light' ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
-      btn.title = next === 'light' ? 'Modo oscuro' : 'Modo claro';
-    });
-  }
-
-  function fillThemeButton(btn) {
-    if (!btn) return;
-    btn.type = 'button';
-    btn.classList.add('theme-toggle-btn');
-    btn.id = btn.id || 'theme-btn';
-    clearNode(btn);
-    btn.appendChild(iconSun());
-    btn.appendChild(iconMoon());
-    applyTheme(currentTheme());
-    if (!btn.getAttribute('data-bound')) {
-      btn.setAttribute('data-bound', '1');
-      btn.addEventListener('click', function () {
-        applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
-      });
-    }
-  }
-
-  function buildTopbar() {
-    var header = h('header', 'docs-topbar');
-    header.id = 'docs-topbar';
-    var brand = h('a', 'brand');
-    brand.href = '/';
-    var img = document.createElement('img');
-    img.src = '/avatar.png';
-    img.alt = '';
-    img.className = 'brand-avatar';
-    img.width = 28;
-    img.height = 28;
-    brand.appendChild(img);
-    brand.appendChild(h('span', null, 'ATM Docs'));
-    var actions = h('div', 'topbar-actions');
-    var themeBtn = h('button', 'theme-toggle-btn');
-    fillThemeButton(themeBtn);
-    var hub = h('a', 'hub-link', 'Labs Hub');
-    hub.href = 'https://labs.trujillomingorance.com';
-    hub.rel = 'noopener';
-    actions.appendChild(themeBtn);
-    actions.appendChild(hub);
-    header.appendChild(brand);
-    header.appendChild(actions);
-    return header;
-  }
-
-  function buildShell() {
-    var shell = h('div', 'docs-shell');
-    var aside = h('aside', 'docs-sidebar');
-    var label = h('span', 'sidebar-label', 'Guías');
-    var nav = h('nav', 'sidebar-nav');
-    nav.setAttribute('aria-label', 'Guías');
-    var path = (location.pathname || '/').replace(/\/+$/, '') || '/';
-    GUIDES.forEach(function (item) {
-      var a = h('a', null, item.label);
-      a.href = item.href;
-      var target = item.href.replace(/\/+$/, '') || '/';
-      if (target === '/' && path === '/') a.classList.add('active');
-      else if (target !== '/' && (path === target || path.indexOf(target) === 0)) a.classList.add('active');
-      nav.appendChild(a);
-    });
-    aside.appendChild(label);
-    if (document.querySelector('.guide-card')) {
-      var searchWrap = h('label', 'sidebar-search');
-      searchWrap.appendChild(h('span', 'sidebar-label', 'Buscar'));
-      var input = document.createElement('input');
-      input.type = 'search';
-      input.id = 'guide-search';
-      input.placeholder = 'Buscar guías…';
-      input.autocomplete = 'off';
-      input.spellcheck = false;
-      searchWrap.appendChild(input);
-      aside.insertBefore(searchWrap, nav);
-    }
-    aside.appendChild(nav);
-    aside.appendChild(h('p', 'sidebar-note', 'Mismo formato en todo el hub.'));
-    var main = h('main', 'docs-main');
-    shell.appendChild(aside);
-    shell.appendChild(main);
-    return shell;
-  }
-
-  function ensureChrome() {
-    document.body.classList.add('docs-body');
-    var topbar = document.querySelector('.docs-topbar');
-    if (!topbar) {
-      topbar = buildTopbar();
-      document.body.insertBefore(topbar, document.body.firstChild);
-    } else {
-      var existing = topbar.querySelector('.theme-toggle-btn, #theme-btn, #theme-toggle-btn');
-      if (existing) fillThemeButton(existing);
-      else {
-        var actions = topbar.querySelector('.topbar-actions') || topbar;
-        var btn = h('button', 'theme-toggle-btn');
-        fillThemeButton(btn);
-        actions.insertBefore(btn, actions.firstChild);
-      }
-    }
-
-    var hasShell = !!document.querySelector('.docs-shell');
-    if (!hasShell) {
-      var shell = buildShell();
-      var main = shell.querySelector('.docs-main');
-      var move = [];
-      Array.prototype.forEach.call(document.body.childNodes, function (n) {
-        if (n === topbar || n === shell) return;
-        if (n.nodeType === 1 && (n.tagName === 'SCRIPT' || n.id === 'userModal' || n.id === 'docs-topbar' || n.id === 'progress-bar' || n.id === 'back-to-top' || n.classList.contains('docs-topbar'))) return;
-        move.push(n);
-      });
-      document.body.appendChild(shell);
-      move.forEach(function (n) { main.appendChild(n); });
-    }
-
-    document.querySelectorAll('.theme-toggle-btn, #theme-btn, #theme-toggle-btn').forEach(fillThemeButton);
-
-    var glossaryTheme = $('darkModeToggle') || $('darkModeToggleBind');
-    if (glossaryTheme) glossaryTheme.classList.add('hidden');
-
-    var actions = topbar.querySelector('.topbar-actions');
-    var langEs = $('lang-btn-es');
-    var langEn = $('lang-btn-en');
-    if (actions && langEs && langEn && !topbar.querySelector('#lang-btn-es')) {
-      actions.insertBefore(langEn, actions.firstChild);
-      actions.insertBefore(langEs, actions.firstChild);
-    }
-  }
-
-  function attachCopyButtons() {
-    document.querySelectorAll('pre, .code-box').forEach(function (pre) {
-      if (pre.parentElement && pre.parentElement.classList.contains('code-block')) return;
-      var wrap = h('div', 'code-block');
-      pre.parentNode.insertBefore(wrap, pre);
-      wrap.appendChild(pre);
-      var btn = h('button', 'copy-btn', 'Copiar');
-      btn.type = 'button';
-      wrap.appendChild(btn);
-    });
-  }
-
-  document.addEventListener('click', function (e) {
-    var btn = e.target.closest ? e.target.closest('.copy-btn, .dns-quick-copy') : null;
-    if (!btn) return;
-    var text = btn.getAttribute('data-copy') || '';
-    if (!text) {
-      var container = btn.closest('.code-block, .code-container');
-      if (container) {
-        var code = container.querySelector('code, pre, .code-box');
-        if (code) text = code.textContent.trim();
-      }
-    }
-    if (!text) return;
-    var orig = btn.textContent;
-    function done() {
-      btn.textContent = 'Copiado';
-      setTimeout(function () { btn.textContent = orig; }, 1800);
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done).catch(function () {});
-    }
-  });
-
-  function bindSearch() {
-    var search = $('guide-search');
-    if (!search) return;
-    search.addEventListener('input', function () {
-      var q = (search.value || '').trim().toLowerCase();
-      document.querySelectorAll('.guide-card').forEach(function (card) {
-        var blob = (card.textContent || '').toLowerCase();
-        card.classList.toggle('is-filtered-out', q && blob.indexOf(q) === -1);
-      });
-    });
-  }
-
-  function bindLang() {
-    var langBtns = document.querySelectorAll('[data-lang]');
-    langBtns.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var lang = btn.getAttribute('data-lang');
-        document.documentElement.lang = lang;
-        try { localStorage.setItem('atm_lang', lang); } catch (e) {}
-        langBtns.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-lang') === lang); });
-        document.querySelectorAll('[data-i18n]').forEach(function (el) {
-          var key = el.getAttribute('data-i18n');
-          var map = window.GUIDE_STRINGS && window.GUIDE_STRINGS[lang];
-          if (map && map[key]) el.textContent = map[key];
-        });
-      });
-    });
-  }
-
-  function boot() {
-    try {
-      applyTheme(localStorage.getItem('trujillo_theme') || currentTheme());
-    } catch (e) {
-      applyTheme('dark');
-    }
-    ensureChrome();
-    attachCopyButtons();
-    bindSearch();
-    bindLang();
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else
-
-// --- Auto-injected: Precise Layout & Table Formatter ---
-(function() {
-  function fixLayoutAndTables() {
-    // A. Ocultar o eliminar el bloque viejo flotante de autor/copiar enlace si existe arriba
-    var oldBadges = document.querySelectorAll('.author-badge, [id*="author"], .sidebar-author');
-    oldBadges.forEach(function(el) {
-      if (el.id !== 'guide-article-meta') el.style.display = 'none';
-    });
-
-    // B. Localizar el h1 principal del artículo
-    var article = document.querySelector('article, main, .docs-main') || document.body;
+    // 2. Línea sutil minimalista debajo del H1 real
     var h1 = article.querySelector('h1');
-    if (!h1) return;
-
-    // C. Insertar la línea minimalista EXACTAMENTE debajo del h1
-    if (!document.getElementById('guide-article-meta')) {
+    if (h1 && !document.getElementById('doc-meta-line')) {
       var meta = document.createElement('div');
-      meta.id = 'guide-article-meta';
-      meta.className = 'flex items-center gap-2 text-xs text-slate-400 font-mono mt-2 mb-8 pb-3 border-b border-slate-800/80';
-      meta.innerHTML = '<span class="text-slate-200 font-medium">Alberto Trujillo</span>' +
-                       '<span class="text-slate-600">·</span>' +
-                       '<span class="text-slate-400">@atrumin16</span>' +
-                       '<span class="text-slate-600">·</span>' +
-                       '<span class="text-cyan-400">Guides</span>' +
-                       '<span class="text-slate-600">·</span>' +
-                       '<button id="btn-copy-guide" class="text-slate-400 hover:text-white transition-colors cursor-pointer">Copiar enlace</button>';
+      meta.id = 'doc-meta-line';
+      meta.style.cssText = 'display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-family: monospace; color: #94a3b8; margin: 8px 0 24px 0; padding-bottom: 12px; border-bottom: 1px solid rgba(51, 65, 85, 0.4);';
+      meta.innerHTML = '<span style="color: #f1f5f9; font-weight: 500;">Alberto Trujillo</span>' +
+                       '<span>·</span>' +
+                       '<span style="color: #38bdf8;">@atrumin16</span>' +
+                       '<span>·</span>' +
+                       '<span>Guides</span>' +
+                       '<span>·</span>' +
+                       '<button id="doc-copy-btn" style="background:none;border:none;color:#94a3b8;cursor:pointer;padding:0;font:inherit;" onmouseover="this.style.color=\'#fff\'" onmouseout="this.style.color=\'#94a3b8\'">Copiar enlace</button>';
       
       h1.insertAdjacentElement('afterend', meta);
 
-      var btn = document.getElementById('btn-copy-guide');
+      var btn = document.getElementById('doc-copy-btn');
       if (btn) {
-        btn.onclick = function() {
+        btn.onclick = function () {
           navigator.clipboard.writeText(window.location.href);
           btn.textContent = '¡Copiado!';
-          setTimeout(function() { btn.textContent = 'Copiar enlace'; }, 1500);
+          setTimeout(function () { btn.textContent = 'Copiar enlace'; }, 1500);
         };
       }
     }
 
-    // D. Convertir párrafos que contienen tablas Markdown colapsadas (| Valor | Permiso |...)
-    var paragraphs = article.querySelectorAll('p');
-    paragraphs.forEach(function(p) {
-      var text = p.textContent.trim();
-      if (text.startsWith('|') && text.includes('| :---') || (text.startsWith('|') && text.split('|').length > 8)) {
-        // Normalizar celdas separadas por pipes
-        var tokens = text.split('|').map(function(t) { return t.trim(); }).filter(function(t) { return t.length > 0; });
-        // Filtrar delimitadores de alineación tipo :--- o ---
-        tokens = tokens.filter(function(t) { return !/^:?-+:?$/.test(t); });
+    // 3. Convertir el párrafo de la tabla en un <table> real
+    article.querySelectorAll('p').forEach(function (p) {
+      var txt = p.innerHTML;
+      if (txt.includes('| Valor |') || txt.includes('| :---: |')) {
+        var rawCells = txt.split('|').map(function (c) { return c.trim(); }).filter(function (c) { return c.length > 0; });
+        var cells = rawCells.filter(function (c) { return !/^:?-+:?$/.test(c); });
 
-        // Asumiendo 4 columnas (Valor, Permiso, Ficheros, Directorios)
         var cols = 4;
-        var headerHtml = '<tr>' + tokens.slice(0, cols).map(function(th) {
-          return '<th class="px-4 py-2.5 bg-slate-900/80 text-left font-semibold text-xs text-slate-300 border-b border-slate-700/60 uppercase tracking-wider">' + th + '</th>';
+        var thead = '<tr>' + cells.slice(0, cols).map(function (th) {
+          return '<th style="padding: 10px 14px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; background: rgba(15, 23, 42, 0.8); color: #cbd5e1; border-bottom: 1px solid rgba(51, 65, 85, 0.6);">' + th + '</th>';
         }).join('') + '</tr>';
 
-        var bodyHtml = '';
-        for (var i = cols; i < tokens.length; i += cols) {
-          var rowTokens = tokens.slice(i, i + cols);
-          if (rowTokens.length === cols) {
-            bodyHtml += '<tr>' + rowTokens.map(function(td) {
-              return '<td class="px-4 py-2.5 border-b border-slate-800/40 text-slate-300 text-sm hover:bg-slate-800/20 transition-colors">' + td + '</td>';
+        var tbody = '';
+        for (var i = cols; i < cells.length; i += cols) {
+          var row = cells.slice(i, i + cols);
+          if (row.length === cols) {
+            tbody += '<tr style="border-bottom: 1px solid rgba(30, 41, 59, 0.6);">' + row.map(function (td) {
+              return '<td style="padding: 10px 14px; font-size: 0.85rem; color: #cbd5e1;">' + td + '</td>';
             }).join('') + '</tr>';
           }
         }
 
-        var tableWrapper = document.createElement('div');
-        tableWrapper.className = 'overflow-x-auto my-6 border border-slate-800 rounded-lg';
-        tableWrapper.innerHTML = '<table class="w-full border-collapse"><thead>' + headerHtml + '</thead><tbody>' + bodyHtml + '</tbody></table>';
+        var wrapper = document.createElement('div');
+        wrapper.style.cssText = 'overflow-x: auto; margin: 24px 0; border: 1px solid rgba(51, 65, 85, 0.4); border-radius: 8px; background: rgba(15, 23, 42, 0.4);';
+        wrapper.innerHTML = '<table style="width: 100%; border-collapse: collapse;"><thead>' + thead + '</thead><tbody>' + tbody + '</tbody></table>';
 
-        p.replaceWith(tableWrapper);
+        p.replaceWith(wrapper);
       }
     });
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', fixLayoutAndTables);
+    document.addEventListener('DOMContentLoaded', applyCleanThemeAndTables);
   } else {
-    fixLayoutAndTables();
+    applyCleanThemeAndTables();
   }
 
-  var obs = new MutationObserver(function() { fixLayoutAndTables(); });
-  obs.observe(document.body, { childList: true, subtree: true });
+  var observer = new MutationObserver(function () { applyCleanThemeAndTables(); });
+  observer.observe(document.body, { childList: true, subtree: true });
 })();
