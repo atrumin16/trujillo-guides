@@ -64,12 +64,31 @@ export async function loadGuideRecord(kv, handle, slug) {
   try { return JSON.parse(raw); } catch (e) { return null; }
 }
 
+export async function loadGuideBySlug(kv, slug) {
+  if (!kv || !slug) return null;
+  const ptrRaw = await kv.get('pub:guide:' + slug);
+  if (ptrRaw) {
+    try {
+      const ptr = JSON.parse(ptrRaw);
+      if (ptr && ptr.handle) return loadGuideRecord(kv, ptr.handle, slug);
+    } catch (e) {}
+  }
+  return null;
+}
+
 function inlineMd(text) {
   let s = esc(text);
   s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+|\/[^)]+)\)/g, '<a href="$2" rel="noopener" target="_blank">$1</a>');
+  s = s.replace(/(^|[\s(])\$([A-Z]{1,6}(?:-[A-Z]{1,4})?)\b/g, (m, pre, sym) => pre + tickerHtml(sym));
   return s;
+}
+
+function stripMatchingH1(md, title) {
+  const t = String(title || '').trim().toLowerCase();
+  if (!t) return md;
+  return String(md || '').replace(/^#\s+(.+)\s*\n+/, (all, h) => String(h || '').trim().toLowerCase() === t ? '' : all);
 }
 
 export function renderMarkdown(md) {
@@ -91,6 +110,24 @@ export function renderMarkdown(md) {
       if (t) html += '<p>' + inlineMd(t) + '</p>';
     };
     for (const line of lines) {
+      const tv = line.match(/^<(?:TradingViewWidget|tradingview)\s+symbol=["']([^"']+)["'](?:\s+interval=["']([^"']+)["'])?[^>]*\/?>$/i)
+        || line.match(/^:::tradingview\s+(\S+)(?:\s+(\S+))?/);
+      if (tv) {
+        flush();
+        html += tvEmbed(tv[1], tv[2]);
+        continue;
+      }
+      if (/^\|.+\|$/.test(line)) {
+        flush();
+        const cells = line.split('|').slice(1, -1).map((c) => c.trim());
+        if (/^\s*\|?\s*:?-{3,}/.test(line)) continue;
+        if (!html.endsWith('</th></tr>') && cells.length) {
+          html += '<div class="table-wrap"><table><thead><tr>' + cells.map((c) => '<th>' + inlineMd(c) + '</th>').join('') + '</tr></thead><tbody>';
+        } else {
+          html += '<tr>' + cells.map((c) => '<td>' + inlineMd(c) + '</td>').join('') + '</tr>';
+        }
+        continue;
+      }
       const h = line.match(/^(#{1,3})\s+(.+)$/);
       if (h) {
         flush();
@@ -99,7 +136,7 @@ export function renderMarkdown(md) {
       }
       if (/^[-*]\s+/.test(line)) {
         flush();
-        html += '<li>' + inlineMd(line.replace(/^[-*]\s+/, '')) + '</li>';
+        html += '<li>' + inlineMd(line.replace(/^[-*]\s+\[([ xX])\]\s+/, '').replace(/^[-*]\s+/, '')) + '</li>';
         continue;
       }
       if (!line.trim()) { flush(); continue; }
@@ -150,7 +187,7 @@ function shell(title, inner) {
 <script src="/js/theme-boot.js?v=shell1"></script>
 <link rel="stylesheet" href="/css/tokens.css?v=shell1">
 <link rel="stylesheet" href="/style.css?v=shell1">
-<link rel="stylesheet" href="/css/community.css?v=c2">
+<link rel="stylesheet" href="/css/community.css?v=c3">
 </head>
 <body class="docs-body community-body">
 <header class="docs-topbar">
@@ -170,21 +207,36 @@ ${inner}
 </html>`;
 }
 
+function tickerHtml(sym) {
+  const s = String(sym || '').toUpperCase();
+  return `<a class="ticker" href="https://www.tradingview.com/symbols/${esc(s)}/" rel="noopener" target="_blank">$${esc(s)}</a>`;
+}
+
+function tvEmbed(symbol, interval) {
+  const sym = encodeURIComponent(String(symbol || 'NASDAQ:AAPL').toUpperCase());
+  const iv = encodeURIComponent(interval || 'D');
+  return `<div class="tv-wrap"><iframe src="https://s.tradingview.com/widgetembed/?symbol=${sym}&interval=${iv}&hidesidetoolbar=1&theme=dark&style=1&locale=es&hideideas=1" title="TradingView" loading="lazy"></iframe></div>`;
+}
+
 function poster(item) {
   const handle = String((item && item.handle) || '').replace(/^@/, '');
-  if (!handle && !(item && item.authorName)) return '';
   const name = (item && item.authorName) || handle;
   const pic = (item && item.authorPicture) || '/avatar.png';
-  const board = handle ? '/u/@' + esc(handle) : '/u';
-  return `<div class="poster">
-  <img class="by-logo" src="${esc(pic)}" alt="" width="40" height="40">
-  <div class="by-meta">
-    <div class="by-name">${esc(name)}</div>
-    <div class="by-handle">by ${handle ? `<a href="${board}">@${esc(handle)}</a>` : 'autor'} · Guides</div>
+  const title = (item && item.title) || '';
+  let when = '';
+  try {
+    if (item && (item.updatedAt || item.createdAt)) {
+      when = new Date(item.updatedAt || item.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+  } catch (e) {}
+  return `<header class="article-head">
+  ${title ? `<h1 class="page-title">${esc(title)}</h1>` : ''}
+  <div class="meta-bar">
+    <img class="by-logo" src="${esc(pic)}" alt="" width="28" height="28">
+    <p class="meta-line"><strong>${esc(name || 'Autor')}</strong>${handle ? ` · @${esc(handle)}` : ''} · Guides${when ? ' · ' + esc(when) : ''}</p>
+    <button type="button" class="copy-link" id="copy-link">Copiar enlace</button>
   </div>
-  <button type="button" class="copy-link" id="copy-link">Copiar enlace</button>
-</div>
-${(item && item.title) ? `<h1 class="page-title">${esc(item.title)}</h1>` : ''}`;
+</header>`;
 }
 
 export function renderGuidePage(item) {
@@ -204,7 +256,7 @@ export function renderGuidePage(item) {
   } else if (kind === 'plaintext') {
     stage = `<article class="doc"><p class="prewrap">${esc(raw)}</p></article>`;
   } else if (kind === 'markdown') {
-    stage = `<article class="doc">${renderMarkdown(raw)}</article>`;
+    stage = `<article class="doc">${renderMarkdown(stripMatchingH1(raw, item.title))}</article>`;
   } else {
     stage = `<pre class="code">${esc(raw)}</pre>`;
   }
@@ -254,9 +306,9 @@ export function renderGuideIndex(items, opts) {
   const cards = (items || []).map((it) => {
     const h = it.handle || handle || '';
     const pic = it.authorPicture || '/avatar.png';
-    const href = h ? '/u/@' + encodeURIComponent(h) + '/' + encodeURIComponent(it.slug) : '/u';
+    const href = it.slug ? '/g/' + encodeURIComponent(it.slug) : '/g';
     const by = h ? `<div class="card-by"><img src="${esc(pic)}" alt=""><span>@${esc(h)}</span></div>` : '';
-    return `<a class="guide-card community-card" href="${href}">${by}<h2>${esc(it.title || it.slug)}</h2><p>/u/@${esc(h)}/${esc(it.slug)}</p></a>`;
+    return `<a class="guide-card community-card" href="${href}">${by}<h2>${esc(it.title || it.slug)}</h2><p>/g/${esc(it.slug)}</p></a>`;
   }).join('');
   const heading = handle ? '@' + handle : 'Comunidad';
   const lede = handle

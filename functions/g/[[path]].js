@@ -1,6 +1,5 @@
 import {
-  loadGuideRecord,
-  parseCommunityPath,
+  loadGuideBySlug,
   readJsonArray,
   renderGuideIndex,
   renderGuideMissing,
@@ -24,20 +23,14 @@ function html(body, status) {
 
 export async function onRequestGet(context) {
   const kv = context.env && context.env.BOT_MEMORY;
-  const parsed = parseCommunityPath(context.params.path);
-  if (!parsed || parsed.kind === 'missing') return html(renderGuideMissing(), 404);
-  if (parsed.kind === 'global') {
+  const raw = context.params.path;
+  const slug = (Array.isArray(raw) ? raw[0] : String(raw || '')).toLowerCase().replace(/[^a-z0-9-]+/g, '').slice(0, 48);
+  if (!slug) {
     const index = await readJsonArray(kv, 'guide:public');
     return html(renderGuideIndex(index), 200);
   }
-  if (parsed.kind === 'author') {
-    const index = await readJsonArray(kv, 'guide:index:' + parsed.handle);
-    const meta = index[0] || { handle: parsed.handle };
-    return html(renderGuideIndex(index, {
-      handle: parsed.handle,
-      authorName: meta.authorName,
-      authorPicture: meta.authorPicture
-    }), 200);
-  }
-  return Response.redirect('https://guides.trujillomingorance.com/g/' + encodeURIComponent(parsed.slug), 301);
+  const record = await loadGuideBySlug(kv, slug);
+  if (!record) return html(renderGuideMissing(), 404);
+  record.dest = 'guide';
+  return html(renderGuidePage(record), 200);
 }
