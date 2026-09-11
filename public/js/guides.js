@@ -1,85 +1,84 @@
-﻿(function () {
+(function () {
   'use strict';
 
-  function initGuideElements() {
-    var doc = document.querySelector('article.doc');
-    if (!doc) return;
-
-    // Inserción de barra de autor bajo el H1
-    var h1 = doc.querySelector('h1');
-    if (h1 && !document.getElementById('guide-meta-bar')) {
-      var bar = document.createElement('div');
-      bar.id = 'guide-meta-bar';
-      bar.className = 'guide-meta-bar';
-      bar.innerHTML = 
-        '<div class="guide-meta-left">' +
-          '<img class="guide-avatar" src="https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c" alt="Alberto Trujillo">' +
-          '<span style="color:#f8fafc; font-weight:600;">Alberto Trujillo</span>' +
-          '<span style="color:#475569;">·</span>' +
-          '<span style="color:#38bdf8;">@atrumin16</span>' +
-          '<span style="color:#475569;">·</span>' +
-          '<span class="guide-badge">GUIDE</span>' +
-        '</div>' +
-        '<div class="guide-meta-right">' +
-          '<span style="color:#64748b; font-size:12px;">10 sep 2026</span>' +
-          '<span style="color:#475569;">·</span>' +
-          '<button id="doc-copy-btn" type="button" class="guide-copy-btn">' +
-            '<span id="copy-status">Copiar enlace</span>' +
-          '</button>' +
-        '</div>';
-
-      h1.insertAdjacentElement('afterend', bar);
-
-      var btn = document.getElementById('doc-copy-btn');
-      var status = document.getElementById('copy-status');
-      if (btn && status) {
-        btn.onclick = function () {
-          navigator.clipboard.writeText(window.location.href);
-          status.textContent = '¡Copiado!';
-          btn.style.color = '#38bdf8';
-          btn.style.borderColor = 'rgba(56, 189, 248, 0.5)';
-          setTimeout(function () {
-            status.textContent = 'Copiar enlace';
-            btn.style.color = '#cbd5e1';
-            btn.style.borderColor = 'rgba(148, 163, 184, 0.2)';
-          }, 1800);
-        };
-      }
-    }
-
-    // Parser de tablas en párrafos colapsados
-    doc.querySelectorAll('p').forEach(function (p) {
-      var html = p.innerHTML;
-      if (html.indexOf('| Valor |') !== -1 || html.indexOf('| :---') !== -1) {
-        var rawTokens = html.split('|').map(function (s) { return s.trim(); }).filter(function (s) { return s.length > 0; });
-        var tokens = rawTokens.filter(function (s) { return !/^:?-+:?$/.test(s); });
-
-        var cols = 4;
-        var thead = '<tr>' + tokens.slice(0, cols).map(function (th) { return '<th>' + th + '</th>'; }).join('') + '</tr>';
-
-        var tbody = '';
-        for (var i = cols; i < tokens.length; i += cols) {
-          var row = tokens.slice(i, i + cols);
-          if (row.length === cols) {
-            tbody += '<tr>' + row.map(function (td) { return '<td>' + td + '</td>'; }).join('') + '</tr>';
-          }
-        }
-
-        var wrapper = document.createElement('div');
-        wrapper.className = 'table-wrapper';
-        wrapper.innerHTML = '<table><thead>' + thead + '</thead><tbody>' + tbody + '</tbody></table>';
-
-        p.replaceWith(wrapper);
-      }
+  function wrapTables(root) {
+    if (!root) return;
+    root.querySelectorAll('table').forEach(function (table) {
+      if (table.parentElement && table.parentElement.classList.contains('overflow-x-auto')) return;
+      if (table.parentElement && table.parentElement.classList.contains('table-wrap')) return;
+      var wrap = document.createElement('div');
+      wrap.className = 'overflow-x-auto my-6 border border-neutral-800 rounded-lg table-wrap';
+      table.classList.add('w-full', 'text-left', 'text-sm');
+      table.parentNode.insertBefore(wrap, table);
+      wrap.appendChild(table);
     });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initGuideElements);
-  } else {
-    initGuideElements();
+  function metaBarHtml() {
+    return (
+      '<div id="guide-meta-bar" class="meta-bar">' +
+        '<img class="by-logo" src="/avatar.png" alt="" width="28" height="28">' +
+        '<p class="meta-line"><strong>Alberto Trujillo Mingorance</strong> · @atrumin16 · <span class="guide-badge">Guides</span></p>' +
+        '<button type="button" class="copy-link" id="doc-copy-btn"><span>Copiar enlace</span></button>' +
+      '</div>'
+    );
   }
 
-  var observer = new MutationObserver(function () { initGuideElements(); });
-  observer.observe(document.body, { childList: true, subtree: true });
+  function isMetaNode(el) {
+    if (!el || !el.classList) return false;
+    return el.classList.contains('meta-bar') ||
+      el.classList.contains('guide-meta-bar') ||
+      el.classList.contains('guide-meta-line') ||
+      el.id === 'guide-meta-bar';
+  }
+
+  function bindCopy(btn) {
+    if (!btn || btn.getAttribute('data-bound')) return;
+    btn.setAttribute('data-bound', '1');
+    btn.addEventListener('click', function () {
+      if (!navigator.clipboard) return;
+      navigator.clipboard.writeText(window.location.href).then(function () {
+        var span = btn.querySelector('span') || btn;
+        var prev = span.textContent;
+        span.textContent = 'Copiado';
+        setTimeout(function () { span.textContent = prev || 'Copiar enlace'; }, 1600);
+      }).catch(function () {});
+    });
+  }
+
+  function isGuidePage() {
+    if (document.getElementById('community-feed')) return false;
+    return !!(
+      document.querySelector('.guide-container') ||
+      document.querySelector('article.doc') ||
+      document.querySelector('article.guide-content')
+    );
+  }
+
+  function placeMetaBars() {
+    if (document.querySelector('.article-head .meta-bar')) return;
+    var titles = document.querySelectorAll('h1.page-title, h1.guide-title');
+    if (!titles.length) return;
+    titles.forEach(function (h1) {
+      if (isMetaNode(h1.nextElementSibling)) return;
+      var parent = h1.parentElement;
+      if (!parent) return;
+      var existing = Array.prototype.find.call(parent.children, isMetaNode);
+      if (existing) {
+        h1.insertAdjacentElement('afterend', existing);
+        return;
+      }
+      h1.insertAdjacentHTML('afterend', metaBarHtml());
+    });
+    document.querySelectorAll('#copy-link, #doc-copy-btn, .copy-link').forEach(bindCopy);
+  }
+
+  function initGuideElements() {
+    if (!isGuidePage()) return;
+    placeMetaBars();
+    wrapTables(document.querySelector('article.doc') || document.querySelector('.guide-container') || document.querySelector('article.guide-content') || document.body);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initGuideElements);
+  else initGuideElements();
 })();

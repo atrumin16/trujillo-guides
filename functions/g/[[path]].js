@@ -3,7 +3,8 @@ import {
   readJsonArray,
   renderGuideIndex,
   renderGuideMissing,
-  renderGuidePage
+  renderGuidePage,
+  staticGuideRedirect
 } from '../lib/community.js';
 
 const CSP = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-src 'self' https://s.tradingview.com https://www.tradingview.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests";
@@ -30,7 +31,11 @@ export async function onRequestGet(context) {
     return html(renderGuideIndex(index), 200);
   }
   const record = await loadGuideBySlug(kv, slug);
-  if (!record) return html(renderGuideMissing(), 404);
+  if (!record) {
+    const redir = staticGuideRedirect(slug);
+    if (redir) return redir;
+    return html(renderGuideMissing(), 404);
+  }
   record.dest = 'guide';
   return html(renderGuidePage(record), 200);
 }

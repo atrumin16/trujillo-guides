@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "guides": [
+    {"slug":"enterprise-email","title":"Arquitectura de Correo Empresarial a Coste 0 €","href":"/guides/enterprise-email/","handle":"atrumin16","authorName":"Alberto Trujillo Mingorance","category":"Guides","static":true},
+    {"slug":"it-glossary","title":"Glosario Interactivo de Sistemas e Informática","href":"/guides/it-glossary/","handle":"atrumin16","authorName":"Alberto Trujillo Mingorance","category":"Guides","static":true},
+    {"slug":"open-sentinel","title":"Telemetría Host y Detección de Intrusión (Open-Sentinel)","href":"/guides/open-sentinel/","handle":"atrumin16","authorName":"Alberto Trujillo Mingorance","category":"Guides","static":true},
+    {"slug":"edge-ai-architecture","title":"Inferencia multimodal sub-100ms en Groq LPU y Cloudflare","href":"/guides/edge-ai-architecture/","handle":"atrumin16","authorName":"Alberto Trujillo Mingorance","category":"Guides","static":true},
+    {"slug":"dns-zero-trust","title":"Filtrado DNS DoH y Zero-Trust (AdShield)","href":"/guides/dns-zero-trust/","handle":"atrumin16","authorName":"Alberto Trujillo Mingorance","category":"Guides","static":true},
+    {"slug":"crypto-telemetry","title":"Telemetría On-Chain y Mempool (BitPulse)","href":"/guides/crypto-telemetry/","handle":"atrumin16","authorName":"Alberto Trujillo Mingorance","category":"Guides","static":true}
+  ]
+}

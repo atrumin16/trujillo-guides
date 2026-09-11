@@ -2361,3 +2361,85 @@ progress.checklist-bar-fill::-moz-progress-bar { background: #22c55e; }
 
 html { color-scheme: dark; }
 [data-theme="light"] { color-scheme: light; }
+
+.meta-bar,
+.guide-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #262626;
+}
+.by-logo { width: 28px; height: 28px; border-radius: 999px; object-fit: cover; background: #262626; flex-shrink: 0; }
+.meta-line { font-size: 13px; color: #a3a3a3; margin: 0; min-width: 0; }
+.meta-line strong { color: var(--text-primary, #e5e5e5); font-weight: 600; }
+.meta-bar .copy-link { margin-left: auto; }
+.guide-badge {
+  display: inline-block;
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+.copy-link {
+  border: 1px solid var(--border, rgba(255,255,255,.12));
+  background: transparent;
+  color: var(--text-secondary, #94a3b8);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.table-wrap,
+.overflow-x-auto.my-6 {
+  overflow-x: auto;
+  margin: 24px 0;
+  border: 1px solid #262626;
+  border-radius: 8px;
+}
+.table-wrap table,
+.md-body table,
+article.doc table {
+  width: 100%;
+  text-align: left;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+}
+.table-wrap th,
+.md-body th,
+article.doc th {
+  padding: 12px 16px;
+  background: #171717;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #a3a3a3;
+  border-bottom: 1px solid #262626;
+}
+.table-wrap td,
+.md-body td,
+article.doc td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(38, 38, 38, 0.6);
+  color: #d4d4d4;
+}
+.settings-table th {
+  padding: 12px 16px;
+  background: #171717;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #a3a3a3;
+  border-bottom: 1px solid #262626;
+}
+.settings-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(38, 38, 38, 0.6);
+  color: #d4d4d4;
+}

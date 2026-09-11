@@ -1,3 +1,5 @@
+import { mergeGuideFeed, STATIC_SLUGS } from './feed.js';
+
 const GUIDES_ORIGIN = 'https://guides.trujillomingorance.com';
 
 export function esc(s) {
@@ -104,30 +106,39 @@ export function renderMarkdown(md) {
     }
     const lines = parts[i].split('\n');
     let buf = [];
+    let inTable = false;
     const flush = () => {
       const t = buf.join(' ').trim();
       buf = [];
       if (t) html += '<p>' + inlineMd(t) + '</p>';
+    };
+    const closeTable = () => {
+      if (!inTable) return;
+      html += '</tbody></table></div>';
+      inTable = false;
     };
     for (const line of lines) {
       const tv = line.match(/^<(?:TradingViewWidget|tradingview)\s+symbol=["']([^"']+)["'](?:\s+interval=["']([^"']+)["'])?[^>]*\/?>$/i)
         || line.match(/^:::tradingview\s+(\S+)(?:\s+(\S+))?/);
       if (tv) {
         flush();
+        closeTable();
         html += tvEmbed(tv[1], tv[2]);
         continue;
       }
-      if (/^\|.+\|$/.test(line)) {
+      if (/^\s*\|.+\|\s*$/.test(line)) {
         flush();
         const cells = line.split('|').slice(1, -1).map((c) => c.trim());
         if (/^\s*\|?\s*:?-{3,}/.test(line)) continue;
-        if (!html.endsWith('</th></tr>') && cells.length) {
-          html += '<div class="table-wrap"><table><thead><tr>' + cells.map((c) => '<th>' + inlineMd(c) + '</th>').join('') + '</tr></thead><tbody>';
+        if (!inTable) {
+          html += '<div class="overflow-x-auto my-6 border border-neutral-800 rounded-lg table-wrap"><table class="w-full text-left text-sm border-collapse"><thead><tr>' + cells.map((c) => '<th>' + inlineMd(c) + '</th>').join('') + '</tr></thead><tbody>';
+          inTable = true;
         } else {
           html += '<tr>' + cells.map((c) => '<td>' + inlineMd(c) + '</td>').join('') + '</tr>';
         }
         continue;
       }
+      closeTable();
       const h = line.match(/^(#{1,3})\s+(.+)$/);
       if (h) {
         flush();
@@ -143,6 +154,7 @@ export function renderMarkdown(md) {
       buf.push(line.trim());
     }
     flush();
+    closeTable();
   }
   return html.replace(/(?:<li>[\s\S]*?<\/li>)+/g, (b) => '<ul>' + b + '</ul>');
 }
@@ -187,7 +199,7 @@ function shell(title, inner) {
 <script src="/js/theme-boot.js?v=shell1"></script>
 <link rel="stylesheet" href="/css/tokens.css?v=shell1">
 <link rel="stylesheet" href="/style.css?v=shell1">
-<link rel="stylesheet" href="/css/community.css?v=c3">
+<link rel="stylesheet" href="/css/community.css?v=c5">
 </head>
 <body class="docs-body community-body">
 <header class="docs-topbar">
@@ -201,8 +213,9 @@ function shell(title, inner) {
   </div>
 </header>
 ${inner}
-<script src="/js/guides.js?v=shell1"></script>
-<script src="/js/community.js?v=c2"></script>
+<script src="/js/guides.js?v=c5"></script>
+<script src="/js/marked.min.js"></script>
+<script src="/js/community.js?v=c5"></script>
 </body>
 </html>`;
 }
@@ -218,22 +231,30 @@ function tvEmbed(symbol, interval) {
   return `<div class="tv-wrap"><iframe src="https://s.tradingview.com/widgetembed/?symbol=${sym}&interval=${iv}&hidesidetoolbar=1&theme=dark&style=1&locale=es&hideideas=1" title="TradingView" loading="lazy"></iframe></div>`;
 }
 
+function formatPubDate(item) {
+  const raw = item && (item.date || item.updatedAt || item.createdAt);
+  if (!raw) return '';
+  try {
+    const d = typeof raw === 'number' || /^\d+$/.test(String(raw)) ? new Date(Number(raw)) : new Date(raw);
+    if (Number.isNaN(d.getTime())) return String(raw);
+    return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+  } catch (e) {
+    return '';
+  }
+}
+
 function poster(item) {
-  const handle = String((item && item.handle) || '').replace(/^@/, '');
-  const name = (item && item.authorName) || handle;
+  const handle = String((item && item.handle) || 'atrumin16').replace(/^@/, '');
+  const name = (item && item.authorName) || 'Alberto Trujillo Mingorance';
   const pic = (item && item.authorPicture) || '/avatar.png';
   const title = (item && item.title) || '';
-  let when = '';
-  try {
-    if (item && (item.updatedAt || item.createdAt)) {
-      when = new Date(item.updatedAt || item.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
-    }
-  } catch (e) {}
+  const category = (item && item.category) || 'Guides';
+  const when = formatPubDate(item);
   return `<header class="article-head">
   ${title ? `<h1 class="page-title">${esc(title)}</h1>` : ''}
   <div class="meta-bar">
     <img class="by-logo" src="${esc(pic)}" alt="" width="28" height="28">
-    <p class="meta-line"><strong>${esc(name || 'Autor')}</strong>${handle ? ` · @${esc(handle)}` : ''} · Guides${when ? ' · ' + esc(when) : ''}</p>
+    <p class="meta-line"><strong>${esc(name)}</strong> · @${esc(handle)} · <span class="guide-badge">${esc(category)}</span>${when ? ' · ' + esc(when) : ''}</p>
     <button type="button" class="copy-link" id="copy-link">Copiar enlace</button>
   </div>
 </header>`;
@@ -303,12 +324,16 @@ function extrasHtml(item) {
 
 export function renderGuideIndex(items, opts) {
   const handle = opts && opts.handle;
-  const cards = (items || []).map((it) => {
+  const merged = mergeGuideFeed(items);
+  const list = handle
+    ? merged.filter((it) => it.static || it.handle === handle)
+    : merged;
+  const cards = list.map((it) => {
     const h = it.handle || handle || '';
     const pic = it.authorPicture || '/avatar.png';
-    const href = it.slug ? '/g/' + encodeURIComponent(it.slug) : '/g';
+    const href = it.href || (it.static ? '/guides/' + it.slug + '/' : '/g/' + encodeURIComponent(it.slug));
     const by = h ? `<div class="card-by"><img src="${esc(pic)}" alt=""><span>@${esc(h)}</span></div>` : '';
-    return `<a class="guide-card community-card" href="${href}">${by}<h2>${esc(it.title || it.slug)}</h2><p>/g/${esc(it.slug)}</p></a>`;
+    return `<a class="guide-card community-card" href="${href}">${by}<h2>${esc(it.title || it.slug)}</h2><p>${esc(it.static ? '/guides/' + it.slug + '/' : '/g/' + it.slug)}</p></a>`;
   }).join('');
   const heading = handle ? '@' + handle : 'Comunidad';
   const lede = handle
@@ -319,7 +344,7 @@ export function renderGuideIndex(items, opts) {
     : '';
   const grid = cards
     ? `<div class="guides-grid">${cards}</div>`
-    : `<p class="lede">${handle ? 'Esta cuenta aún no ha publicado guías.' : 'Publica una guía desde Trujillo AI con una cuenta registrada.'}</p>`;
+    : `<p class="lede">Las guías oficiales están en el índice.</p>`;
   const inner = posterHtml + `<main class="docs-main community-main"><section class="hero"><p class="kicker">ATM Docs · foro de cuentas</p><h1>${esc(heading)}</h1><p class="lede">${lede}</p></section>${grid}</main>`;
   return shell(heading, inner);
 }
@@ -328,4 +353,10 @@ export function renderGuideMissing() {
   return shell('No encontrada', `<main class="docs-main community-main"><section class="hero"><h1>Esta guía no existe</h1><p class="lede">Se despublicó, es de otra cuenta o el enlace es incorrecto.</p><p><a class="hub-link" href="/u">Comunidad</a> · <a class="hub-link" href="/">Guías oficiales</a></p></section></main>`);
 }
 
-export { GUIDES_ORIGIN };
+export function staticGuideRedirect(slug) {
+  const g = STATIC_SLUGS[slug];
+  if (!g) return null;
+  return Response.redirect(GUIDES_ORIGIN + (g.href || ('/guides/' + slug + '/')), 302);
+}
+
+export { GUIDES_ORIGIN, STATIC_SLUGS };
