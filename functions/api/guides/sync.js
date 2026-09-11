@@ -1,4 +1,5 @@
 import { loadGuideRecord } from '../../lib/community.js';
+import { mergeGuideFeed } from '../../lib/feed.js';
 
 const INSULTS = /\b(idiota|imbecil|imbécil|estupido|estúpido|mierda|cabr[oó]n|hijo\s*de\s*puta|gilipollas|puta)\b/i;
 const SPAM = /\b(crypto\s*airdrop|guaranteed\s*profit|buy\s*followers|casino\s*bonus|viagra)\b/i;
@@ -132,7 +133,7 @@ export async function onRequestPost(context) {
 
   return json({
     success: true,
-    count: pub.length,
+    count: mergeGuideFeed(pub).length,
     slug: slug,
     url: 'https://guides.trujillomingorance.com/g/' + slug
   }, 200);
