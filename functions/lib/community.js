@@ -199,7 +199,7 @@ function shell(title, inner) {
 <script src="/js/theme-boot.js?v=shell1"></script>
 <link rel="stylesheet" href="/css/tokens.css?v=shell1">
 <link rel="stylesheet" href="/style.css?v=shell1">
-<link rel="stylesheet" href="/css/community.css?v=c5">
+<link rel="stylesheet" href="/css/community.css?v=c6">
 </head>
 <body class="docs-body community-body">
 <header class="docs-topbar">
@@ -213,9 +213,9 @@ function shell(title, inner) {
   </div>
 </header>
 ${inner}
-<script src="/js/guides.js?v=c5"></script>
 <script src="/js/marked.min.js"></script>
-<script src="/js/community.js?v=c5"></script>
+<script src="/js/guides.js?v=c6"></script>
+<script src="/js/community.js?v=c6"></script>
 </body>
 </html>`;
 }
@@ -281,8 +281,21 @@ export function renderGuidePage(item) {
   } else {
     stage = `<pre class="code">${esc(raw)}</pre>`;
   }
-  const inner = poster(item) + `<main class="community-main">${stage}</main>` + extrasHtml(item);
+  const inner = poster(item) + `<main class="community-main">${stage}</main>` + extrasHtml(item) + payloadScript(item);
   return shell(item.title || 'Guía', inner);
+}
+
+function payloadScript(item) {
+  const extra = (item && item.extras) || {};
+  const data = {
+    title: (item && item.title) || '',
+    date: (item && item.date) || '',
+    attachments: Array.isArray(extra.attachments) ? extra.attachments : [],
+    widgets: Array.isArray(extra.widgets) ? extra.widgets : []
+  };
+  return '<script type="application/json" id="guide-payload">' +
+    JSON.stringify(data).replace(/</g, '\\u003c') +
+    '</script><aside id="guide-attachments" class="attach-list" hidden></aside>';
 }
 
 function extrasHtml(item) {
@@ -290,7 +303,8 @@ function extrasHtml(item) {
   const sources = Array.isArray(extra.sources) ? extra.sources : [];
   const resources = Array.isArray(extra.resources) ? extra.resources : [];
   const widgets = Array.isArray(extra.widgets) ? extra.widgets : [];
-  if (!sources.length && !resources.length && !widgets.length) return '';
+  const attachments = Array.isArray(extra.attachments) ? extra.attachments : [];
+  if (!sources.length && !resources.length && !widgets.length && !attachments.length) return '';
   let html = '<aside class="extras"><div class="extras-grid">';
   if (sources.length) {
     html += '<div><h2>Fuentes</h2>' + sources.map((s) =>
@@ -303,6 +317,13 @@ function extrasHtml(item) {
       return s.url
         ? `<p><a href="${esc(s.url)}" rel="noopener" target="_blank">${esc(s.title || s.url)}</a>${note}</p>`
         : `<p>${esc(s.title || '')}${note}</p>`;
+    }).join('') + '</div>';
+  }
+  if (attachments.length) {
+    html += '<div><h2>Adjuntos</h2>' + attachments.map((a) => {
+      if (!a || !a.url) return '';
+      const ext = String(a.ext || '').toUpperCase();
+      return `<a class="attach-card" href="${esc(a.url)}" rel="noopener" download><span class="attach-badge">${esc(ext)}</span><span class="attach-meta"><strong>${esc(a.name || a.url)}</strong></span><span class="attach-dl">Descargar</span></a>`;
     }).join('') + '</div>';
   }
   if (widgets.length) {
