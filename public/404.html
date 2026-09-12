@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>404 · Documentación no encontrada | ATM Docs</title>
+  <title>404 · No encontrado | ATM Docs</title>
   <meta name="description" content="La guía o ruta solicitada no existe en guides.trujillomingorance.com">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#080c14">
+  <meta name="theme-color" content="#0b0f14">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <script src="/js/theme-boot.js?v=nf1"></script>
   <link rel="stylesheet" href="/css/tokens.css?v=nf1">
   <link rel="stylesheet" href="/style.css?v=nf1">
+  <link rel="stylesheet" href="/css/community.css?v=nf1">
   <link rel="stylesheet" href="/css/404.css?v=nf1">
 </head>
 <body class="docs-body">
@@ -19,61 +20,51 @@
       <img src="/avatar.png" alt="" class="brand-avatar" width="28" height="28">
       <span>ATM Docs</span>
     </a>
-    <div class="topbar-actions">
-      <button type="button" class="theme-toggle-btn" id="theme-btn" title="Cambiar tema" aria-label="Cambiar tema">
-        <svg class="sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
-      <a class="hub-link" href="https://labs.trujillomingorance.com" rel="noopener">Labs Hub</a>
-    </div>
+    <div class="topbar-actions"></div>
   </header>
 
-  <div class="docs-shell">
-    <aside class="docs-sidebar">
-      <span class="sidebar-label">Guías</span>
-      <nav class="sidebar-nav" aria-label="Guías">
-        <a href="/">Índice</a>
-        <a href="/guides/enterprise-email/">Correo empresarial 0 €</a>
-        <a href="/guides/it-glossary/">Glosario de sistemas</a>
-        <a href="/guides/open-sentinel/">Open-Sentinel</a>
-        <a href="/guides/edge-ai-architecture/">Edge AI</a>
-        <a href="/guides/dns-zero-trust/">DNS Zero-Trust</a>
-        <a href="/guides/crypto-telemetry/">Telemetría on-chain</a>
-      </nav>
-      <p class="sidebar-note">Misma cromática en cualquier ruta.</p>
-    </aside>
+  <main class="home-main nf">
+    <section class="hero">
+      <p class="kicker">HTTP 404</p>
+      <p class="nf-badge">Ruta no encontrada</p>
+      <h1 data-i18n="nfTitle">Esta pieza no existe</h1>
+      <p class="lede" data-i18n="nfLede">La URL no está publicada, se ha movido o el identificador es incorrecto.</p>
+      <code class="nf-path" id="nf-path">/</code>
+      <div class="nf-actions">
+        <a class="nf-cta" href="/" data-i18n="nfHome">Volver al índice</a>
+        <a class="hub-link" href="/write" data-i18n="newGuide">Publicar</a>
+        <a class="hub-link" href="https://ai.trujillomingorance.com/" rel="noopener">Studio</a>
+      </div>
+    </section>
 
-    <main class="docs-main">
-      <section class="hero nf">
-        <p class="nf-badge">HTTP 404 · ruta no encontrada</p>
-        <p class="kicker">ATM Docs · <span id="nf-host">guides.trujillomingorance.com</span></p>
-        <h1>Esta guía no existe</h1>
-        <p class="lede">La ruta solicitada no está publicada o se ha movido. Los estilos cargan desde la raíz del origen, así que el chrome se mantiene en cualquier profundidad de URL.</p>
-        <code class="nf-path" id="nf-path">/</code>
-        <div class="nf-actions">
-          <a class="nf-cta" href="/">Volver al índice</a>
-          <a class="hub-link" href="https://labs.trujillomingorance.com" rel="noopener">Labs Hub</a>
-        </div>
-      </section>
-
-      <div class="guides-grid nf-links">
-        <a href="/guides/enterprise-email/" class="guide-card">
+    <p class="home-label" data-i18n="nfSuggest">Sugerencias</p>
+    <div class="guides-grid nf-links">
+      <a href="/guides/enterprise-email/" class="guide-card">
+        <img class="guide-card-avatar" src="/avatar.png" alt="" width="36" height="36">
+        <div class="guide-card-body">
           <h2>Correo empresarial 0 €</h2>
           <p>Arquitectura de correo en el Edge.</p>
-        </a>
-        <a href="/guides/it-glossary/" class="guide-card">
+        </div>
+      </a>
+      <a href="/guides/it-glossary/" class="guide-card">
+        <img class="guide-card-avatar" src="/avatar.png" alt="" width="36" height="36">
+        <div class="guide-card-body">
           <h2>Glosario de sistemas</h2>
           <p>Términos de computación e infraestructura.</p>
-        </a>
-        <a href="/guides/dns-zero-trust/" class="guide-card">
+        </div>
+      </a>
+      <a href="/guides/dns-zero-trust/" class="guide-card">
+        <img class="guide-card-avatar" src="/avatar.png" alt="" width="36" height="36">
+        <div class="guide-card-body">
           <h2>DNS Zero-Trust</h2>
           <p>Filtrado DoH y perímetro.</p>
-        </a>
-      </div>
-    </main>
-  </div>
+        </div>
+      </a>
+    </div>
+  </main>
 
-  <script src="/js/guides.js?v=nf1"></script>
+  <script src="/js/i18n.js?v=nf1"></script>
+  <script src="/js/chrome.js?v=nf1"></script>
   <script src="/js/404.js?v=nf1"></script>
 </body>
 </html>

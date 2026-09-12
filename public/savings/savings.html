@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark" data-font-size="normal">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Savings & Runway Familiar — Trujillo AI</title>
+  <meta name="description" content="Auditoría privada de liquidez, colchón de supervivencia financiera y coste de oportunidad al 7% para familias. Procesamiento 100% en memoria volátil RAM." />
+  <link rel="icon" type="image/png" href="/avatar.png" />
+  <meta name="theme-color" content="#0b0f14" />
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('trujillo_theme') || localStorage.getItem('atm_theme');
+        if (t === 'light' || t === 'dark') {
+          document.documentElement.setAttribute('data-theme', t);
+        }
+        var fs = localStorage.getItem('atm_savings_font_size');
+        if (fs === 'large' || fs === 'xlarge') {
+          document.documentElement.setAttribute('data-font-size', fs);
+        }
+        var lang = localStorage.getItem('atm_lang');
+        if (lang) {
+          document.documentElement.lang = lang;
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cascadia+Code&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="./assets/savings-DJ09X4Bv.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/savings-BRO5GTdM.css">
+</head>
+<body class="docs-body">
+  <div id="root"></div>
+</body>
+</html>

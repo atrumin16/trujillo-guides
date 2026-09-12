@@ -4,7 +4,9 @@
   "private": true,
   "description": "Technical engineering guides and production architectures by Trujillo AI",
   "scripts": {
-    "deploy": "npx wrangler pages deploy public --project-name trujillo-guides --branch main --commit-dirty=true"
+    "build:savings": "vite build --config vite.savings.config.ts",
+    "build": "npm run build:savings",
+    "deploy": "npm run build && npx wrangler pages deploy public --project-name trujillo-guides --branch main --commit-dirty=true"
   },
   "author": "Alberto Trujillo Mingorance",
   "license": "MIT",
@@ -15,5 +17,12 @@
     "react-markdown": "^9.1.0",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0"
   }
 }

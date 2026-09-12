@@ -1,13 +1,14 @@
 import {
-  loadGuideRecord,
+  HIDDEN_KEY,
   parseCommunityPath,
   readJsonArray,
   renderGuideIndex,
-  renderGuideMissing,
-  renderGuidePage
+  renderGuideMissing
 } from '../lib/community.js';
+import { attachSocial } from '../lib/social.js';
+import { mergeGuideFeed } from '../lib/feed.js';
 
-const CSP = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-src 'self' https://s.tradingview.com https://www.tradingview.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests";
+const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://translate.googleapis.com https://da.gd https://tinyurl.com https://api-ssl.bitly.com; frame-src 'self' data: blob: https://s.tradingview.com https://www.tradingview.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests";
 
 function html(body, status) {
   return new Response(body, {
@@ -24,19 +25,22 @@ function html(body, status) {
 
 export async function onRequestGet(context) {
   const kv = context.env && context.env.BOT_MEMORY;
+  const hidden = await readJsonArray(kv, HIDDEN_KEY);
   const parsed = parseCommunityPath(context.params.path);
   if (!parsed || parsed.kind === 'missing') return html(renderGuideMissing(), 404);
   if (parsed.kind === 'global') {
-    const index = await readJsonArray(kv, 'guide:public');
-    return html(renderGuideIndex(index), 200);
+    return Response.redirect('https://guides.trujillomingorance.com/', 302);
   }
   if (parsed.kind === 'author') {
-    const index = await readJsonArray(kv, 'guide:index:' + parsed.handle);
+    const raw = await readJsonArray(kv, 'guide:index:' + parsed.handle);
+    const merged = mergeGuideFeed(raw, hidden).filter((it) => String(it.handle || '').toLowerCase() === parsed.handle);
+    const index = await attachSocial(kv, merged);
     const meta = index[0] || { handle: parsed.handle };
     return html(renderGuideIndex(index, {
       handle: parsed.handle,
       authorName: meta.authorName,
-      authorPicture: meta.authorPicture
+      authorPicture: meta.authorPicture,
+      skipMerge: true
     }), 200);
   }
   return Response.redirect('https://guides.trujillomingorance.com/g/' + encodeURIComponent(parsed.slug), 301);

@@ -6,11 +6,11 @@
   <title>{{TITLE}} · ATM Docs</title>
   <meta name="description" content="{{DESCRIPTION}}">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <meta name="theme-color" content="#080c14">
-  <script src="/js/theme-boot.js?v=c6"></script>
-  <link rel="stylesheet" href="/css/tokens.css?v=c6">
-  <link rel="stylesheet" href="/style.css?v=c6">
-  <link rel="stylesheet" href="/css/community.css?v=c6">
+  <meta name="theme-color" content="#030712">
+  <script src="/js/theme-boot.js?v=pub2"></script>
+  <link rel="stylesheet" href="/css/tokens.css?v=pub2">
+  <link rel="stylesheet" href="/style.css?v=pub2">
+  <link rel="stylesheet" href="/css/community.css?v=pub2">
 </head>
 <body class="docs-body community-body">
   <header class="docs-topbar">
@@ -18,45 +18,52 @@
       <img src="/avatar.png" alt="" class="brand-avatar" width="28" height="28">
       <span>ATM Docs</span>
     </a>
-    <div class="topbar-actions">
-      <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" title="Cambiar tema" aria-label="Cambiar tema">Tema</button>
-      <a class="hub-link" href="https://ai.trujillomingorance.com" rel="noopener">Studio</a>
-    </div>
+    <div class="topbar-actions"></div>
   </header>
 
-  <div class="guide-container">
-    <a href="/" class="back-nav">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-      Volver al Hub de Guías
-    </a>
+  <div class="guide-container doc-page has-toc-sidebar">
+    <header class="doc-header">
+      <a href="/" class="back-nav">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Volver al Hub de Guías
+      </a>
 
-    <h1 class="page-title">{{TITLE}}</h1>
-    <div id="guide-meta-bar" class="meta-bar border-b border-neutral-800 pb-4 mb-8">
-      <img class="by-logo" src="/avatar.png" alt="" width="28" height="28">
-      <p class="meta-line"><strong>Alberto Trujillo Mingorance</strong> · @atrumin16 · <span class="guide-badge">Guides</span> · {{DATE}}</p>
-      <button type="button" class="copy-link" id="copy-link"><span>Copiar enlace</span></button>
+      <h1 class="page-title">{{TITLE}}</h1>
+      <div id="guide-meta-bar" class="poster meta-bar poster-bar">
+        <div class="poster-author">
+          <span class="poster-avatar">AT</span>
+          <span class="poster-name">Alberto Trujillo</span>
+          <a class="poster-handle" href="/u/@atrumin16">@atrumin16</a>
+        </div>
+        <div class="poster-right">
+          <time class="poster-date meta-chip">{{DATE}}</time>
+          <button type="button" class="copy-link poster-copy meta-chip" id="copy-link">
+            <svg class="tool-ic" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <span>Copiar enlace</span>
+          </button>
+        </div>
+      </div>
+
+      <p class="page-subtitle">{{DESCRIPTION}}</p>
+    </header>
+
+    <div class="doc-layout">
+      <aside class="doc-sidebar"></aside>
+      <div class="doc-content">
+        <article id="guide-body" class="md-body doc"></article>
+        <aside id="guide-attachments" class="attach-list" hidden></aside>
+      </div>
     </div>
-
-    <p class="page-subtitle">{{DESCRIPTION}}</p>
-    <article id="guide-body" class="md-body doc"></article>
-    <aside id="guide-attachments" class="attach-list" hidden></aside>
   </div>
 
   <script type="text/markdown" id="guide-markdown">{{CONTENT}}</script>
   <script type="application/json" id="guide-payload">{"attachments":[],"widgets":[],"date":"{{DATE}}"}</script>
+  <script src="/js/i18n.js?v=pub2"></script>
+  <script src="/js/chrome.js?v=pub2"></script>
+  <script src="/js/social.js?v=pub2"></script>
+  <script src="/js/forum.js?v=pub2"></script>
+  <script src="/js/translate.js?v=pub2"></script>
   <script src="/js/marked.min.js"></script>
-  <script src="/js/guides.js?v=c6"></script>
-  <script>
-    (function () {
-      var btn = document.getElementById('theme-toggle-btn');
-      if (!btn) return;
-      btn.addEventListener('click', function () {
-        var current = document.documentElement.getAttribute('data-theme');
-        var next = current === 'light' ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', next);
-        try { localStorage.setItem('trujillo_theme', next); } catch (e) {}
-      });
-    })();
-  </script>
+  <script src="/js/guides.js?v=pub2"></script>
 </body>
 </html>

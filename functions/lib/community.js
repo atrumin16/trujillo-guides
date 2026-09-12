@@ -1,4 +1,4 @@
-import { mergeGuideFeed, STATIC_SLUGS } from './feed.js';
+import { mergeGuideFeed, STATIC_SLUGS, HIDDEN_KEY, hiddenSlugSet } from './feed.js';
 
 const GUIDES_ORIGIN = 'https://guides.trujillomingorance.com';
 
@@ -83,7 +83,7 @@ function inlineMd(text) {
   s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+|\/[^)]+)\)/g, '<a href="$2" rel="noopener" target="_blank">$1</a>');
-  s = s.replace(/(^|[\s(])\$([A-Z]{1,6}(?:-[A-Z]{1,4})?)\b/g, (m, pre, sym) => pre + tickerHtml(sym));
+  s = s.replace(/(^|[\s()])\\?\$([A-Z]{1,6}(?:[.-][A-Z]{1,4})?|\d{4,5})\b/g, (m, pre, sym) => pre + tickerHtml(sym));
   return s;
 }
 
@@ -100,8 +100,14 @@ export function renderMarkdown(md) {
   for (let i = 0; i < parts.length; i++) {
     if (i % 2 === 1) {
       const nl = parts[i].indexOf('\n');
-      const code = nl === -1 ? parts[i] : parts[i].slice(nl + 1);
-      html += '<pre><code>' + esc(code.replace(/\n$/, '')) + '</code></pre>';
+      const fence = (nl === -1 ? '' : parts[i].slice(0, nl)).trim().toLowerCase();
+      const code = (nl === -1 ? parts[i] : parts[i].slice(nl + 1)).replace(/\n$/, '');
+      if (fence === 'mermaid') {
+        html += '<pre class="mermaid">' + esc(code) + '</pre>';
+      } else {
+        const langTag = fence ? fence.toUpperCase() : 'TXT';
+        html += '<div class="code-block-wrap"><div class="code-header"><span class="code-lang">' + esc(langTag) + '</span><button type="button" class="copy-code-btn" title="Copiar código" aria-label="Copiar código"><svg class="tool-ic" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>Copiar</span></button></div><pre><code' + (fence ? ' class="lang-' + esc(fence) + '"' : '') + '>' + esc(code) + '</code></pre></div>';
+      }
       continue;
     }
     const lines = parts[i].split('\n');
@@ -117,13 +123,42 @@ export function renderMarkdown(md) {
       html += '</tbody></table></div>';
       inTable = false;
     };
+    let inScriptOrStyle = false;
     for (const line of lines) {
+      if (inScriptOrStyle) {
+        html += line + '\n';
+        if (/<\/(?:script|style)>/i.test(line)) {
+          inScriptOrStyle = false;
+        }
+        continue;
+      }
+      if (/^\s*<(?:script|style)\b/i.test(line)) {
+        flush();
+        closeTable();
+        html += line + '\n';
+        if (!/<\/(?:script|style)>/i.test(line)) {
+          inScriptOrStyle = true;
+        }
+        continue;
+      }
+      if (/^\s*<\/?(?:div|section|article|aside|p|form|button|input|textarea|select|option|label|table|tbody|thead|tr|td|th|svg|canvas|iframe|details|summary|figure|figcaption)\b/i.test(line)) {
+        flush();
+        closeTable();
+        html += line + '\n';
+        continue;
+      }
       const tv = line.match(/^<(?:TradingViewWidget|tradingview)\s+symbol=["']([^"']+)["'](?:\s+interval=["']([^"']+)["'])?[^>]*\/?>$/i)
         || line.match(/^:::tradingview\s+(\S+)(?:\s+(\S+))?/);
       if (tv) {
         flush();
         closeTable();
         html += tvEmbed(tv[1], tv[2]);
+        continue;
+      }
+      if (/^\s*(?:---|\*\*\*|___)\s*$/.test(line)) {
+        flush();
+        closeTable();
+        html += '<hr class="divider">';
         continue;
       }
       if (/^\s*\|.+\|\s*$/.test(line)) {
@@ -162,7 +197,8 @@ export function renderMarkdown(md) {
 function csvTable(text) {
   const rows = String(text || '').trim().split(/\r?\n/).filter(Boolean);
   if (!rows.length) return '<p>CSV vacío</p>';
-  const parseRow = (line) => line.split(',').map((cell) => esc(cell.trim()));
+  const delim = rows[0].indexOf('\t') !== -1 && (rows[0].split('\t').length > rows[0].split(',').length) ? '\t' : ',';
+  const parseRow = (line) => line.split(delim).map((cell) => esc(cell.trim()));
   const head = parseRow(rows[0]);
   const body = rows.slice(1).map(parseRow);
   let html = '<table class="tbl"><thead><tr>' + head.map((c) => '<th>' + c + '</th>').join('') + '</tr></thead><tbody>';
@@ -171,14 +207,34 @@ function csvTable(text) {
   return html;
 }
 
-function detectKind(lang, content) {
+export const LANG_MAP = {
+  html: 'html', htm: 'html',
+  markdown: 'markdown', md: 'markdown',
+  plaintext: 'plaintext', text: 'plaintext', txt: 'plaintext',
+  json: 'json', csv: 'csv', tsv: 'csv',
+  svg: 'svg', mermaid: 'mermaid', mmd: 'mermaid',
+  javascript: 'javascript', js: 'javascript', mjs: 'javascript', cjs: 'javascript',
+  typescript: 'javascript', ts: 'javascript',
+  python: 'python', py: 'python',
+  yaml: 'code', yml: 'code', xml: 'code', sql: 'code', toml: 'code',
+  css: 'code', scss: 'code', go: 'code', rs: 'code', rust: 'code',
+  java: 'code', c: 'code', h: 'code', cpp: 'code', cs: 'code',
+  php: 'code', rb: 'code', sh: 'code', bash: 'code', shell: 'code',
+  code: 'code'
+};
+
+export function detectKind(lang, content) {
   const l = String(lang || '').toLowerCase().trim();
-  const map = { html: 'html', markdown: 'markdown', md: 'markdown', plaintext: 'plaintext', text: 'plaintext', json: 'json', csv: 'csv', svg: 'svg', mermaid: 'mermaid', code: 'code', javascript: 'javascript', python: 'python' };
-  if (map[l]) return map[l];
+  if (LANG_MAP[l]) return LANG_MAP[l];
   const c = String(content || '').trim();
   if (/^<svg[\s>]/i.test(c)) return 'svg';
   if (/^<!doctype html/i.test(c) || /^<html[\s>]/i.test(c)) return 'html';
-  if (/^(graph|flowchart|sequenceDiagram)\b/m.test(c)) return 'mermaid';
+  if (/^(graph|flowchart|sequenceDiagram|classDiagram|erDiagram|journey|pie|gantt)\b/m.test(c)) return 'mermaid';
+  if (/^[\s]*[{\[]/.test(c)) {
+    try { JSON.parse(c); return 'json'; } catch (e) {}
+  }
+  if (/^[^,\n]+,[^,\n]+,/m.test(c) && (c.match(/\n/g) || []).length >= 1) return 'csv';
+  if (/^#\s|^\*\*|^\-\s|```/m.test(c)) return 'markdown';
   return 'markdown';
 }
 
@@ -186,49 +242,125 @@ function prettyJson(text) {
   try { return JSON.stringify(JSON.parse(text), null, 2); } catch (e) { return text; }
 }
 
-function shell(title, inner) {
+function injectOledTheme(html) {
+  const oledCss = `<style>
+    :root, html, body {
+      background-color: #030712 !important;
+      color: #f8fafc !important;
+      color-scheme: dark !important;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif !important;
+      margin: 0 !important;
+      padding: 16px !important;
+    }
+    table {
+      background: #080c14 !important;
+      border: 1px solid #1e293b !important;
+      border-collapse: collapse !important;
+      width: 100% !important;
+      margin: 16px 0 !important;
+    }
+    th {
+      background: #0f172a !important;
+      color: #94a3b8 !important;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+      text-transform: uppercase !important;
+      font-size: 11px !important;
+      letter-spacing: 0.06em !important;
+      border-bottom: 1px solid #1e293b !important;
+      padding: 10px 14px !important;
+      text-align: left !important;
+    }
+    td {
+      padding: 10px 14px !important;
+      border-bottom: 1px solid #1e293b !important;
+      color: #cbd5e1 !important;
+      font-size: 13px !important;
+    }
+    tr:hover td { background: rgba(255, 255, 255, 0.02) !important; }
+    a { color: #38bdf8 !important; }
+  </style>
+  <script>
+    function sendH(){
+      var h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+      window.parent.postMessage({ type: 'FRAME_RESIZE', height: h }, '*');
+    }
+    window.addEventListener('load', sendH);
+    window.addEventListener('resize', sendH);
+    if (window.ResizeObserver) { new ResizeObserver(sendH).observe(document.body); }
+  </script>`;
+  if (/<head[^>]*>/i.test(html)) {
+    return html.replace(/<head[^>]*>/i, '$&' + oledCss);
+  }
+  return oledCss + html;
+}
+
+function shell(title, inner, opts) {
+  const share = !!(opts && opts.share);
+  const docTitle = share ? 'Documento' : (esc(title) + ' · ATM Docs');
   return `<!DOCTYPE html>
 <html lang="es" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title)} · ATM Docs</title>
-<meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#080c14">
+<title>${docTitle}</title>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#030712">
 <link rel="icon" href="/favicon.ico">
-<script src="/js/theme-boot.js?v=shell1"></script>
-<link rel="stylesheet" href="/css/tokens.css?v=shell1">
-<link rel="stylesheet" href="/style.css?v=shell1">
-<link rel="stylesheet" href="/css/community.css?v=c6">
+<script src="/js/theme-boot.js?v=pub2"></script>
+<link rel="stylesheet" href="/css/tokens.css?v=pub2">
+<link rel="stylesheet" href="/style.css?v=pub2">
+<link rel="stylesheet" href="/css/community.css?v=pub2">
 </head>
-<body class="docs-body community-body">
-<header class="docs-topbar">
-  <a href="/" class="brand">
-    <img src="/avatar.png" alt="" class="brand-avatar" width="28" height="28">
-    <span>ATM Docs</span>
-  </a>
-  <div class="topbar-actions">
-    <button type="button" class="theme-toggle-btn" id="theme-btn" title="Cambiar tema" aria-label="Cambiar tema">Tema</button>
-    <a class="hub-link" href="https://ai.trujillomingorance.com" rel="noopener">Studio</a>
-  </div>
-</header>
+<body class="docs-body community-body"${share ? ' data-share="1"' : ''}>
+<header class="docs-topbar"></header>
 ${inner}
+<footer class="docs-footer" id="docs-footer"></footer>
+<script src="/js/i18n.js?v=pub2"></script>
+<script src="/js/chrome.js?v=pub2"></script>
+<script src="/js/social.js?v=pub2"></script>
 <script src="/js/marked.min.js"></script>
-<script src="/js/guides.js?v=c6"></script>
-<script src="/js/community.js?v=c6"></script>
+<script src="/js/guides.js?v=pub2"></script>
+<script src="/js/community.js?v=pub2"></script>
+<script src="/js/forum.js?v=pub2"></script>
+<script src="/js/translate.js?v=pub2"></script>
 </body>
 </html>`;
 }
 
-function tickerHtml(sym) {
-  const s = String(sym || '').toUpperCase();
-  return `<a class="ticker" href="https://www.tradingview.com/symbols/${esc(s)}/" rel="noopener" target="_blank">$${esc(s)}</a>`;
+function htmlToArticle(raw, title) {
+  let html = String(raw || '');
+  const body = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  if (body) html = body[1];
+  html = html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<link[^>]*>/gi, '')
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, '')
+    .replace(/<\/?font[^>]*>/gi, '')
+    .replace(/<(header|footer|nav)[\s\S]*?<\/\1>/gi, '')
+    .replace(/<(iframe|object|embed|form)[\s\S]*?<\/\1>/gi, '')
+    .replace(/<(iframe|object|embed|input|button)[^>]*\/?>/gi, '')
+    .replace(/\sstyle\s*=\s*("[^"]*"|'[^']*')/gi, '')
+    .replace(/\s(bgcolor|color|background|align)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/\shref\s*=\s*(['"])javascript:[^'"]*\1/gi, ' href="#"');
+  const t = String(title || '').trim().toLowerCase();
+  if (t) {
+    html = html.replace(/<h1[^>]*>[\s\S]*?<\/h1>/i, function (all) {
+      const inner = all.replace(/<[^>]+>/g, '').trim().toLowerCase();
+      return inner === t || inner.indexOf(t.slice(0, 24)) === 0 ? '' : all;
+    });
+  }
+  return html.trim();
 }
 
-function tvEmbed(symbol, interval) {
-  const sym = encodeURIComponent(String(symbol || 'NASDAQ:AAPL').toUpperCase());
-  const iv = encodeURIComponent(interval || 'D');
-  return `<div class="tv-wrap"><iframe src="https://s.tradingview.com/widgetembed/?symbol=${sym}&interval=${iv}&hidesidetoolbar=1&theme=dark&style=1&locale=es&hideideas=1" title="TradingView" loading="lazy"></iframe></div>`;
+function tickerHtml(sym) {
+  return `<a class="ticker" href="https://www.tradingview.com/symbols/${esc(sym)}/" rel="noopener" target="_blank">$${esc(sym)}</a>`;
+}
+
+function tvEmbed(sym, iv) {
+  return `<div class="tv-wrap"><iframe src="https://s.tradingview.com/widgetembed/?symbol=${sym}&interval=${iv || 'D'}&hidesidetoolbar=1&theme=dark&style=1&locale=es&hideideas=1" title="TradingView" loading="lazy"></iframe></div>`;
 }
 
 function formatPubDate(item) {
@@ -245,17 +377,48 @@ function formatPubDate(item) {
 
 function poster(item) {
   const handle = String((item && item.handle) || 'atrumin16').replace(/^@/, '');
-  const name = (item && item.authorName) || 'Alberto Trujillo Mingorance';
-  const pic = (item && item.authorPicture) || '/avatar.png';
+  const name = (item && item.authorName) || 'Alberto Trujillo';
   const title = (item && item.title) || '';
-  const category = (item && item.category) || 'Guides';
-  const when = formatPubDate(item);
-  return `<header class="article-head">
+  const slug = String((item && item.slug) || '');
+  const when = formatPubDate(item) || '11 sep 2026';
+  const kind = String((item && item.category) || (item && item.extras && item.extras.kind) || 'guide');
+  const kindLabel = ({ guide: 'Guía', post: 'Post', opinion: 'Opinión', analysis: 'Análisis', brief: 'Brief', note: 'Nota', research: 'Research', changelog: 'Changelog' })[kind] || 'Guía';
+  const summary = (item && item.extras && item.extras.summary) || item.summary || '';
+  return `<header class="article-head doc-header">
+  <a href="/" class="back-nav">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Volver al Hub de Guías
+  </a>
   ${title ? `<h1 class="page-title">${esc(title)}</h1>` : ''}
-  <div class="meta-bar">
-    <img class="by-logo" src="${esc(pic)}" alt="" width="28" height="28">
-    <p class="meta-line"><strong>${esc(name)}</strong> · @${esc(handle)} · <span class="guide-badge">${esc(category)}</span>${when ? ' · ' + esc(when) : ''}</p>
-    <button type="button" class="copy-link" id="copy-link">Copiar enlace</button>
+  ${summary ? `<p class="lede">${esc(summary)}</p>` : ''}
+  <div class="poster meta-bar poster-bar" data-slug="${esc(slug)}">
+    <div class="poster-author">
+      <span class="poster-avatar">AT</span>
+      <span class="poster-name">${esc(name)}</span>
+      <a class="poster-handle" href="/u/@${esc(handle)}">@${esc(handle)}</a>
+      <span class="guide-badge">${esc(kindLabel)}</span>
+    </div>
+    <div class="poster-right">
+      <time class="poster-date meta-chip">${esc(when)}</time>
+      <button type="button" class="copy-link poster-copy meta-chip" id="copy-link" data-slug="${esc(slug)}">
+        <svg class="tool-ic" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <span>Copiar enlace</span>
+      </button>
+    </div>
+  </div>
+  <div class="social-bar" data-slug="${esc(slug)}" data-handle="${esc(handle)}">
+    <button type="button" class="vote-btn" data-vote="up" data-i18n-title="like" title="Me gusta" aria-label="Me gusta"><svg class="vote-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11v8a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h2z"/><path d="M7 11V8a3 3 0 0 1 3-3h1v6h6.2a1.8 1.8 0 0 1 1.76 2.17l-1.05 5.1A1.8 1.8 0 0 1 16.15 20H9a2 2 0 0 1-2-2v-7z"/></svg> <span data-up-count>0</span></button>
+    <button type="button" class="vote-btn" data-vote="down" data-i18n-title="dislike" title="No me gusta" aria-label="No me gusta"><svg class="vote-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 13V5a1 1 0 0 1 1-1h1a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2z"/><path d="M17 13v3a3 3 0 0 1-3 3h-1v-6H6.8a1.8 1.8 0 0 1-1.76-2.17l1.05-5.1A1.8 1.8 0 0 1 7.85 4H15a2 2 0 0 1 2 2v7z"/></svg> <span data-down-count>0</span></button>
+    <button type="button" class="tool-btn" data-share data-i18n-title="share" title="Compartir" aria-label="Compartir"><svg class="tool-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+    <button type="button" class="tool-btn" data-save data-i18n-title="save" title="Guardar" aria-label="Guardar"><svg class="tool-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
+    <button type="button" class="tool-btn" data-edit data-i18n-title="edit" title="Editar" aria-label="Editar" hidden>
+      <svg class="tool-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+    </button>
+    <button type="button" class="tool-btn" data-follow data-i18n-title="follow" title="Seguir" aria-label="Seguir"><svg class="tool-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></button>
+    <button type="button" class="pin-btn" data-pin data-i18n-title="pin" title="Fijar" aria-label="Fijar" hidden><svg class="tool-ic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.89A2 2 0 0 1 15 10.76V6h1a1 1 0 0 0 0-2H8a1 1 0 0 0 0 2h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.89A2 2 0 0 0 5 15.24z"/></svg></button>
   </div>
 </header>`;
 }
@@ -265,7 +428,10 @@ export function renderGuidePage(item) {
   const raw = item.content || '';
   let stage = '';
   if (kind === 'html') {
-    stage = `<div class="stage"><iframe class="frame" sandbox="allow-scripts allow-forms" srcdoc="${srcdocEsc(raw)}" title="Guía"></iframe></div>`;
+    const article = htmlToArticle(raw, item.title);
+    stage = article
+      ? `<article class="doc html-doc">${article}</article>`
+      : `<div class="stage"><iframe class="frame" sandbox="allow-scripts allow-forms" srcdoc="${srcdocEsc(injectOledTheme(raw))}" title="Guía" allowtransparency="true"></iframe></div>`;
   } else if (kind === 'svg') {
     stage = `<div class="stage pad"><div class="svgwrap"><img alt="" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(raw)}"></div></div>`;
   } else if (kind === 'mermaid') {
@@ -281,8 +447,18 @@ export function renderGuidePage(item) {
   } else {
     stage = `<pre class="code">${esc(raw)}</pre>`;
   }
-  const inner = poster(item) + `<main class="community-main">${stage}</main>` + extrasHtml(item) + payloadScript(item);
-  return shell(item.title || 'Guía', inner);
+  const inner = `<div class="guide-container doc-page has-toc-sidebar">` +
+    poster(item) +
+    `<div class="doc-layout">` +
+      `<aside class="doc-sidebar"></aside>` +
+      `<div class="doc-content">` +
+        `<main class="community-main">${stage}</main>` +
+        extrasHtml(item) +
+      `</div>` +
+    `</div>` +
+    payloadScript(item) +
+  `</div>`;
+  return shell(item.title || 'Guía', inner, { share: !!(item && item.share) });
 }
 
 function payloadScript(item) {
@@ -322,8 +498,11 @@ function extrasHtml(item) {
   if (attachments.length) {
     html += '<div><h2>Adjuntos</h2>' + attachments.map((a) => {
       if (!a || !a.url) return '';
-      const ext = String(a.ext || '').toUpperCase();
-      return `<a class="attach-card" href="${esc(a.url)}" rel="noopener" download><span class="attach-badge">${esc(ext)}</span><span class="attach-meta"><strong>${esc(a.name || a.url)}</strong></span><span class="attach-dl">Descargar</span></a>`;
+      const ext = String(a.ext || '').toLowerCase();
+      if (/^(png|jpe?g|jpg|webp|gif|avif|svg)$/i.test(ext)) {
+        return `<figure class="attach-figure"><img src="${esc(a.url)}" alt="${esc(a.name || '')}"><figcaption>${esc(a.name || '')}</figcaption></figure>`;
+      }
+      return `<a class="attach-card" href="${esc(a.url)}" rel="noopener"><span class="attach-badge">${esc(ext.toUpperCase())}</span><span class="attach-meta"><strong>${esc(a.name || a.url)}</strong></span><span class="attach-dl">Abrir</span></a>`;
     }).join('') + '</div>';
   }
   if (widgets.length) {
@@ -345,39 +524,46 @@ function extrasHtml(item) {
 
 export function renderGuideIndex(items, opts) {
   const handle = opts && opts.handle;
-  const merged = mergeGuideFeed(items);
+  const merged = opts && opts.skipMerge ? (items || []) : mergeGuideFeed(items, opts && opts.hidden);
   const list = handle
-    ? merged.filter((it) => it.static || it.handle === handle)
+    ? merged.filter((it) => String(it.handle || '').toLowerCase() === handle)
     : merged;
   const cards = list.map((it) => {
     const h = it.handle || handle || '';
-    const pic = it.authorPicture || '/avatar.png';
     const href = it.href || (it.static ? '/guides/' + it.slug + '/' : '/g/' + encodeURIComponent(it.slug));
-    const by = h ? `<div class="card-by"><img src="${esc(pic)}" alt=""><span>@${esc(h)}</span></div>` : '';
-    return `<a class="guide-card community-card" href="${href}">${by}<h2>${esc(it.title || it.slug)}</h2><p>${esc(it.static ? '/guides/' + it.slug + '/' : '/g/' + it.slug)}</p></a>`;
+    const likes = Number(it.likes) || 0;
+    const pin = it.pinned ? '<span class="pin-flag">Fijada</span>' : '';
+    return `<a class="guide-row" href="${href}"><span class="guide-row-title">${esc(it.title || it.slug)}</span><span class="guide-row-meta">${esc(h ? '@' + h : '')}${pin} ↑ ${likes}</span></a>`;
   }).join('');
-  const heading = handle ? '@' + handle : 'Comunidad';
-  const lede = handle
-    ? 'Guías publicadas por esta cuenta. El contenido editorial de ATM Docs vive en /guides y no se mezcla aquí.'
-    : 'Tableros de cuentas registradas. Cada guía lleva by @usuario. Las guías oficiales están en el índice.';
-  const posterHtml = handle
-    ? poster({ handle, authorName: (opts && opts.authorName) || handle, authorPicture: (opts && opts.authorPicture) || '/avatar.png' })
-    : '';
+  const name = (opts && opts.authorName) || handle || 'Perfil';
+  const pic = (opts && opts.authorPicture) || '/avatar.png';
+  const heading = handle ? '@' + handle : 'Guías';
+  const profile = handle
+    ? `<header class="profile-head">
+        <img class="profile-avatar" src="${esc(pic)}" alt="" width="56" height="56">
+        <div><h1>${esc(name)}</h1><p class="lede">@${esc(handle)} · ${list.length} ${list.length === 1 ? 'guía' : 'guías'}</p></div>
+      </header>`
+    : `<section class="hero"><h1>Guías</h1></section>`;
   const grid = cards
-    ? `<div class="guides-grid">${cards}</div>`
-    : `<p class="lede">Las guías oficiales están en el índice.</p>`;
-  const inner = posterHtml + `<main class="docs-main community-main"><section class="hero"><p class="kicker">ATM Docs · foro de cuentas</p><h1>${esc(heading)}</h1><p class="lede">${lede}</p></section>${grid}</main>`;
+    ? `<div class="guides-list" id="guides-feed">${cards}</div>`
+    : `<p class="lede">Esta cuenta aún no ha publicado.</p>`;
+  const inner = `<main class="home-main">${profile}${grid}</main>`;
   return shell(heading, inner);
 }
 
 export function renderGuideMissing() {
-  return shell('No encontrada', `<main class="docs-main community-main"><section class="hero"><h1>Esta guía no existe</h1><p class="lede">Se despublicó, es de otra cuenta o el enlace es incorrecto.</p><p><a class="hub-link" href="/u">Comunidad</a> · <a class="hub-link" href="/">Guías oficiales</a></p></section></main>`);
+  return shell('No encontrada', `<main class="home-main"><h1>Esta guía no existe</h1><p class="lede">Se despublicó o el enlace es incorrecto.</p><p><a class="hub-link" href="/">Volver al índice</a></p></main>`);
 }
 
-export function staticGuideRedirect(slug) {
+export function staticGuideRedirect(slug, hidden) {
   const g = STATIC_SLUGS[slug];
   if (!g) return null;
+  if (hiddenSlugSet(hidden)[slug]) return null;
   return Response.redirect(GUIDES_ORIGIN + (g.href || ('/guides/' + slug + '/')), 302);
 }
 
-export { GUIDES_ORIGIN, STATIC_SLUGS };
+export function isHiddenSlug(hidden, slug) {
+  return !!hiddenSlugSet(hidden)[slug];
+}
+
+export { GUIDES_ORIGIN, STATIC_SLUGS, HIDDEN_KEY };

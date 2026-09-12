@@ -630,14 +630,12 @@
         // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
             // Cargar preferencias guardadas
-            const savedLang = localStorage.getItem('language') || 'es';
+            const savedLang = glossaryLang(typeof window.atmLang === 'function' ? window.atmLang() : (localStorage.getItem('atm_lang') || localStorage.getItem('language') || 'es'));
             const savedLevel = localStorage.getItem('userLevel');
             const savedTheme = localStorage.getItem('trujillo_theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme === 'light' ? 'light' : 'dark');
 
-            // Aplicar idioma
             currentLanguage = savedLang;
-            document.getElementById('languageSelect').value = savedLang;
             applyTranslations();
 
             // Mostrar modal si no hay nivel guardado
@@ -663,10 +661,15 @@
             document.getElementById('userModal').classList.remove('hidden');
         }
 
-        // Cambiar idioma
+        function glossaryLang(lang) {
+            lang = String(lang || '').toLowerCase();
+            if (lang === 'es' || lang === 'ca') return lang;
+            return 'en';
+        }
+
         function changeLanguage(lang) {
-            currentLanguage = lang;
-            localStorage.setItem('language', lang);
+            currentLanguage = glossaryLang(lang);
+            localStorage.setItem('language', currentLanguage);
             applyTranslations();
             renderCards();
         }
@@ -676,7 +679,7 @@
             const elements = document.querySelectorAll('[data-i18n]');
             elements.forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if (translations[currentLanguage][key]) {
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
                     el.textContent = translations[currentLanguage][key];
                 }
             });
@@ -854,6 +857,7 @@
             });
             var darkBtn = document.getElementById('darkModeToggle') || document.getElementById('darkModeToggleBind');
             if (darkBtn) darkBtn.addEventListener('click', toggleDarkMode);
-            var langSelect = document.getElementById('languageSelect');
-            if (langSelect) langSelect.addEventListener('change', function () { changeLanguage(langSelect.value); });
+            document.addEventListener('atm:lang', function (e) {
+                changeLanguage((e.detail && e.detail.lang) || (typeof window.atmLang === 'function' ? window.atmLang() : 'es'));
+            });
         });

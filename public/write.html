@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Publicar · ATM Docs</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <meta name="theme-color" content="#0b0f14">
+  <script src="/js/theme-boot.js?v=pub2"></script>
+  <link rel="stylesheet" href="/css/tokens.css?v=pub2">
+  <link rel="stylesheet" href="/style.css?v=pub2">
+  <link rel="stylesheet" href="/css/community.css?v=pub2">
+</head>
+<body class="docs-body">
+  <header class="docs-topbar">
+    <a href="/" class="brand">
+      <img src="/avatar.png" alt="" class="brand-avatar" width="28" height="28">
+      <span>ATM Docs</span>
+    </a>
+    <div class="topbar-actions"></div>
+  </header>
+  <main class="guide-container write-main">
+    <a href="/" class="back-nav">← Índice</a>
+    <p class="kicker" data-i18n="publishKicker">Publicar en Guides</p>
+    <h1 class="page-title" id="write-heading" data-i18n="newGuide">Nueva publicación</h1>
+    <p class="lede" data-i18n="writeHint">Guías, posts, opiniones, análisis, briefs y notas. Markdown, HTML, código, datos o un archivo.</p>
+    <form id="write-form" class="write-form">
+      <fieldset class="kind-set">
+        <legend data-i18n="writeKind">Tipo</legend>
+        <div class="kind-chips" id="kind-chips"></div>
+        <input type="hidden" name="kind" id="write-kind" value="guide">
+      </fieldset>
+      <label>
+        <span data-i18n="writeTitle">Título</span>
+        <input type="text" name="title" maxlength="120" required placeholder="Título de la pieza">
+      </label>
+      <label>
+        <span data-i18n="writeSummary">Resumen</span>
+        <input type="text" name="summary" maxlength="220" placeholder="Una línea para la portada (opcional)">
+      </label>
+      <div class="write-row">
+        <label>
+          <span data-i18n="writeFormat">Formato del cuerpo</span>
+          <select name="lang" id="write-lang">
+            <option value="markdown">Markdown</option>
+            <option value="html">HTML</option>
+            <option value="plaintext">Texto</option>
+            <option value="javascript">JavaScript / TypeScript</option>
+            <option value="python">Python</option>
+            <option value="json">JSON</option>
+            <option value="csv">CSV / TSV / tabla</option>
+            <option value="svg">SVG</option>
+            <option value="mermaid">Mermaid</option>
+            <option value="yaml">YAML</option>
+            <option value="sql">SQL</option>
+            <option value="xml">XML</option>
+            <option value="css">CSS</option>
+            <option value="code">Código</option>
+          </select>
+        </label>
+        <label class="write-import">
+          <span data-i18n="importFile">Importar archivo</span>
+          <input type="file" id="import-file" accept=".md,.markdown,.html,.htm,.txt,.json,.csv,.tsv,.svg,.xml,.yml,.yaml,.js,.mjs,.ts,.py,.sql,.css,.mmd,.mermaid,.toml,.go,.rs,.java">
+        </label>
+      </div>
+      <label>
+        <span data-i18n="writeBody">Contenido</span>
+        <textarea name="content" rows="20" required placeholder="Escribe o suelta un archivo aquí…"></textarea>
+      </label>
+      <div class="write-drop" id="write-drop" tabindex="0">
+        <p data-i18n="dropHint">Suelta archivos aquí: el cuerpo se importa si es texto; imágenes y binarios se adjuntan.</p>
+      </div>
+      <div class="write-attach">
+        <span data-i18n="attachFiles">Imágenes y adjuntos</span>
+        <input type="file" id="attach-files" multiple accept=".png,.jpg,.jpeg,.webp,.gif,.avif,.svg,.pdf,.csv,.tsv,.xlsx,.xls,.docx,.doc,.pptx,.json,.txt,.zip,.html,.md">
+        <ul id="attach-list" class="attach-pending"></ul>
+      </div>
+      <p class="write-status" id="write-status" hidden></p>
+      <div class="write-actions">
+        <button type="submit" data-i18n="publish">Publicar</button>
+        <a class="text-btn" id="open-ai" href="https://ai.trujillomingorance.com/" rel="noopener" target="_blank" data-i18n="openAi">Abrir Trujillo AI</a>
+        <button type="button" class="text-btn" id="delete-guide" hidden data-i18n="delete">Borrar</button>
+      </div>
+    </form>
+  </main>
+  <script src="/js/i18n.js?v=pub2"></script>
+  <script src="/js/chrome.js?v=pub2"></script>
+  <script src="/js/social.js?v=pub2"></script>
+  <script src="/js/write.js?v=pub2"></script>
+</body>
+</html>

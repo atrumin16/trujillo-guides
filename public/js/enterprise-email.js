@@ -8,17 +8,6 @@
   // ── DOM ready ───────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', function () {
 
-    // Theme toggle
-    var themeBtn = document.getElementById('theme-toggle-btn');
-    if (themeBtn) {
-      themeBtn.addEventListener('click', function () {
-        var cur = document.documentElement.getAttribute('data-theme') || 'dark';
-        var next = cur === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        try { localStorage.setItem('trujillo_theme', next); localStorage.setItem('atm_theme', next); } catch (e) {}
-      });
-    }
-
     // ── Language toggle ─────────────────────────────────────────────
     var UI = {
       es: {

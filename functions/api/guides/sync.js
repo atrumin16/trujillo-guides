@@ -1,11 +1,11 @@
 import { loadGuideRecord } from '../../lib/community.js';
-import { mergeGuideFeed } from '../../lib/feed.js';
+import { mergeGuideFeed, HIDDEN_KEY } from '../../lib/feed.js';
 
 const INSULTS = /\b(idiota|imbecil|imbécil|estupido|estúpido|mierda|cabr[oó]n|hijo\s*de\s*puta|gilipollas|puta)\b/i;
 const SPAM = /\b(crypto\s*airdrop|guaranteed\s*profit|buy\s*followers|casino\s*bonus|viagra)\b/i;
 const AFFILIATE = /(\bbit\.ly\/|\bamzn\.to\/|\baffiliate=)/i;
-const BLOCKED = /^(exe|msi|bat|cmd|vbs|scr|com|pif|dll|js|ps1)$/i;
-const ALLOWED = /^(pdf|docx|doc|xlsx|xls|csv|zip)$/i;
+const BLOCKED = /^(exe|msi|bat|cmd|vbs|scr|com|pif|dll|ps1)$/i;
+const ALLOWED = /^(pdf|png|jpe?g|jpg|webp|gif|avif|svg|docx?|xlsx?|pptx?|csv|tsv|zip|txt|md|html?|json|ya?ml|xml|js|ts|py|css|sql|mmd)$/i;
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -178,10 +178,17 @@ export async function onRequestPost(context) {
   await kv.put('guide:index:' + handle, JSON.stringify(upsertList(index || [], card, function (it) { return it.slug === slug; })));
   const nextPub = upsertList(pub || [], card, function (it) { return it && it.slug === slug && it.handle === handle; });
   await kv.put('guide:public', JSON.stringify(nextPub));
+  const hiddenRaw = await kv.get(HIDDEN_KEY);
+  const hidden = readIndex(hiddenRaw) || [];
+  const nextHidden = hidden.filter(function (it) {
+    const s = typeof it === 'string' ? it : (it && it.slug);
+    return s !== slug;
+  });
+  if (nextHidden.length !== hidden.length) await kv.put(HIDDEN_KEY, JSON.stringify(nextHidden));
 
   return json({
     success: true,
-    count: mergeGuideFeed(nextPub).length,
+    count: mergeGuideFeed(nextPub, nextHidden).length,
     slug: slug,
     url: 'https://guides.trujillomingorance.com/g/' + slug
   }, 200);

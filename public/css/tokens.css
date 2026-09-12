@@ -1,15 +1,18 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
 /* Trujillo AI shared design tokens — aligned with ai.trujillomingorance.com */
 :root,
 [data-theme="dark"] {
-  --bg: #080c14;
-  --bg-elev: #0d1522;
-  --bg-card: rgba(15, 22, 36, 0.78);
-  --bg-card-hover: rgba(22, 32, 52, 0.9);
-  --bg-code: #0c1220;
+  color-scheme: dark;
+  --bg: #0b0f14;
+  --bg-elev: #11161d;
+  --bg-card: #11161d;
+  --bg-card-hover: #171d26;
+  --bg-code: #0e1319;
   --line: rgba(255, 255, 255, 0.08);
   --line-strong: rgba(255, 255, 255, 0.14);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border: #1f2937;
+  --border-subtle: rgba(255, 255, 255, 0.06);
   --text: #f8fafc;
   --text-primary: #f8fafc;
   --muted: #94a3b8;
@@ -17,23 +20,24 @@
   --dim: #64748b;
   --text-muted: #64748b;
   --white: #ffffff;
-  --accent: #0078d4;
-  --accent-cyan: #38bdf8;
+  --accent: #3b82f6;
+  --accent-cyan: #3b82f6;
   --green: #107c41;
-  --accent-pill: #0078d4;
+  --accent-pill: #2563eb;
   --accent-pill-text: #ffffff;
-  --header-bg: rgba(8, 12, 20, 0.85);
-  --header-border: rgba(255, 255, 255, 0.08);
+  --header-bg: rgba(11, 15, 20, 0.92);
+  --header-border: #1f2937;
   --font: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --serif: Newsreader, "Iowan Old Style", Georgia, serif;
+  --serif: ui-serif, Georgia, Cambria, serif;
   --mono: "Cascadia Code", "IBM Plex Mono", ui-monospace, monospace;
   --font-mono: "Cascadia Code", "IBM Plex Mono", ui-monospace, monospace;
-  --header-height: 64px;
+  --header-height: 56px;
   --sidebar-width: 260px;
 }
 
 [data-theme="light"] {
+  color-scheme: light;
   --bg: #ffffff;
   --bg-elev: #f8fafc;
   --bg-card: #ffffff;
@@ -50,8 +54,10 @@
   --dim: #64748b;
   --text-muted: #64748b;
   --white: #0f172a;
-  --accent: #0078d4;
-  --accent-cyan: #0284c7;
+  --accent: #2563eb;
+  --accent-cyan: #2563eb;
+  --accent-pill: #1d4ed8;
+  --accent-pill-text: #ffffff;
   --header-bg: rgba(255, 255, 255, 0.92);
   --header-border: #e2e8f0;
 }

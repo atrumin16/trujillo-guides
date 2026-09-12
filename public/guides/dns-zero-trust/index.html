@@ -6,12 +6,23 @@
   <title>Filtrado DNS-over-HTTPS Zero-Trust y AdShield · ATM Guides</title>
   <meta name="description" content="Especificación de arquitectura para filtrado DNS de alta concurrencia, bloqueo de telemetría y protección perimetral sin agentes de software.">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <meta name="theme-color" content="#080c14">
-  <script src="/js/theme-boot.js?v=shell1"></script>
-  <link rel="stylesheet" href="/css/tokens.css?v=shell1">
-  <link rel="stylesheet" href="/style.css?v=c5">
-  </head>
-<body>
+  <meta name="theme-color" content="#030712">
+  <script src="/js/theme-boot.js?v=pub2"></script>
+  <link rel="stylesheet" href="/css/tokens.css?v=pub2">
+  <link rel="stylesheet" href="/style.css?v=pub2">
+  <link rel="stylesheet" href="/css/community.css?v=pub2">
+</head>
+<body class="docs-body">
+  <header class="docs-topbar">
+    <a href="/" class="brand">
+      <img src="/avatar.png" alt="" class="brand-avatar" width="28" height="28">
+      <span>ATM Docs</span>
+    </a>
+    <div class="topbar-actions">
+      <button type="button" class="theme-toggle-btn" id="theme-btn" title="Cambiar tema" aria-label="Cambiar tema">Tema</button>
+      <a class="hub-link" href="https://ai.trujillomingorance.com" rel="noopener">Studio</a>
+    </div>
+  </header>
   <div class="guide-container">
     <a href="/" class="back-nav">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
@@ -20,6 +31,11 @@
 
     <span class="hero-badge">● CIBERSEGURIDAD PERIMETRAL · ZERO-TRUST</span>
     <h1 class="page-title">Filtrado DNS-over-HTTPS Zero-Trust y Protección AdShield</h1>
+    <div class="meta-bar">
+      <img class="by-logo" src="/avatar.png" alt="" width="28" height="28">
+      <p class="meta-line"><strong>Alberto Trujillo Mingorance</strong> · @atrumin16 · <span class="guide-badge">Guides</span></p>
+      <button type="button" class="copy-link"><span>Copiar enlace</span></button>
+    </div>
     <p class="page-subtitle">Arquitectura de inspección y bloqueo perimetral en tiempo real bajo RFC 8484. Bloquea anuncios invasivos, telemetría de sistemas y vectores de phishing a nivel de paquete antes de que alcancen los navegadores.</p>
 
     <!-- STEP 1 -->
@@ -66,7 +82,12 @@
       <p class="step-desc">Para evaluar millones de reglas de filtrado sin degradar la latencia de navegación, se emplean estructuras probabilísticas Bloom Filter en RAM que descartan peticiones limpias en sub-1 milisegundo.</p>
     </section>
   </div>
-  <script src="/js/guides.js?v=c6"></script>
+  <script src="/js/i18n.js?v=pub2"></script>
+  <script src="/js/chrome.js?v=pub2"></script>
+  <script src="/js/social.js?v=pub2"></script>
+  <script src="/js/forum.js?v=pub2"></script>
+  <script src="/js/translate.js?v=pub2"></script>
+  <script src="/js/guides.js?v=pub2"></script>
 </body>
 </html>
 

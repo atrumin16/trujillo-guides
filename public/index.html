@@ -3,19 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ATM Docs · Guías y Runbooks de Ingeniería</title>
-  <meta name="description" content="Guías técnicas, runbooks de producción y especificaciones de sistemas por Alberto Trujillo Mingorance.">
+  <title>ATM Docs · Guías</title>
+  <meta name="description" content="Guías técnicas de ATM Software Labs. Las destacadas, fijadas por sus autores.">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="canonical" href="https://guides.trujillomingorance.com/">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="ATM Docs · Engineering Guides &amp; Runbooks">
-  <meta property="og:description" content="Guías técnicas de producción: arquitectura email, Edge AI, Zero-Trust e ingeniería de sistemas.">
-  <meta property="og:url" content="https://guides.trujillomingorance.com/">
-  <meta name="theme-color" content="#080c14">
-  <script src="/js/theme-boot.js?v=shell1"></script>
-  <link rel="stylesheet" href="/css/tokens.css?v=c5">
-  <link rel="stylesheet" href="/style.css?v=c5">
-  <link rel="stylesheet" href="/css/community.css?v=c6">
+  <meta name="theme-color" content="#030712">
+  <script src="/js/theme-boot.js?v=pub2"></script>
+  <link rel="stylesheet" href="/css/tokens.css?v=pub2">
+  <link rel="stylesheet" href="/style.css?v=pub2">
+  <link rel="stylesheet" href="/css/community.css?v=pub2">
 </head>
 <body class="docs-body">
   <header class="docs-topbar">
@@ -23,81 +19,54 @@
       <img src="/avatar.png" alt="" class="brand-avatar" width="28" height="28">
       <span>ATM Docs</span>
     </a>
-    <div class="topbar-actions">
-      <button type="button" class="lang-btn active" data-lang="es">ES</button>
-      <button type="button" class="lang-btn" data-lang="en">EN</button>
-      <button type="button" class="theme-toggle-btn" id="theme-btn" title="Cambiar tema" aria-label="Cambiar tema">
-        <svg class="sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
-      <a class="hub-link" href="https://labs.trujillomingorance.com" rel="noopener">Labs Hub</a>
-    </div>
+    <div class="topbar-actions"></div>
   </header>
 
-  <div class="docs-shell">
-    <aside class="docs-sidebar">
-      <label class="sidebar-search">
-        <span class="sidebar-label">Buscar</span>
-        <input type="search" id="guide-search" placeholder="Buscar guías…" autocomplete="off" spellcheck="false">
-      </label>
-      <nav class="sidebar-nav" aria-label="Guías">
-        <a href="/guides/enterprise-email/">Correo empresarial 0 €</a>
-        <a href="/guides/it-glossary/">Glosario de sistemas</a>
-        <a href="/guides/open-sentinel/">Open-Sentinel</a>
-        <a href="/guides/edge-ai-architecture/">Edge AI</a>
-        <a href="/guides/dns-zero-trust/">DNS Zero-Trust</a>
-        <a href="/guides/crypto-telemetry/">Telemetría on-chain</a>
-        <a href="/u">Comunidad</a>
-      </nav>
-      <p class="sidebar-note">Búsqueda local. Sin llamadas de red.</p>
-    </aside>
+  <main class="home-main">
+    <section class="hero">
+      <p class="kicker" data-i18n="kicker">Documentación técnica</p>
+      <h1 data-i18n="hero-title">Guías de ingeniería y runbooks</h1>
+      <p class="lede" data-i18n="hero-sub">Arquitecturas reales. En portada, las que sus autores fijan como mejores.</p>
+    </section>
+    <label class="home-search">
+      <input type="search" id="guide-search" placeholder="Buscar guías…" autocomplete="off" spellcheck="false" data-i18n-placeholder="search">
+    </label>
+    <div class="home-filters" data-notranslate>
+      <select id="filter-scope" aria-label="Vista">
+        <option value="featured" data-i18n="featured">Destacadas</option>
+        <option value="all" data-i18n="all">Todas</option>
+      </select>
+      <select id="filter-kind" aria-label="Tipo">
+        <option value="" data-i18n="writeKind">Tipo</option>
+        <option value="guide" data-i18n="kind-guide">Guía</option>
+        <option value="post" data-i18n="kind-post">Post</option>
+        <option value="opinion" data-i18n="kind-opinion">Opinión</option>
+        <option value="analysis" data-i18n="kind-analysis">Análisis</option>
+        <option value="brief" data-i18n="kind-brief">Brief</option>
+        <option value="note" data-i18n="kind-note">Nota</option>
+        <option value="research" data-i18n="kind-research">Research</option>
+        <option value="changelog" data-i18n="kind-changelog">Changelog</option>
+      </select>
+      <select id="filter-author" aria-label="Autor">
+        <option value="">Autor</option>
+      </select>
+      <select id="filter-sort" aria-label="Orden">
+        <option value="likes" data-i18n="sortLikes">Más votadas</option>
+        <option value="recent" data-i18n="sortRecent">Más recientes</option>
+        <option value="title" data-i18n="sortTitle">Título</option>
+      </select>
+      <label class="filter-check"><input type="checkbox" id="filter-pinned"> <span data-i18n="onlyPinned">Solo fijadas</span></label>
+      <label class="filter-check"><input type="checkbox" id="filter-saved"> <span data-i18n="onlySaved">Guardadas</span></label>
+      <label class="filter-check"><input type="checkbox" id="filter-following"> <span data-i18n="onlyFollowing">Siguiendo</span></label>
+    </div>
+    <p class="home-label" id="home-label" data-i18n="featured">Destacadas</p>
+    <div class="guides-grid" id="guides-feed"></div>
+  </main>
 
-    <main class="docs-main">
-      <section class="hero">
-        <p class="kicker" data-i18n="eyebrow">Documentación técnica · ATM Software Labs</p>
-        <h1 data-i18n="hero-title">Guías de ingeniería y runbooks de producción</h1>
-        <p class="lede" data-i18n="hero-sub">Arquitecturas reales, especificaciones y runbooks verificados en producción.</p>
-      </section>
-
-      <div class="guides-grid">
-        <a href="/guides/enterprise-email/" class="guide-card">
-          <h2 data-i18n="title-1">Arquitectura de Correo Empresarial a Coste 0 €</h2>
-          <p data-i18n="desc-1">Pipelines transaccionales, MX en el edge, DKIM/SPF/DMARC y avatares verificados sin Google Workspace.</p>
-        </a>
-        <a href="/guides/it-glossary/" class="guide-card">
-          <h2 data-i18n="title-glossary">Glosario Interactivo de Sistemas e Informática</h2>
-          <p data-i18n="desc-glossary">Flashcards, quiz y buscador local de términos de computación.</p>
-        </a>
-        <a href="/guides/open-sentinel/" class="guide-card">
-          <h2 data-i18n="title-sentinel">Telemetría Host y Detección de Intrusión (Open-Sentinel)</h2>
-          <p data-i18n="desc-sentinel">Forense de arranque, integridad de red y alertas cifradas a Discord, Telegram y WhatsApp.</p>
-        </a>
-        <a href="/guides/edge-ai-architecture/" class="guide-card">
-          <h2 data-i18n="title-edgeai">Inferencia multimodal sub-100ms en Groq LPU y Cloudflare</h2>
-          <p data-i18n="desc-edgeai">Workers, streaming SSE y memoria persistente a coste cero.</p>
-        </a>
-        <a href="/guides/dns-zero-trust/" class="guide-card">
-          <h2 data-i18n="title-dns">Filtrado DNS DoH y Zero-Trust (AdShield)</h2>
-          <p data-i18n="desc-dns">Resolver cifrado para telemetría publicitaria, phishing y perímetro.</p>
-        </a>
-        <a href="/guides/crypto-telemetry/" class="guide-card">
-          <h2 data-i18n="title-crypto">Telemetría On-Chain y Mempool (BitPulse)</h2>
-          <p data-i18n="desc-crypto">Ingesta EVM/Solana, mempool en vivo y tarifas dinámicas.</p>
-        </a>
-      </div>
-
-      <section class="hero" style="margin-top:48px">
-        <p class="kicker">Comunidad</p>
-        <h2>Posts y guías publicadas</h2>
-        <p class="lede">Editorial y comunidad en el mismo índice. Si KV está vacío, se muestran las guías estáticas.</p>
-      </section>
-      <div class="guides-grid" id="community-feed"></div>
-    </main>
-  </div>
-
-  <script src="/js/i18n-home.js"></script>
-  <script src="/js/feed.js?v=c5"></script>
-  <script src="/js/guides.js?v=c6"></script>
+  <script src="/js/i18n.js?v=pub2"></script>
+  <script src="/js/chrome.js?v=pub2"></script>
+  <script src="/js/social.js?v=pub2"></script>
+  <script src="/js/feed.js?v=pub2"></script>
+  <script src="/js/translate.js?v=pub2"></script>
 </body>
 </html>
-
