@@ -186,6 +186,93 @@
     }
   }
 
+  function setSharedToken(tok, user) {
+    if (!tok) return;
+    try {
+      localStorage.setItem('trujillo_ai_token', tok);
+      localStorage.setItem('auth_token', tok);
+      localStorage.setItem('trujillo_auth_token', tok);
+      if (user) {
+        localStorage.setItem('trujillo_ai_user', JSON.stringify(user));
+        localStorage.setItem('auth_user', JSON.stringify(user));
+        if (user.name) localStorage.setItem('atm_guest_name', user.name);
+      }
+    } catch (e) {}
+    setSharedCookie('ta_session', tok);
+    setSharedCookie('auth_token', tok);
+    setSharedCookie('session_active', '1');
+  }
+
+  function mountGoogleInGuides() {
+    var slot = document.getElementById('google-guides-btn');
+    if (!slot) return;
+    if (slot.getAttribute('data-ready')) return;
+
+    function renderGoogle() {
+      if (!window.google || !window.google.accounts || !window.google.accounts.id) return;
+      var curSlot = document.getElementById('google-guides-btn');
+      if (!curSlot) return;
+      try {
+        window.google.accounts.id.initialize({
+          client_id: '161745150528-5pb84k9upvamvlvnc7lg6nr1ku74vc4a.apps.googleusercontent.com',
+          callback: async function (res) {
+            try {
+              var r = await fetch('/api/auth/google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ credential: res.credential })
+              });
+              var d = await r.json();
+              if (r.ok && (d.ok || d.token)) {
+                setSharedToken(d.token, d.user);
+                closeAuth();
+                location.reload();
+              } else {
+                alert(d.error || 'No se pudo iniciar sesión con Google.');
+              }
+            } catch (err) {
+              alert('Error al conectar con Google.');
+            }
+          },
+          auto_select: false,
+          ux_mode: 'popup'
+        });
+        window.google.accounts.id.renderButton(curSlot, {
+          type: 'standard',
+          theme: (document.documentElement.getAttribute('data-theme') === 'light' ? 'outline' : 'filled_black'),
+          size: 'large',
+          text: 'continue_with',
+          shape: 'pill',
+          width: 280
+        });
+        curSlot.setAttribute('data-ready', 'true');
+      } catch (e) {}
+    }
+
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      setTimeout(renderGoogle, 50);
+    } else {
+      var existing = document.getElementById('google-gsi-script');
+      if (!existing) {
+        var s = document.createElement('script');
+        s.id = 'google-gsi-script';
+        s.src = 'https://accounts.google.com/gsi/client';
+        s.async = true;
+        s.defer = true;
+        s.onload = function () { setTimeout(renderGoogle, 50); };
+        document.head.appendChild(s);
+      } else {
+        var interval = setInterval(function () {
+          if (window.google && window.google.accounts && window.google.accounts.id) {
+            clearInterval(interval);
+            renderGoogle();
+          }
+        }, 150);
+        setTimeout(function () { clearInterval(interval); }, 5000);
+      }
+    }
+  }
+
   function authModalHtml() {
     var t = typeof window.atmT === 'function' ? window.atmT : function (k) { return k; };
     return '<div class="auth-modal" id="auth-modal" hidden>' +
@@ -193,11 +280,24 @@
       '<button type="button" class="auth-close" data-close-auth aria-label="Cerrar">✕</button>' +
       '<h2 data-i18n="enterName">' + t('enterName') + '</h2>' +
       '<p class="lede" data-i18n="guestHint">' + t('guestHint') + '</p>' +
+      '<div style="display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;margin-bottom:14px;">' +
+      '<div id="google-guides-btn" style="min-height:44px;display:flex;justify-content:center;width:100%;"></div>' +
+      '<button type="button" id="btn-guides-x" style="width:100%;max-width:280px;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#000;color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:9999px;font-size:14px;font-weight:600;padding:10px 16px;cursor:pointer;">' +
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>' +
+      '<span>Continuar con X</span></button>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:10px;margin:4px 0 14px;color:var(--text-muted,#71717a);font-size:12px;width:100%;">' +
+      '<span style="flex:1;height:1px;background:var(--border,rgba(255,255,255,0.1));"></span>' +
+      '<span>o usa un nombre local</span>' +
+      '<span style="flex:1;height:1px;background:var(--border,rgba(255,255,255,0.1));"></span>' +
+      '</div>' +
       '<form id="guest-form">' +
       '<input type="text" name="guestName" maxlength="40" required autocomplete="nickname" placeholder="' + t('yourName') + '" data-i18n-placeholder="yourName" value="' + esc(guestName()) + '">' +
       '<button type="submit" data-i18n="guestContinue">' + t('guestContinue') + '</button>' +
       '</form>' +
+      '<div style="margin-top:14px;text-align:center;">' +
       '<a class="auth-studio" href="' + studioLoginUrl(false) + '" data-studio-login rel="noopener" data-i18n="studioLogin">' + t('studioLogin') + '</a>' +
+      '</div>' +
       '</div></div>';
   }
 
@@ -211,6 +311,7 @@
     var modal = document.getElementById('auth-modal');
     if (!modal) return;
     modal.hidden = false;
+    mountGoogleInGuides();
     var input = modal.querySelector('[name="guestName"]');
     if (input) {
       input.value = guestName();
@@ -222,6 +323,34 @@
     var modal = document.getElementById('auth-modal');
     if (modal) modal.hidden = true;
   }
+
+  (function checkSocialCallback() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var state = params.get('state') || '';
+      var isX = params.get('auth') === 'x_callback' || state.indexOf('x_oauth_') === 0;
+      if (!isX) return;
+      var code = params.get('code');
+      window.history.replaceState({}, document.title, window.location.pathname);
+      if (code) {
+        fetch('/api/auth/x', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: code, redirectUri: window.location.origin + '/?auth=x_callback' })
+        })
+          .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+          .then(function (res) {
+            if (res.ok && res.d.token) {
+              setSharedToken(res.d.token, res.d.user);
+              location.reload();
+            } else {
+              alert(res.d.error || 'No se pudo validar con X');
+            }
+          })
+          .catch(function () { alert('Error al contactar con X'); });
+      }
+    } catch (e) {}
+  })();
 
   function checkUrlToken() {
     try {
@@ -387,6 +516,17 @@
       if (studioBtn) {
         e.preventDefault();
         openStudioLogin();
+        return;
+      }
+      var xBtn = e.target.closest('#btn-guides-x');
+      if (xBtn) {
+        e.preventDefault();
+        var state = 'x_oauth_' + Math.random().toString(36).slice(2, 10);
+        try { localStorage.setItem('trujillo_x_oauth_state', state); } catch (err) {}
+        var redirectUri = encodeURIComponent(window.location.origin + '/?auth=x_callback');
+        window.location.href = 'https://twitter.com/i/oauth2/authorize?response_type=code&client_id=NF94WVVIT1dzSXZNaTJuYjRXSEc6MTpjaQ' +
+          '&redirect_uri=' + redirectUri + '&scope=users.read%20tweet.read&state=' + state +
+          '&code_challenge=challenge&code_challenge_method=plain';
         return;
       }
       if (!e.target.closest('.account-menu-wrap')) closeAccountMenu();
