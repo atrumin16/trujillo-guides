@@ -1,25 +1,39 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ParseResult } from './types';
 import { calculateRunway } from './utils/runwayCalculator';
 import { calculateCategoryBreakdown, calculateSavingsRate } from './utils/categories';
 import { generateDemoStatements } from './utils/demoData';
 import { I18nProvider, useI18n } from './utils/i18n';
+import { getStoredUserName, SavedAudit } from './utils/userMemoryStore';
 import { Header } from './components/Header';
 import { GlobalLiquidityInput } from './components/GlobalLiquidityInput';
 import { UniversalDropzone } from './components/UniversalDropzone';
 import { RunwayMetrics } from './components/RunwayMetrics';
 import { CategoryBreakdown } from './components/CategoryBreakdown';
+import { Budget503020Card } from './components/Budget503020Card';
+import { RecurringExpensesCard } from './components/RecurringExpensesCard';
 import { PersonalizedTips } from './components/PersonalizedTips';
+import { FinancialStressSimulator } from './components/FinancialStressSimulator';
+import { SavingsGoalsTracker } from './components/SavingsGoalsTracker';
 import { OpportunityCostCard } from './components/OpportunityCostCard';
 import { UnifiedTransactionsTable } from './components/UnifiedTransactionsTable';
+import { MemoryVaultModal } from './components/MemoryVaultModal';
 import './styles/savings.css';
 
 const SavingsMainContent: React.FC = () => {
   const { t } = useI18n();
 
+  // Estado del usuario y memoria
+  const [userName, setUserName] = useState<string>('');
+  const [isVaultOpen, setIsVaultOpen] = useState<boolean>(false);
+
   // Estado 100% volátil en memoria RAM (Zero-Knowledge)
   const [totalLiquidity, setTotalLiquidity] = useState<number>(0);
   const [parseResults, setParseResults] = useState<ParseResult[]>([]);
+
+  useEffect(() => {
+    setUserName(getStoredUserName());
+  }, []);
 
   const handleAddResults = (newResults: ParseResult[]) => {
     setParseResults((prev) => {
@@ -46,19 +60,24 @@ const SavingsMainContent: React.FC = () => {
     setParseResults([]);
   };
 
+  const handleLoadAudit = (audit: SavedAudit) => {
+    setTotalLiquidity(audit.totalLiquidity);
+    setParseResults(audit.parseResults);
+  };
+
   // Consolidación de análisis financiero
   const runwayAnalysis = useMemo(() => {
     return calculateRunway(totalLiquidity, parseResults);
   }, [totalLiquidity, parseResults]);
 
-  // Lista plana de transacciones para la tabla
+  // Lista plana de transacciones para la tabla y módulos
   const allTransactions = useMemo(() => {
     const list = parseResults.flatMap((r) => r.transactions);
     list.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
     return list;
   }, [parseResults]);
 
-  // Desglose de categorías y tasa de ahorro para métricas y consejos
+  // Desglose de categorías y tasa de ahorro
   const categories = useMemo(() => {
     return calculateCategoryBreakdown(allTransactions, runwayAnalysis.monthsSpanned);
   }, [allTransactions, runwayAnalysis.monthsSpanned]);
@@ -71,7 +90,13 @@ const SavingsMainContent: React.FC = () => {
 
   return (
     <div className="savings-app-wrapper">
-      <Header onReset={handleReset} hasData={hasData} />
+      <Header
+        onReset={handleReset}
+        hasData={hasData}
+        onOpenVault={() => setIsVaultOpen(true)}
+        userName={userName}
+        onUpdateUserName={setUserName}
+      />
 
       <main className="savings-main">
         {/* Paso 1: Liquidez Global */}
@@ -88,18 +113,29 @@ const SavingsMainContent: React.FC = () => {
           onLoadDemo={handleLoadDemo}
         />
 
-        {/* Auditoría, Métricas, Desglose Visual y Consejos Personalizados */}
+        {/* Funciones Avanzadas de Auditoría Financiera */}
         {parseResults.length > 0 && (
           <>
+            {/* 1. Métricas Centrales de Runway y Supervivencia */}
             <RunwayMetrics analysis={runwayAnalysis} />
 
-            {/* Desglose por categorías y semáforo de ahorro */}
+            {/* 2. Salud Presupuestaria · Regla 50/30/20 */}
+            <Budget503020Card
+              categories={categories}
+              averageIncome={runwayAnalysis.monthlyIncome}
+              averageExpenses={runwayAnalysis.monthlyExpenses}
+            />
+
+            {/* 3. Desglose de Gastos por Categoría */}
             <CategoryBreakdown
               transactions={allTransactions}
               runwayAnalysis={runwayAnalysis}
             />
 
-            {/* Consejos personalizados basados en los gastos reales del usuario */}
+            {/* 4. Detector de Gastos Fijos y Cuotas Recurrentes */}
+            <RecurringExpensesCard transactions={allTransactions} />
+
+            {/* 5. Recomendaciones Financieras Personalizadas */}
             <PersonalizedTips
               runwayAnalysis={runwayAnalysis}
               categories={categories}
@@ -107,10 +143,25 @@ const SavingsMainContent: React.FC = () => {
               transactions={allTransactions}
             />
 
+            {/* 6. Simulador de Estrés Financiero (Crisis, ERTE, Inflación) */}
+            <FinancialStressSimulator
+              totalLiquidity={totalLiquidity}
+              averageIncome={runwayAnalysis.monthlyIncome}
+              averageExpenses={runwayAnalysis.monthlyExpenses}
+            />
+
+            {/* 7. Rastreador de Metas de Ahorro Familiar */}
+            <SavingsGoalsTracker
+              monthlySavingsCapacity={Math.max(0, runwayAnalysis.monthlyIncome - runwayAnalysis.monthlyExpenses)}
+              totalLiquidity={totalLiquidity}
+            />
+
+            {/* 8. Proyección y Coste de Oportunidad al 7% */}
             <OpportunityCostCard
               detectedMonthlyLeak={runwayAnalysis.leakMonthlyEstimate}
             />
 
+            {/* 9. Tabla Unificada con Exportador Excel Formateado y PDF */}
             <UnifiedTransactionsTable
               transactions={allTransactions}
               topExpenses={runwayAnalysis.topExpenses}
@@ -138,16 +189,23 @@ const SavingsMainContent: React.FC = () => {
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
-            <span>{t('footer.privacy')}</span>
+            <span>Procesamiento 100% en memoria volátil RAM del navegador. Ningún dato bancario viaja a ningún servidor externo.</span>
           </div>
 
-          <p className="footer-disclaimer">{t('footer.disclaimer')}</p>
-
           <p className="footer-copyright">
-            {t('footer.copyright', { year: new Date().getFullYear() })}
+            © 2026 Alberto Trujillo Mingorance · ATM Labs · trujillomingorance.com
           </p>
         </div>
       </footer>
+
+      {/* Modal de Bóveda y Memoria Local */}
+      <MemoryVaultModal
+        isOpen={isVaultOpen}
+        onClose={() => setIsVaultOpen(false)}
+        currentLiquidity={totalLiquidity}
+        currentParseResults={parseResults}
+        onLoadAudit={handleLoadAudit}
+      />
     </div>
   );
 };

@@ -21,6 +21,9 @@ export async function onRequest(context) {
 
   // 1. ISOLATED DOMAIN: savings.trujillomingorance.com
   if (isSavingsHost) {
+    if (path.startsWith('/api/')) {
+      return context.next();
+    }
     if (/\.(css|js|png|jpg|jpeg|webp|svg|ico|woff|woff2|json|txt|map)$/i.test(path)) {
       if (context.env && context.env.ASSETS && !path.startsWith('/savings/')) {
         let assetRes = await context.env.ASSETS.fetch(new URL(`/savings${path}`, url));

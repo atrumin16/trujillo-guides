@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-export type LanguageId = 'es' | 'en' | 'ca';
+export type LanguageId = 'es' | 'en' | 'ca' | 'fr' | 'de' | 'it' | 'pt' | 'zh' | 'ja' | 'ar';
 
 export interface LanguageMeta {
   id: LanguageId;
@@ -11,31 +11,44 @@ export interface LanguageMeta {
 export const SUPPORTED_LANGUAGES: LanguageMeta[] = [
   { id: 'es', name: 'Español', flag: '🇪🇸' },
   { id: 'en', name: 'English', flag: '🇬🇧' },
-  { id: 'ca', name: 'Català', flag: '🇦🇩' }
+  { id: 'ca', name: 'Català', flag: '🇦🇩' },
+  { id: 'fr', name: 'Français', flag: '🇫🇷' },
+  { id: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { id: 'it', name: 'Italiano', flag: '🇮🇹' },
+  { id: 'pt', name: 'Português', flag: '🇵🇹' },
+  { id: 'zh', name: '中文', flag: '🇨🇳' },
+  { id: 'ja', name: '日本語', flag: '🇯🇵' },
+  { id: 'ar', name: 'العربية', flag: '🇸🇦' }
 ];
 
-export const TRANSLATIONS: Record<LanguageId, Record<string, string>> = {
+export const TRANSLATIONS: Record<string, Record<string, string>> = {
   es: {
     // Topbar & Header
-    'header.brand': 'Savings & Runway Familiar',
+    'header.brand': 'ATM Savings',
     'header.badge': 'Auditoría Privada',
-    'header.privacy': '100% Volátil en RAM • Zero-Knowledge',
+    'header.privacy': 'Zero-Knowledge · RAM',
     'header.privacy_title': 'Tus extractos se procesan únicamente en la memoria RAM de tu navegador. Ningún dato viaja a la red.',
-    'header.back_labs': 'ATM Labs',
-    'header.guides': 'Guías',
+    'header.back_labs': 'Labs',
+    'header.guides': 'Guides',
     'header.reset': 'Reiniciar',
-    'header.reset_title': 'Borrar todos los datos y reiniciar la auditoría',
-    'header.reset_confirm': '¿Seguro que deseas reiniciar y borrar todos los extractos cargados en memoria?',
-    'header.theme': 'Tema',
+    'header.reset_title': 'Borrar datos activos de la memoria RAM',
+    'header.reset_confirm': '¿Seguro que deseas reiniciar y borrar los datos cargados en la sesión actual?',
+    'header.theme': 'Cambiar tema',
     'header.font_size': 'Tamaño de letra',
     'header.font_normal': 'Texto Normal (A)',
     'header.font_large': 'Texto Grande (A+)',
     'header.font_xlarge': 'Texto Muy Grande (A++)',
+    'header.login': 'Entrar',
+    'header.user_guest': 'Invitado',
+    'header.save_memory': 'Guardar en memoria',
+    'header.saved_audits': 'Mis auditorías',
+    'header.change_name': 'Cambiar nombre',
+    'header.logout': 'Salir',
 
     // Paso 1: Liquidez
     'step1.badge': 'Paso 1',
     'step1.title': 'Colchón de Liquidez Global Familiar',
-    'step1.desc': 'Indica el dinero líquido disponible hoy en tu familia (cuentas corrientes, libretas de ahorro, cuentas remuneradas, depósitos o fondos monetarios) del que puedes disponer sin penalización en caso de emergencia.',
+    'step1.desc': 'Indica el dinero líquido disponible hoy en tu familia (cuentas corrientes, libretas de ahorro, cuentas remuneradas o depósitos) del que puedes disponer sin penalización en caso de emergencia.',
     'step1.input_label': 'Importe de liquidez en euros',
     'step1.active_preview': 'Importe activo:',
     'step1.presets_label': 'Accesos directos:',
@@ -45,10 +58,10 @@ export const TRANSLATIONS: Record<LanguageId, Record<string, string>> = {
     // Paso 2: Dropzone & Carga
     'step2.badge': 'Paso 2',
     'step2.title': 'Carga de Extractos Bancarios (CSV o Excel)',
-    'step2.desc': 'Arrastra o selecciona uno o varios extractos descargados de tu banca online. Soporta todos los bancos españoles (CaixaBank, Santander, BBVA, Sabadell, Bankinter, ING, MyInvestor, Openbank, Abanca, Unicaja, Revolut, N26, Trade Republic, etc.).',
+    'step2.desc': 'Arrastra o selecciona uno o varios extractos descargados de tu banca online. Soporta todos los bancos españoles e internacionales. Procesamiento 100% en memoria volátil RAM.',
     'step2.drop_prompt': 'Arrastra aquí tus extractos bancarios o',
     'step2.select_files': 'selecciona archivos desde tu equipo',
-    'step2.support_info': 'Formatos CSV y texto exportados de banca online. Multi-entidad automática.',
+    'step2.support_info': 'Formatos CSV y texto exportados de banca online. Detección automática multi-banco.',
     'step2.processing': 'Analizando extractos en memoria volátil...',
     'step2.demo_btn': 'Cargar datos de ejemplo',
     'step2.demo_sub': 'Prueba el análisis al instante con extractos de muestra sin subir tus archivos.',
@@ -58,622 +71,625 @@ export const TRANSLATIONS: Record<LanguageId, Record<string, string>> = {
     'step2.remove_file': 'Quitar extracto',
     'step2.err_empty': 'El archivo {name} parece estar vacío o no contiene transacciones válidas.',
     'step2.err_read': 'No se pudo leer el archivo {name}. Asegúrate de que no esté protegido con contraseña.',
-    'step2.warn_duplicate': 'El extracto {name} se ha actualizado correctamente.',
 
-    // Métricas de Runway
-    'runway.title': 'Salud Financiera y Colchón de Supervivencia (Runway)',
-    'runway.subtitle': 'Basado en {months} meses de actividad bancaria consolidada.',
-    'runway.hero_label': 'Tiempo Estimado de Cobertura',
-    'runway.surplus': 'Superávit Activo',
-    'runway.exhausted': 'Agotado',
-    'runway.months': 'meses',
-    'runway.years': 'años',
-    'runway.stat_surplus': 'Capacidad de Ahorro Mensual',
-    'runway.stat_burn': 'Quema Mensual Neta (Burn Rate)',
-    'runway.note_surplus': 'Margen disponible para invertir o incrementar patrimonio',
-    'runway.note_burn': 'Déficit mensual cubierto por tu colchón de liquidez',
-    'runway.kpi_liquidity': 'Colchón Líquido',
-    'runway.kpi_liquidity_sub': 'Fondos de disponibilidad inmediata',
-    'runway.kpi_income': 'Ingresos Mensuales',
-    'runway.kpi_income_sub': 'Nóminas, pensiones y rentas periódicas',
-    'runway.kpi_expenses': 'Gastos Mensuales',
-    'runway.kpi_expenses_sub': 'Consumo ordinario, suministros y compras',
-    'runway.kpi_leaks': 'Fugas Evitables Detectadas',
-    'runway.kpi_leaks_sub': 'Suscripciones y gastos sedentarios prescindibles',
+    // Paso 3: Métricas de Runway
+    'step3.badge': 'Paso 3',
+    'step3.title': 'Auditoría de Supervivencia y Runway Financiero',
+    'step3.desc': 'Diagnóstico exacto de cuántos meses puede sostenerse tu economía familiar si se interrumpen por completo los ingresos hoy mismo.',
+    'step3.runway_title': 'Supervivencia Financiera Neta',
+    'step3.runway_suffix': 'meses',
+    'step3.runway_days': 'aprox. {days} días de autonomía total',
+    'step3.net_burn': 'Gasto Neto Mensual',
+    'step3.total_income': 'Ingresos Promedio',
+    'step3.total_expenses': 'Gastos Promedio',
+    'step3.savings_rate': 'Tasa de Ahorro Real',
+    'step3.cushion_health': 'Estado del Colchón',
+    'step3.badge_critical': 'Nivel Crítico (< 3 meses)',
+    'step3.badge_warning': 'En Alerta (3 - 6 meses)',
+    'step3.badge_healthy': 'Saludable (6 - 12 meses)',
+    'step3.badge_optimal': 'Óptimo (12 - 24 meses)',
+    'step3.badge_oversized': 'Exceso de Liquidez (> 24 meses)',
 
-    // Status / Semáforo Runway
-    'status.surplus_title': 'Superávit Financiero',
-    'status.surplus_badge': 'Capacidad de Ahorro Activa',
-    'status.surplus_exp': 'Tus ingresos mensuales superan a los gastos. Tu colchón de seguridad no se consume y genera margen de ahorro continuo.',
-    'status.exhausted_title': 'Sin Colchón Disponible',
-    'status.exhausted_badge': '0 meses',
-    'status.exhausted_exp': 'El balance de liquidez actual está agotado o no cubre los gastos del periodo actual.',
-    'status.critical_badge': 'Alerta: Margen Crítico (< 6 meses)',
-    'status.critical_exp': 'Con el ritmo de gasto neto actual, los fondos disponibles durarán aproximadamente {months} meses ({days} días). Se aconseja reducir gastos inmediatos.',
-    'status.moderate_badge': 'Margen Moderado (6-18 meses)',
-    'status.moderate_exp': 'Tu colchón cubre {months} meses de gastos netos. Estás protegido frente a imprevistos normales, pero optimizar fugas dará mayor tranquilidad.',
-    'status.solid_badge': 'Excelente Colchón (> 18 meses)',
-    'status.solid_exp': 'Dispones de una holgura financiera sólida de {years} años de tranquilidad y supervivencia sin nuevos ingresos.',
-
-    // Desglose por categorías y Tasa de Ahorro
-    'cat.section_title': 'Desglose Visual de Gastos y Tasa de Ahorro Familiar',
-    'cat.section_desc': 'Distribución automática de tus salidas de dinero para entender en qué partidas se concentran los recursos del hogar.',
-    'cat.savings_rate_title': 'Tasa de Ahorro Familiar Mensual',
-    'cat.savings_rate_sub': 'Porcentaje de tus ingresos netos que logras retener cada mes.',
-    'cat.rate_excellent': 'Excelente (Ahorro > 20%)',
-    'cat.rate_healthy': 'Saludable (Ahorro 10% - 20%)',
-    'cat.rate_tight': 'Ajustado (Ahorro 0% - 10%)',
-    'cat.rate_deficit': 'En Déficit (Gasto supera ingreso)',
-    'cat.rate_desc_excellent': '¡Enhorabuena! Retienes una proporción muy alta de tus ingresos, blindando el patrimonio familiar.',
-    'cat.rate_desc_healthy': 'Buen equilibrio. Mantienes un colchón creciente mes a mes para imprevistos e inversión.',
-    'cat.rate_desc_tight': 'Llegas a fin de mes, pero cualquier imprevisto (avería, salud) podría comprometer tus ahorros.',
-    'cat.rate_desc_deficit': 'Atención: Estás consumiendo parte de tus reservas para sostener los gastos ordinarios.',
-
-    // Objetivo de Colchón (Simulator)
-    'target.title': 'Objetivo del "Colchón de Tranquilidad"',
-    'target.desc': 'El estándar de oro de la economía familiar recomienda tener entre 6 y 12 meses de gastos esenciales en liquidez inmediata.',
-    'target.choice_6': '6 Meses (Básico)',
-    'target.choice_12': '12 Meses (Recomendado)',
-    'target.choice_24': '24 Meses (Máxima Paz)',
-    'target.needed_label': 'Capital necesario para {months} meses:',
-    'target.current_label': 'Colchón actual:',
-    'target.achieved': '¡Meta Cumplida! Tienes un colchón óptimo de tranquilidad.',
-    'target.missing': 'Te faltan {amount} para alcanzar tu objetivo de {months} meses de tranquilidad.',
-    'target.progress': 'Progreso de cobertura:',
+    // Desglose de Gastos
+    'breakdown.title': 'Radiografía de Gastos por Categoría',
+    'breakdown.desc': 'Clasificación automática e inteligente de tus salidas de dinero según su impacto presupuestario.',
+    'breakdown.total_expenses': 'Total Gastos:',
+    'breakdown.all_categories': 'Todas las categorías',
+    'breakdown.filter': 'Filtrar categoría:',
 
     // Categorías
-    'cat.housing': 'Vivienda, Hipoteca y Alquiler',
-    'cat.supermarket': 'Alimentación y Supermercado',
-    'cat.utilities': 'Suministros (Luz, Agua, Gas, Internet)',
-    'cat.health_insurance': 'Salud, Seguros y Farmacia',
-    'cat.transport': 'Transporte, Combustible y Viajes',
-    'cat.leaks': 'Fugas y Suscripciones Detectadas',
-    'cat.leisure': 'Ocio, Restauración y Compras',
-    'cat.income': 'Nóminas y Rentas Ingresadas',
-    'cat.other': 'Otros Gastos y Varios',
+    'cat.housing': 'Vivienda y Alquiler',
+    'cat.supermarket': 'Supermercado y Alimentación',
+    'cat.utilities': 'Luz, Agua, Gas e Internet',
+    'cat.transport': 'Transporte y Combustible',
+    'cat.dining': 'Restaurantes y Ocio',
+    'cat.shopping': 'Compras y Comercio',
+    'cat.health': 'Salud y Farmacia',
+    'cat.education': 'Educación y Cursos',
+    'cat.subscriptions': 'Suscripciones y Streaming',
+    'cat.insurance': 'Seguros e Impuestos',
+    'cat.cash': 'Cajeros y Efectivo',
+    'cat.transfers': 'Transferencias y Pagos',
+    'cat.other_expense': 'Otros Gastos',
+    'cat.salary': 'Nómina y Salarios',
+    'cat.investments': 'Inversiones y Dividendos',
+    'cat.other_income': 'Otros Ingresos',
 
-    // Coste de Oportunidad
-    'opp.tag': 'Palanca de Ahorro e Interés Compuesto',
+    // Consejos Personalizados
+    'tips.title': 'Recomendaciones Financieras a Medida',
+    'tips.desc': 'Estrategias automáticas generadas a partir de tus extractos para optimizar tu colchón y proteger tu patrimonio.',
+    'tips.large_expenses_title': 'Planificar y Escalonar Pagos Grandes',
+    'tips.large_expenses_desc': 'Hemos detectado {count} cargos superiores a 250 € este mes (total {amount} €). Si los separas trimestralmente o creas una provisión mensual, ganarás 2-3 meses de margen de reacción ante imprevistos.',
+    'tips.runway_boost_title': 'Fortalecer el Colchón de Emergencia',
+    'tips.runway_boost_desc': 'Tu colchón actual es de {months} meses. Para tener tranquilidad ante bajas médicas o imprevistos familiares, te recomendamos alcanzar entre 6 y 12 meses.',
+    'tips.subscriptions_title': 'Revisar Cuotas Recurrentes y Suscripciones',
+    'tips.subscriptions_desc': 'Gastas {amount} €/mes en cuotas fijas y suscripciones ({yearly} €/año). Revisar y cancelar 1 o 2 que no uses liberará liquidez inmediata.',
+    'tips.housing_ratio_title': 'Ratio de Esfuerzo en Vivienda',
+    'tips.housing_ratio_desc': 'La vivienda representa el {percent}% de tus ingresos (recomendado máximo 30-35%). Evita asumir nuevos compromisos crediticios fijos.',
+    'tips.pay_yourself_title': 'Automatizar el "Págate a ti primero"',
+    'tips.pay_yourself_desc': 'Programa una transferencia automática del 10% ({amount} €) el día 1 de cada mes hacia tu cuenta remunerada antes de empezar a gastar.',
+
+    // Coste de Oportunidad al 7%
     'opp.title': 'Coste de Oportunidad al 7% Anual',
-    'opp.rate_pill': 'Rentabilidad de Referencia: 7% Anual Compuesto',
-    'opp.desc': 'El dinero que se filtra en pequeñas cuotas sedentarias o suscripciones olvidadas tiene un coste oculto enorme: el capital que deja de producir al reinvertirse en un índice global diversificado.',
-    'opp.slider_label': 'Simula redirigir este ahorro mensual hacia un fondo indexado:',
-    'opp.presets_caption': 'Atajos rápidos:',
-    'opp.detected_leaks_btn': 'Fugas detectadas ({amount})',
-    'opp.horizon_10': 'Horizonte 10 Años',
-    'opp.horizon_15': 'Horizonte 15 Años',
-    'opp.future_capital': 'Capital Acumulado Estimado',
-    'opp.contributed': 'Capital Aportado de tu Bolsillo:',
-    'opp.interest_earned': 'Intereses Ganados por el Mercado:',
-    'opp.compound_badge': '+{pct}% de Rendimiento Generado',
-    'opp.explanation_10': 'Si eliminas estas fugas e inviertes {amount}/mes en un fondo indexado global al 7% anual, dentro de 10 años dispondrás de {future} (habiendo aportado únicamente {contributed}).',
-    'opp.explanation_15': 'Gracias al poder del interés compuesto exponencial, en 15 años tu dinero se multiplicará hasta alcanzar {future}, generando {interest} en intereses pasivos sin esfuerzo adicional.',
-
-    // Top 8 Gastos
-    'top.badge': 'Auditoría de Impacto',
-    'top.title': 'Top 8 Mayores Salidas y Recibos',
-    'top.subtitle': 'Los pagos de mayor volumen registrados en tus extractos bancarios.',
+    'opp.desc': 'Proyección a largo plazo si inviertes tu ahorro mensual en un fondo indexado diversificado global (ej. MSCI World / S&P 500) a un retorno histórico medio del 7% anual.',
+    'opp.monthly_savings': 'Ahorro mensual potencial:',
+    'opp.in_5_years': 'En 5 Años',
+    'opp.in_10_years': 'En 10 Años',
+    'opp.in_20_years': 'En 20 Años',
+    'opp.contributed': 'Capital aportado:',
+    'opp.interests': 'Intereses generados:',
+    'opp.note': 'Cálculo de interés compuesto con aportaciones mensuales constantes y reinversión de dividendos. No constituye asesoramiento financiero regulado.',
 
     // Tabla de Movimientos
-    'table.title': 'Extracto Consolidado de Movimientos',
-    'table.subtitle': 'Mostrando {filtered} de {total} transacciones auditadas.',
-    'table.search_placeholder': 'Buscar concepto, comercio o banco...',
-    'table.all_banks': 'Todas las entidades ({count})',
-    'table.tab_all': 'Todos ({count})',
-    'table.tab_expenses': 'Gastos',
-    'table.tab_income': 'Ingresos',
-    'table.tab_leaks': 'Fugas Detectadas',
-    'table.empty': 'No se encontraron movimientos con los filtros seleccionados.',
-    'table.th_date': 'Fecha',
-    'table.th_bank': 'Entidad',
-    'table.th_concept': 'Concepto / Descripción',
-    'table.th_category': 'Categoría / Alerta',
-    'table.th_amount': 'Importe',
-    'table.page_prev': '← Anterior',
-    'table.page_next': 'Siguiente →',
-    'table.page_of': 'Página {current} de {total}',
+    'table.title': 'Auditoría Detallada de Transacciones',
+    'table.desc': 'Listado completo de movimientos normalizados con búsqueda instantánea y filtros por categoría.',
+    'table.search': 'Buscar por concepto o banco…',
+    'table.export_excel': 'Exportar Excel Formateado',
+    'table.print_pdf': 'Guardar en PDF / Imprimir',
+    'table.filter_all': 'Todos',
+    'table.filter_expenses': 'Solo Gastos',
+    'table.filter_income': 'Solo Ingresos',
+    'table.col_date': 'Fecha',
+    'table.col_desc': 'Concepto',
+    'table.col_category': 'Categoría',
+    'table.col_account': 'Entidad / Archivo',
+    'table.col_amount': 'Importe',
+    'table.no_results': 'No se encontraron movimientos coincidentes.',
+    'table.showing': 'Mostrando {count} de {total} movimientos',
+    'table.page_prev': 'Anterior',
+    'table.page_next': 'Siguiente',
 
-    // Exportación a Excel y PDF
-    'export.excel_btn': 'Exportar Excel Formateado (.xls)',
-    'export.excel_tooltip': 'Descarga una hoja de cálculo con formato visual, colores, totales y fórmulas',
-    'export.print_btn': 'Imprimir / Guardar en PDF',
-    'export.print_tooltip': 'Abre la vista de impresión optimizada para guardar en PDF o imprimir en papel',
-    'export.generating': 'Generando documento...',
+    // NUEVAS FUNCIONES: Regla 50/30/20
+    'rule503020.title': 'Salud Presupuestaria · Regla 50/30/20',
+    'rule503020.desc': 'Distribución equilibrada recomendada por economistas: 50% Necesidades básicas, 30% Deseos y estilo de vida, 20% Ahorro e inversión.',
+    'rule503020.needs': 'Necesidades (50%)',
+    'rule503020.wants': 'Deseos y Ocio (30%)',
+    'rule503020.savings': 'Ahorro / Inversión (20%)',
+    'rule503020.target': 'Meta estándar: {target}%',
+    'rule503020.real': 'Real en tu economía: {real}% ({amount} €)',
+    'rule503020.status_optimal': 'Equilibrado',
+    'rule503020.status_warning': 'Atención',
+    'rule503020.status_alert': 'Desviado',
 
-    // Estrategia y Consejos Personalizados
-    'tips.section_title': 'Estrategia Financiera Personalizada y Consejos a Medida',
-    'tips.section_desc': 'Recomendaciones inteligentes generadas en tiempo real a partir del análisis exclusivo de tus extractos y hábitos de gasto.',
-    'tips.badge_timing': 'Planificación y Tesorería',
-    'tips.timing_title': 'Desconcentra gastos grandes: Paga trimestral o semestralmente',
-    'tips.timing_desc': 'Hemos detectado {count} recibos de gran importe ({names}) que concentran {amount} en poco tiempo. Contacta con tus aseguradoras y compañías para fraccionar el pago (IBI, seguro de coche, seguro de hogar, revisiones) de forma semestral o trimestral. Evitarás caídas bruscas de liquidez en un solo mes y ganarás margen de maniobra ante imprevistos.',
-    'tips.badge_urgency': 'Alerta de Seguridad',
-    'tips.critical_title': 'Prioridad #1: Construir el Muro de 6 Meses ({months} meses actuales)',
-    'tips.critical_desc': 'Con un gasto mensual de {monthlyExpenses}, tu colchón actual te protege durante {months} meses. Recomendamos acumular {needed} adicionales antes de comprometer fondos en compras no esenciales.',
-    'tips.badge_optim': 'Optimización de Capital',
-    'tips.oversized_title': 'Excedente de Seguridad: Tu colchón cubre {years} años',
-    'tips.oversized_desc': 'Dispones de {months} meses de cobertura ({years} años). Mantener más de 12-18 meses de liquidez en una cuenta corriente al 0% sufre la erosión de la inflación. Considera mover el excedente de {excess} hacia cuentas remuneradas o fondos indexados globales.',
-    'tips.badge_leaks': 'Poda Directa de Fugas',
-    'tips.leaks_title': 'Ahorro Inmediato: Recupera {yearly} al año',
-    'tips.leaks_desc': 'Detectamos {count} cobros de suscripciones y cuotas recurrentes ({names}) por un total de {monthly}/mes. Cancelar las que no uses liberará {yearly} al año en tu bolsillo sin esfuerzo.',
-    'tips.badge_budget': 'Vivienda y Esfuerzo',
-    'tips.housing_title': 'Ratio de Vivienda al {pct}% de tus Ingresos',
-    'tips.housing_desc': 'Tus costes fijos de vivienda suman {amount}/mes ({pct}% de ingresos). Los economistas recomiendan mantener este ratio por debajo del 30-35% para tener estabilidad financiera.',
-    'tips.badge_habit': 'Hábito Familiar',
-    'tips.pay_first_title': 'Automatiza: Págate a ti primero el día 1 de cada mes',
-    'tips.pay_first_desc': 'Programa una transferencia automática de {amount}/mes hacia una hucha o libreta separada el mismo día que entra tu nómina o pensión. Si ahorras al principio en vez de esperar a final de mes, el ahorro se consolida automáticamente.',
-    'tips.badge_method': 'Filtro Emocional',
-    'tips.rule_72_title': 'Regla de las 72 Horas para Gastos No Esenciales',
-    'tips.rule_72_desc': 'Para cualquier capricho o gasto superior a 100 €, espera 3 días antes de comprar. Más del 70% de las compras por impulso se descartan transcurrido ese tiempo de enfriamiento.',
+    // NUEVAS FUNCIONES: Gastos Recurrentes
+    'recurring.title': 'Detector de Gastos Fijos y Recurrentes',
+    'recurring.desc': 'Identificación automática de cuotas periódicas mensuales (suministros, streaming, telecomunicaciones, seguros, alquiler).',
+    'recurring.monthly_total': 'Compromiso fijo mensual:',
+    'recurring.yearly_total': 'Compromiso fijo anual:',
+    'recurring.detected_count': '{count} suscripciones y cuotas identificadas',
+    'recurring.potential_savings': 'Margen de optimización revisando cuotas prescindibles: hasta {amount} €/mes',
 
-    // Footer
-    'footer.privacy': 'Privacidad Absoluta: Ningún dato bancario viaja a servidores ni se guarda en cookies ni almacenamiento local.',
-    'footer.disclaimer': 'Esta herramienta es un simulador matemático privado y local para asistencia y orden financiero familiar. No constituye asesoramiento financiero regulado ni recomendaciones personalizadas de inversión.',
-    'footer.copyright': '© {year} Trujillo AI • Ecosistema de Ingeniería y Guías Técnicas'
+    // NUEVAS FUNCIONES: Simulador de Estrés
+    'stress.title': 'Simulador de Estrés Financiero (Crisis & Imprevistos)',
+    'stress.desc': 'Pon a prueba la solidez de tu economía familiar simulando caídas de ingresos, subidas de precios o averías inesperadas.',
+    'stress.income_drop': 'Caída de ingresos mensuales:',
+    'stress.unexpected_expense': 'Gasto imprevisto puntual:',
+    'stress.inflation': 'Subida de gastos por inflación:',
+    'stress.result_runway': 'Runway en este escenario de estrés:',
+    'stress.result_months': '{months} meses de autonomía',
+    'stress.resilience_high': 'Resiliencia Alta: Tu economía absorbería este golpe sin problemas.',
+    'stress.resilience_med': 'Resiliencia Moderada: Tu colchón resistiría pero requeriría ajustar gastos superfluos.',
+    'stress.resilience_low': 'Resiliencia Crítica: En este escenario tu liquidez se agotaría en menos de 6 meses.',
+
+    // NUEVAS FUNCIONES: Metas de Ahorro
+    'goals.title': 'Rastreador de Metas Familiares',
+    'goals.desc': 'Define objetivos de ahorro prioritarios (fondo de emergencia, viaje, reformas o compra de coche) y visualiza el tiempo exacto para alcanzarlos.',
+    'goals.add_btn': 'Añadir Nueva Meta',
+    'goals.name_placeholder': 'Nombre de la meta (ej. Reparación coche, Vacaciones)',
+    'goals.amount_placeholder': 'Importe objetivo en €',
+    'goals.target_date': 'A tu ritmo de ahorro actual ({rate} €/mes), alcanzarás esta meta en {months} meses ({date}).',
+    'goals.progress': 'Progreso actual:',
+
+    // Modal de Usuario & Memoria
+    'vault.title': 'Bóveda de Auditorías en Memoria Local',
+    'vault.subtitle': 'Tus análisis se almacenan 100% en tu navegador (Zero-Knowledge). Guarda múltiples versiones familiares o restaura auditorías anteriores.',
+    'vault.save_current': 'Guardar estado actual',
+    'vault.audit_name': 'Nombre de la auditoría / escenario:',
+    'vault.save_btn': 'Guardar en memoria',
+    'vault.list_title': 'Auditorías guardadas en este dispositivo',
+    'vault.empty': 'Aún no has guardado ninguna auditoría en la memoria de este navegador.',
+    'vault.load_btn': 'Cargar',
+    'vault.delete_btn': 'Eliminar',
+    'vault.export_backup': 'Exportar Copia de Seguridad JSON',
+    'vault.import_backup': 'Importar Copia de Seguridad JSON',
+    'vault.close': 'Cerrar',
+
+    // Modal de Identificación
+    'auth.title': '¿Cómo te llamamos?',
+    'auth.desc': 'Indica tu nombre para personalizar tus auditorías y guardar tus presupuestos en este equipo. Sin contraseñas ni correos obligatorios.',
+    'auth.input_label': 'Tu nombre o alias:',
+    'auth.submit': 'Guardar y Continuar',
+    'auth.studio_link': 'Tengo cuenta en Trujillo AI Studio'
   },
-
   en: {
-    // Topbar & Header
-    'header.brand': 'Family Savings & Runway',
+    'header.brand': 'ATM Savings',
     'header.badge': 'Private Audit',
-    'header.privacy': '100% Volatile in RAM • Zero-Knowledge',
-    'header.privacy_title': 'Your bank statements are processed strictly in your browser RAM. No financial data ever leaves your device.',
-    'header.back_labs': 'ATM Labs',
+    'header.privacy': 'Zero-Knowledge · RAM',
+    'header.privacy_title': 'Your bank statements are processed entirely in browser volatile RAM. No data is sent over the network.',
+    'header.back_labs': 'Labs',
     'header.guides': 'Guides',
     'header.reset': 'Reset',
-    'header.reset_title': 'Clear all data and restart audit',
-    'header.reset_confirm': 'Are you sure you want to reset and clear all statements loaded in memory?',
-    'header.theme': 'Theme',
+    'header.reset_title': 'Clear active data from RAM',
+    'header.reset_confirm': 'Are you sure you want to reset and clear all statements loaded in this session?',
+    'header.theme': 'Toggle theme',
     'header.font_size': 'Font size',
     'header.font_normal': 'Normal Text (A)',
     'header.font_large': 'Large Text (A+)',
     'header.font_xlarge': 'Extra Large Text (A++)',
+    'header.login': 'Sign in',
+    'header.user_guest': 'Guest',
+    'header.save_memory': 'Save to memory',
+    'header.saved_audits': 'My audits',
+    'header.change_name': 'Change name',
+    'header.logout': 'Sign out',
 
-    // Step 1: Liquidity
     'step1.badge': 'Step 1',
-    'step1.title': 'Family Global Liquid Cushion',
-    'step1.desc': 'Enter total liquid funds available across all accounts (checking, savings, high-yield accounts, emergency deposits, or money market funds) accessible immediately without penalties.',
-    'step1.input_label': 'Liquidity amount in euros',
+    'step1.title': 'Total Family Liquidity Cushion',
+    'step1.desc': 'Enter the cash currently available to your household (checking accounts, savings books, high-yield accounts, deposits) accessible immediately without penalty.',
+    'step1.input_label': 'Liquidity amount in EUR',
     'step1.active_preview': 'Active amount:',
     'step1.presets_label': 'Quick presets:',
     'step1.stepper_minus': 'Subtract 1,000 €',
     'step1.stepper_plus': 'Add 1,000 €',
 
-    // Step 2: Dropzone & Upload
     'step2.badge': 'Step 2',
     'step2.title': 'Upload Bank Statements (CSV or Excel)',
-    'step2.desc': 'Drag & drop or browse bank statements exported from your online banking. Supports Spanish & international banks (CaixaBank, Santander, BBVA, Sabadell, Bankinter, ING, MyInvestor, Openbank, Revolut, N26, Trade Republic, etc.).',
-    'step2.drop_prompt': 'Drag & drop your bank statements here or',
-    'step2.select_files': 'browse files on your device',
-    'step2.support_info': 'CSV and text formats exported from online banking. Automatic multi-bank parsing.',
-    'step2.processing': 'Analyzing statements in volatile RAM memory...',
-    'step2.demo_btn': 'Load Demo Sample Data',
-    'step2.demo_sub': 'Try the audit instantly with realistic sample data without uploading your personal files.',
+    'step2.desc': 'Drag or select bank statements exported from your online banking. Supports Spanish and international banks. 100% volatile in-RAM processing.',
+    'step2.drop_prompt': 'Drop your bank statements here or',
+    'step2.select_files': 'browse files from your device',
+    'step2.support_info': 'CSV and text files exported from online banking. Multi-bank auto detection.',
+    'step2.processing': 'Parsing statements in volatile RAM...',
+    'step2.demo_btn': 'Load demo data',
+    'step2.demo_sub': 'Test analysis instantly with sample statements without uploading your files.',
     'step2.loaded_title': 'Consolidated Bank Statements',
     'step2.movements': 'transactions',
-    'step2.period': 'Date range:',
+    'step2.period': 'Period:',
     'step2.remove_file': 'Remove statement',
-    'step2.err_empty': 'File {name} appears empty or contains no valid transactions.',
-    'step2.err_read': 'Could not read file {name}. Please make sure it is not password-protected.',
-    'step2.warn_duplicate': 'Statement {name} was successfully updated.',
+    'step2.err_empty': 'File {name} appears empty or has no valid transactions.',
+    'step2.err_read': 'Could not read file {name}. Ensure it is not password-protected.',
 
-    // Runway Metrics
-    'runway.title': 'Financial Health & Survival Runway Cushion',
-    'runway.subtitle': 'Based on {months} months of consolidated bank activity.',
-    'runway.hero_label': 'Estimated Coverage Time',
-    'runway.surplus': 'Active Surplus',
-    'runway.exhausted': 'Exhausted',
-    'runway.months': 'months',
-    'runway.years': 'years',
-    'runway.stat_surplus': 'Monthly Net Savings Capacity',
-    'runway.stat_burn': 'Net Monthly Burn Rate',
-    'runway.note_surplus': 'Margin available to invest or grow family net worth',
-    'runway.note_burn': 'Monthly deficit covered by your liquid savings cushion',
-    'runway.kpi_liquidity': 'Liquid Cushion',
-    'runway.kpi_liquidity_sub': 'Immediately available emergency funds',
-    'runway.kpi_income': 'Monthly Incomes',
-    'runway.kpi_income_sub': 'Salaries, pensions, and periodic revenues',
-    'runway.kpi_expenses': 'Monthly Expenses',
-    'runway.kpi_expenses_sub': 'Living costs, bills, groceries and purchases',
-    'runway.kpi_leaks': 'Detected Avoidable Leaks',
-    'runway.kpi_leaks_sub': 'Forgotten subscriptions and sedentary fees',
+    'step3.badge': 'Step 3',
+    'step3.title': 'Survival Audit & Financial Runway',
+    'step3.desc': 'Accurate calculation of how many months your household can sustain itself if all income stops today.',
+    'step3.runway_title': 'Net Financial Survival',
+    'step3.runway_suffix': 'months',
+    'step3.runway_days': 'approx. {days} days of complete autonomy',
+    'step3.net_burn': 'Monthly Net Burn',
+    'step3.total_income': 'Average Income',
+    'step3.total_expenses': 'Average Expenses',
+    'step3.savings_rate': 'Real Savings Rate',
+    'step3.cushion_health': 'Cushion Health',
+    'step3.badge_critical': 'Critical (< 3 months)',
+    'step3.badge_warning': 'Warning (3 - 6 months)',
+    'step3.badge_healthy': 'Healthy (6 - 12 months)',
+    'step3.badge_optimal': 'Optimal (12 - 24 months)',
+    'step3.badge_oversized': 'Excess Liquidity (> 24 months)',
 
-    // Runway Status
-    'status.surplus_title': 'Financial Surplus',
-    'status.surplus_badge': 'Active Savings Capacity',
-    'status.surplus_exp': 'Monthly income exceeds expenses. Your emergency cushion is not depleted and provides ongoing investing capability.',
-    'status.exhausted_title': 'No Cushion Available',
-    'status.exhausted_badge': '0 months',
-    'status.exhausted_exp': 'Current liquidity balance is exhausted or does not cover current expenses.',
-    'status.critical_badge': 'Alert: Critical Margin (< 6 months)',
-    'status.critical_exp': 'At the current net spend rate, funds will last approximately {months} months ({days} days). Cutting non-essential spend is recommended.',
-    'status.moderate_badge': 'Moderate Margin (6-18 months)',
-    'status.moderate_exp': 'Your cushion covers {months} months of net spending. You are safeguarded against standard emergencies, but optimizing leaks will offer greater peace of mind.',
-    'status.solid_badge': 'Solid Cushion (> 18 months)',
-    'status.solid_exp': 'You have a solid financial runway of {years} years of peace of mind and survival without new income.',
+    'breakdown.title': 'Category Expense Breakdown',
+    'breakdown.desc': 'Automatic smart classification of cash outflows by budget impact.',
+    'breakdown.total_expenses': 'Total Expenses:',
+    'breakdown.all_categories': 'All categories',
+    'breakdown.filter': 'Filter category:',
 
-    // Categories & Savings Rate
-    'cat.section_title': 'Visual Expense Breakdown & Family Savings Rate',
-    'cat.section_desc': 'Automatic categorization of money outflows to understand where household resources are allocated.',
-    'cat.savings_rate_title': 'Monthly Family Savings Rate',
-    'cat.savings_rate_sub': 'Percentage of your net income retained each month.',
-    'cat.rate_excellent': 'Excellent (Savings > 20%)',
-    'cat.rate_healthy': 'Healthy (Savings 10% - 20%)',
-    'cat.rate_tight': 'Tight (Savings 0% - 10%)',
-    'cat.rate_deficit': 'In Deficit (Spending exceeds income)',
-    'cat.rate_desc_excellent': 'Congratulations! You retain a high portion of your earnings, strongly building family wealth.',
-    'cat.rate_desc_healthy': 'Good balance. You maintain a growing cushion month by month for emergencies and investment.',
-    'cat.rate_desc_tight': 'Breaking even, but unforeseen expenses (repairs, health) could deplete emergency savings.',
-    'cat.rate_desc_deficit': 'Caution: You are tapping into your cash reserves to cover regular monthly expenses.',
+    'cat.housing': 'Housing & Rent',
+    'cat.supermarket': 'Groceries & Food',
+    'cat.utilities': 'Utilities & Internet',
+    'cat.transport': 'Transport & Fuel',
+    'cat.dining': 'Dining & Leisure',
+    'cat.shopping': 'Shopping & Retail',
+    'cat.health': 'Healthcare & Pharmacy',
+    'cat.education': 'Education & Courses',
+    'cat.subscriptions': 'Subscriptions & Streaming',
+    'cat.insurance': 'Insurance & Taxes',
+    'cat.cash': 'Cash & ATMs',
+    'cat.transfers': 'Transfers & Payments',
+    'cat.other_expense': 'Other Expenses',
+    'cat.salary': 'Salary & Payroll',
+    'cat.investments': 'Investments & Dividends',
+    'cat.other_income': 'Other Income',
 
-    // Target Peace of Mind Simulator
-    'target.title': 'Peace of Mind Runway Target',
-    'target.desc': 'The family financial gold standard recommends keeping between 6 and 12 months of essential living expenses in liquid reserves.',
-    'target.choice_6': '6 Months (Basic)',
-    'target.choice_12': '12 Months (Recommended)',
-    'target.choice_24': '24 Months (Maximum Peace of Mind)',
-    'target.needed_label': 'Target capital for {months} months:',
-    'target.current_label': 'Current cushion:',
-    'target.achieved': 'Goal Achieved! You have an optimal peace of mind cushion.',
-    'target.missing': 'You need {amount} more to achieve your {months}-month peace of mind goal.',
-    'target.progress': 'Coverage progress:',
+    'tips.title': 'Tailored Financial Recommendations',
+    'tips.desc': 'Automatic strategies based on your actual bank statements to protect and optimize your cushion.',
+    'tips.large_expenses_title': 'Stagger Large Expenses',
+    'tips.large_expenses_desc': 'Detected {count} charges over 250 € this month ({amount} € total). Staggering them quarterly will give you 2-3 extra months of reaction buffer.',
+    'tips.runway_boost_title': 'Strengthen Emergency Cushion',
+    'tips.runway_boost_desc': 'Your cushion is {months} months. We recommend reaching 6 to 12 months for peace of mind against family emergencies.',
+    'tips.subscriptions_title': 'Review Recurring Subscriptions',
+    'tips.subscriptions_desc': 'You spend {amount} €/month on recurring fees ({yearly} €/year). Canceling unused services immediately frees liquidity.',
+    'tips.housing_ratio_title': 'Housing Effort Ratio',
+    'tips.housing_ratio_desc': 'Housing represents {percent}% of your income (recommended max 30-35%). Avoid taking on new fixed debt.',
+    'tips.pay_yourself_title': 'Automate "Pay Yourself First"',
+    'tips.pay_yourself_desc': 'Schedule an automated transfer of 10% ({amount} €) on the 1st of every month into high-yield savings before spending.',
 
-    // Categories
-    'cat.housing': 'Housing, Mortgage & Rent',
-    'cat.supermarket': 'Groceries & Supermarket',
-    'cat.utilities': 'Utilities (Electricity, Water, Gas, Internet)',
-    'cat.health_insurance': 'Health, Insurance & Pharmacy',
-    'cat.transport': 'Transport, Fuel & Travel',
-    'cat.leaks': 'Detected Leaks & Subscriptions',
-    'cat.leisure': 'Leisure, Dining & Shopping',
-    'cat.income': 'Salaries, Pensions & Revenues',
-    'cat.other': 'Other Expenses & Miscellaneous',
-
-    // Opportunity Cost
-    'opp.tag': 'Savings Leverage & Compound Growth',
     'opp.title': 'Opportunity Cost at 7% Annual Return',
-    'opp.rate_pill': 'Benchmark Return: 7% Compound Annual Rate',
-    'opp.desc': 'Money leaking into small forgotten subscriptions carries a massive hidden cost: the wealth it fails to generate when reinvested into a globally diversified index fund.',
-    'opp.slider_label': 'Simulate redirecting this monthly saving into an index fund:',
-    'opp.presets_caption': 'Quick presets:',
-    'opp.detected_leaks_btn': 'Detected leaks ({amount})',
-    'opp.horizon_10': '10-Year Horizon',
-    'opp.horizon_15': '15-Year Horizon',
-    'opp.future_capital': 'Estimated Accumulated Capital',
-    'opp.contributed': 'Capital Contributed by You:',
-    'opp.interest_earned': 'Market Interest Earned:',
-    'opp.compound_badge': '+{pct}% Total Return Generated',
-    'opp.explanation_10': 'By eliminating these leaks and investing {amount}/month into a 7% global index fund, in 10 years you will accumulate {future} (having contributed only {contributed}).',
-    'opp.explanation_15': 'Powered by exponential compound growth, in 15 years your money will grow to {future}, generating {interest} in pure passive market returns.',
+    'opp.desc': 'Long-term projection if your monthly savings are invested in a diversified global index fund (e.g. MSCI World / S&P 500) at 7% annual average return.',
+    'opp.monthly_savings': 'Potential monthly savings:',
+    'opp.in_5_years': 'In 5 Years',
+    'opp.in_10_years': 'In 10 Years',
+    'opp.in_20_years': 'In 20 Years',
+    'opp.contributed': 'Capital contributed:',
+    'opp.interests': 'Compound interest earned:',
+    'opp.note': 'Compound interest calculation with monthly contributions and reinvested dividends. Not regulated financial advice.',
 
-    // Top 8 Expenses
-    'top.badge': 'Impact Audit',
-    'top.title': 'Top 8 Largest Outflows & Bills',
-    'top.subtitle': 'The largest individual payments recorded across your bank statements.',
+    'table.title': 'Detailed Transaction Audit',
+    'table.desc': 'Full list of normalized transactions with instant search and category filters.',
+    'table.search': 'Search description or bank…',
+    'table.export_excel': 'Export Formatted Excel',
+    'table.print_pdf': 'Save as PDF / Print',
+    'table.filter_all': 'All',
+    'table.filter_expenses': 'Expenses Only',
+    'table.filter_income': 'Income Only',
+    'table.col_date': 'Date',
+    'table.col_desc': 'Description',
+    'table.col_category': 'Category',
+    'table.col_account': 'Bank / File',
+    'table.col_amount': 'Amount',
+    'table.no_results': 'No matching transactions found.',
+    'table.showing': 'Showing {count} of {total} transactions',
+    'table.page_prev': 'Previous',
+    'table.page_next': 'Next',
 
-    // Transactions Table
-    'table.title': 'Consolidated Statement of Transactions',
-    'table.subtitle': 'Displaying {filtered} of {total} audited transactions.',
-    'table.search_placeholder': 'Search concept, merchant or bank...',
-    'table.all_banks': 'All banks ({count})',
-    'table.tab_all': 'All ({count})',
-    'table.tab_expenses': 'Expenses',
-    'table.tab_income': 'Incomes',
-    'table.tab_leaks': 'Detected Leaks',
-    'table.empty': 'No transactions match the selected filters.',
-    'table.th_date': 'Date',
-    'table.th_bank': 'Bank',
-    'table.th_concept': 'Concept / Description',
-    'table.th_category': 'Category / Alert',
-    'table.th_amount': 'Amount',
-    'table.page_prev': '← Previous',
-    'table.page_next': 'Next →',
-    'table.page_of': 'Page {current} of {total}',
+    'rule503020.title': 'Budget Health · 50/30/20 Rule',
+    'rule503020.desc': 'Recommended balance: 50% Needs, 30% Wants & lifestyle, 20% Savings & investments.',
+    'rule503020.needs': 'Needs (50%)',
+    'rule503020.wants': 'Wants & Leisure (30%)',
+    'rule503020.savings': 'Savings & Investment (20%)',
+    'rule503020.target': 'Target: {target}%',
+    'rule503020.real': 'Actual: {real}% ({amount} €)',
+    'rule503020.status_optimal': 'Balanced',
+    'rule503020.status_warning': 'Notice',
+    'rule503020.status_alert': 'Imbalanced',
 
-    // Excel & Print Export
-    'export.excel_btn': 'Export Formatted Excel (.xls)',
-    'export.excel_tooltip': 'Download a visually styled spreadsheet with colors, totals and summary tables',
-    'export.print_btn': 'Print / Save as PDF',
-    'export.print_tooltip': 'Open print-optimized view to print on paper or save as clean PDF',
-    'export.generating': 'Generating document...',
+    'recurring.title': 'Recurring Bills & Subscription Detector',
+    'recurring.desc': 'Automatic identification of fixed monthly bills (utilities, streaming, phone, insurance, rent).',
+    'recurring.monthly_total': 'Monthly committed expenses:',
+    'recurring.yearly_total': 'Annual committed expenses:',
+    'recurring.detected_count': '{count} recurring bills detected',
+    'recurring.potential_savings': 'Optimization margin from reviewing unused subscriptions: up to {amount} €/mo',
 
-    // Personalized Strategy & Tips
-    'tips.section_title': 'Personalized Financial Strategy & Actionable Tips',
-    'tips.section_desc': 'Smart recommendations dynamically generated from real-time analysis of your statements and spending patterns.',
-    'tips.badge_timing': 'Cash Flow & Timing',
-    'tips.timing_title': 'Stagger large expenses: Pay quarterly or semi-annually',
-    'tips.timing_desc': 'We detected {count} large outflows ({names}) concentrating {amount} within a short window. Contact your insurers and providers to split large annual bills (home/car insurance, property taxes, vehicle inspection) into quarterly or semi-annual payments. This prevents steep cash-flow shocks in a single month and grants 2-3 months of extra buffer for unforeseen events.',
-    'tips.badge_urgency': 'Security Alert',
-    'tips.critical_title': 'Priority #1: Build the 6-Month Safety Wall ({months} months currently)',
-    'tips.critical_desc': 'With monthly expenses of {monthlyExpenses}, your current cushion protects you for {months} months. We advise saving an extra {needed} before committing funds to non-essential purchases.',
-    'tips.badge_optim': 'Capital Optimization',
-    'tips.oversized_title': 'Security Surplus: Your cushion covers {years} years',
-    'tips.oversized_desc': 'You have {months} months of coverage ({years} years). Keeping more than 12-18 months of liquidity in a 0% checking account suffers from inflation drag. Consider shifting the surplus of {excess} into high-yield savings or diversified global index funds.',
-    'tips.badge_leaks': 'Direct Leak Trimming',
-    'tips.leaks_title': 'Instant Savings: Recover {yearly} per year',
-    'tips.leaks_desc': 'We found {count} recurring subscription charges ({names}) totaling {monthly}/month. Cancelling inactive services will free up {yearly}/year in your pocket with zero lifestyle friction.',
-    'tips.badge_budget': 'Housing Effort Ratio',
-    'tips.housing_title': 'Housing Cost Ratio at {pct}% of Income',
-    'tips.housing_desc': 'Fixed housing costs total {amount}/month ({pct}% of income). Financial standards advise keeping this ratio below 30-35% to protect monthly flexibility.',
-    'tips.badge_habit': 'Household Habit',
-    'tips.pay_first_title': 'Automate: Pay yourself first on Day 1 of each month',
-    'tips.pay_first_desc': 'Set up an automatic monthly transfer of {amount} to a separate vault on the exact day your salary or pension arrives. Saving upfront rather than waiting for month-end consolidates savings automatically.',
-    'tips.badge_method': 'Emotional Filter',
-    'tips.rule_72_title': 'The 72-Hour Rule for Non-Essential Purchases',
-    'tips.rule_72_desc': 'For any discretionary purchase over 100 €, wait 3 days before buying. Over 70% of impulse buys are discarded once this mental cooling-off period passes.',
+    'stress.title': 'Financial Stress Simulator (Shock Tests)',
+    'stress.desc': 'Test the resilience of your household against income drops, sudden emergencies, or inflation.',
+    'stress.income_drop': 'Monthly income drop:',
+    'stress.unexpected_expense': 'Sudden unexpected expense:',
+    'stress.inflation': 'Expense increase from inflation:',
+    'stress.result_runway': 'Runway under this stress scenario:',
+    'stress.result_months': '{months} months of autonomy',
+    'stress.resilience_high': 'High Resilience: Your cushion absorbs this shock comfortably.',
+    'stress.resilience_med': 'Moderate Resilience: Your cushion withstands the shock but requires trimming discretionary spending.',
+    'stress.resilience_low': 'Critical Resilience: In this scenario, liquidity expires in under 6 months.',
 
-    // Footer
-    'footer.privacy': 'Absolute Privacy: No banking data travels to servers or is stored in cookies or local storage.',
-    'footer.disclaimer': 'This tool is a private, local mathematical simulator for family financial assistance. It does not constitute regulated financial advice.',
-    'footer.copyright': '© {year} Trujillo AI • Engineering Ecosystem & Technical Guides'
+    'goals.title': 'Family Savings Goals Tracker',
+    'goals.desc': 'Set prioritized savings goals (emergency fund, travel, home purchase) and see the exact timeline to reach them.',
+    'goals.add_btn': 'Add New Goal',
+    'goals.name_placeholder': 'Goal name (e.g. Car repair, Summer vacation)',
+    'goals.amount_placeholder': 'Target amount in €',
+    'goals.target_date': 'At current savings rate ({rate} €/mo), you will reach this goal in {months} months ({date}).',
+    'goals.progress': 'Current progress:',
+
+    'vault.title': 'Local Memory Audit Vault',
+    'vault.subtitle': 'Your data is saved 100% inside your browser (Zero-Knowledge). Save multiple family scenarios or restore previous audits.',
+    'vault.save_current': 'Save Current Audit',
+    'vault.audit_name': 'Audit / Scenario name:',
+    'vault.save_btn': 'Save to Memory',
+    'vault.list_title': 'Saved Audits on this Device',
+    'vault.empty': 'No audits saved in this browser yet.',
+    'vault.load_btn': 'Load',
+    'vault.delete_btn': 'Delete',
+    'vault.export_backup': 'Export JSON Backup',
+    'vault.import_backup': 'Import JSON Backup',
+    'vault.close': 'Close',
+
+    'auth.title': 'What should we call you?',
+    'auth.desc': 'Enter your name or nickname to personalize your audits and save scenarios on this device. No password or email needed.',
+    'auth.input_label': 'Your name:',
+    'auth.submit': 'Save & Continue',
+    'auth.studio_link': 'I have an account in Trujillo AI Studio'
   },
-
   ca: {
-    // Topbar & Header
-    'header.brand': 'Savings & Runway Familiar',
+    'header.brand': 'ATM Savings',
     'header.badge': 'Auditoria Privada',
-    'header.privacy': '100% Volàtil en RAM • Zero-Knowledge',
-    'header.privacy_title': 'Els teus extractes es processen únicament a la memòria RAM del teu navegador. Cap dada no viatja a la xarxa.',
-    'header.back_labs': 'ATM Labs',
-    'header.guides': 'Guies',
+    'header.privacy': 'Zero-Knowledge · RAM',
+    'header.privacy_title': 'Els teus extractes es processen exclusivament a la memòria RAM del navegador. Cap dada viatja a la xarxa.',
+    'header.back_labs': 'Labs',
+    'header.guides': 'Guides',
     'header.reset': 'Reiniciar',
-    'header.reset_title': 'Esborrar totes les dades i reiniciar l’auditoria',
-    'header.reset_confirm': 'Segur que vols reiniciar i esborrar tots els extractes carregats a la memòria?',
-    'header.theme': 'Tema',
+    'header.reset_title': 'Esborrar dades de la memòria RAM',
+    'header.reset_confirm': 'Segur que vols reiniciar i esborrar totes les dades carregades a la sessió actual?',
+    'header.theme': 'Canviar tema',
     'header.font_size': 'Mida de lletra',
     'header.font_normal': 'Text Normal (A)',
     'header.font_large': 'Text Gran (A+)',
     'header.font_xlarge': 'Text Molt Gran (A++)',
+    'header.login': 'Entrar',
+    'header.user_guest': 'Convidat',
+    'header.save_memory': 'Guardar a memòria',
+    'header.saved_audits': 'Les meves auditories',
+    'header.change_name': 'Canviar nom',
+    'header.logout': 'Sortir',
 
-    // Pas 1: Liquiditat
     'step1.badge': 'Pas 1',
     'step1.title': 'Matalàs de Liquiditat Global Familiar',
-    'step1.desc': 'Indica el capital líquid disponible avui a la teva família (comptes corrents, llibretes, comptes remunerats o fons monetaris) disponible sense penalització en cas d’imprevist.',
+    'step1.desc': 'Indica els diners líquids disponibles avui a la teva família dels quals pots disposar immediatament en cas d’emergència.',
     'step1.input_label': 'Import de liquiditat en euros',
     'step1.active_preview': 'Import actiu:',
-    'step1.presets_label': 'Dreceres ràpides:',
+    'step1.presets_label': 'Accessos directes:',
     'step1.stepper_minus': 'Restar 1.000 €',
     'step1.stepper_plus': 'Afegir 1.000 €',
 
-    // Pas 2: Dropzone & Càrrega
     'step2.badge': 'Pas 2',
     'step2.title': 'Càrrega d’Extractes Bancaris (CSV o Excel)',
-    'step2.desc': 'Arrossega o selecciona un o diversos extractos descarregats de la teva banca en línia. Suporta CaixaBank, Santander, BBVA, Sabadell, Bankinter, ING, MyInvestor, Openbank, Revolut, etc.',
+    'step2.desc': 'Arrossega o selecciona un o diversos extractes de la teva banca online. Processament 100% en memòria volàtil RAM.',
     'step2.drop_prompt': 'Arrossega aquí els teus extractes bancaris o',
-    'step2.select_files': 'selecciona fitxers des del teu dispositiu',
-    'step2.support_info': 'Formats CSV i text de banca online. Multi-entitat automàtica.',
-    'step2.processing': 'Analitzant extractes a la memòria volàtil...',
+    'step2.select_files': 'selecciona fitxers del teu equip',
+    'step2.support_info': 'Formats CSV i text de banca online. Detecció multi-banc automàtica.',
+    'step2.processing': 'Analitzant extractes en memòria volàtil...',
     'step2.demo_btn': 'Carregar dades d’exemple',
-    'step2.demo_sub': 'Prova l’auditoria a l’instant amb extractes de mostra sense pujar fitxers personals.',
+    'step2.demo_sub': 'Prova l’anàlisi a l’instant sense pujar els teus fitxers.',
     'step2.loaded_title': 'Extractes Bancaris Consolidats',
     'step2.movements': 'moviments',
     'step2.period': 'Període:',
     'step2.remove_file': 'Treure extracte',
     'step2.err_empty': 'El fitxer {name} sembla buit o no conté transaccions vàlides.',
-    'step2.err_read': 'No s’ha pogut llegir el fitxer {name}. Assegura’t que no té contrasenya.',
-    'step2.warn_duplicate': 'L’extracte {name} s’ha actualitzat correctament.',
+    'step2.err_read': 'No s’ha pogut llegir el fitxer {name}.',
 
-    // Mètriques de Runway
-    'runway.title': 'Salut Financera i Matalàs de Supervivència (Runway)',
-    'runway.subtitle': 'Basat en {months} mesos d’activitat bancària consolidada.',
-    'runway.hero_label': 'Temps Estimat de Cobertura',
-    'runway.surplus': 'Superàvit Actiu',
-    'runway.exhausted': 'Esgotat',
-    'runway.months': 'mesos',
-    'runway.years': 'anys',
-    'runway.stat_surplus': 'Capacitat d’Estalvi Mensual',
-    'runway.stat_burn': 'Crema Mensual Neta (Burn Rate)',
-    'runway.note_surplus': 'Marge disponible per a invertir o fer créixer el patrimoni familiar',
-    'runway.note_burn': 'Dèficit mensual cobert pel teu matalàs de liquiditat',
-    'runway.kpi_liquidity': 'Matalàs Líquid',
-    'runway.kpi_liquidity_sub': 'Fons de disponibilitat immediata',
-    'runway.kpi_income': 'Ingressos Mensuals',
-    'runway.kpi_income_sub': 'Nòmines, pensions i rendes periòdiques',
-    'runway.kpi_expenses': 'Despeses Mensuals',
-    'runway.kpi_expenses_sub': 'Consum ordinari, subministraments i compres',
-    'runway.kpi_leaks': 'Fugues Evitables Detectades',
-    'runway.kpi_leaks_sub': 'Subscripcions i despeses sedentàries prescindibles',
+    'step3.badge': 'Pas 3',
+    'step3.title': 'Auditoria de Supervivència i Runway Financer',
+    'step3.desc': 'Diagnòstic exacte de quants mesos pot sostenir-se la teva economia si s’interrompen els ingressos avui.',
+    'step3.runway_title': 'Supervivència Financera Neta',
+    'step3.runway_suffix': 'mesos',
+    'step3.runway_days': 'aprox. {days} dies d’autonomia total',
+    'step3.net_burn': 'Despesa Neta Mensual',
+    'step3.total_income': 'Ingressos Mitjans',
+    'step3.total_expenses': 'Despeses Mitjanes',
+    'step3.savings_rate': 'Taxa d’Estalvi Real',
+    'step3.cushion_health': 'Estat del Matalàs',
+    'step3.badge_critical': 'Nivell Crític (< 3 mesos)',
+    'step3.badge_warning': 'En Alerta (3 - 6 mesos)',
+    'step3.badge_healthy': 'Saludable (6 - 12 mesos)',
+    'step3.badge_optimal': 'Òptim (12 - 24 mesos)',
+    'step3.badge_oversized': 'Excés de Liquiditat (> 24 mesos)',
 
-    // Status / Semàfor Runway
-    'status.surplus_title': 'Superàvit Financer',
-    'status.surplus_badge': 'Capacitat d’Estalvi Activa',
-    'status.surplus_exp': 'Els teus ingressos mensuals superen les despeses. El teu matalàs de seguretat no es consumeix.',
-    'status.exhausted_title': 'Sense Matalàs Disponible',
-    'status.exhausted_badge': '0 mesos',
-    'status.exhausted_exp': 'El balanç de liquiditat actual està esgotat o no cobreix les despeses del període.',
-    'status.critical_badge': 'Alerta: Marge Crític (< 6 mesos)',
-    'status.critical_exp': 'Amb el ritme de despesa actual, els fons duraran aproximadament {months} mesos ({days} dies).',
-    'status.moderate_badge': 'Marge Moderat (6-18 mesos)',
-    'status.moderate_exp': 'El teu matalàs cobreix {months} mesos de despeses netes. Estàs protegit davant imprevistos ordinaris.',
-    'status.solid_badge': 'Excel·lent Matalàs (> 18 mesos)',
-    'status.solid_exp': 'Tens una folgança financera sòlida de {years} anys de tranquil·litat i supervivència.',
+    'breakdown.title': 'Radiografia de Despeses per Categoria',
+    'breakdown.desc': 'Classificació automàtica i intel·ligent de les teves sortides de diners.',
+    'breakdown.total_expenses': 'Total Despeses:',
+    'breakdown.all_categories': 'Totes les categories',
+    'breakdown.filter': 'Filtrar categoria:',
 
-    // Categories i Taxa d'Estalvi
-    'cat.section_title': 'Desglossament Visual de Despeses i Taxa d’Estalvi Familiar',
-    'cat.section_desc': 'Distribució automàtica de les sortides de diners per a comprendre les partides de la llar.',
-    'cat.savings_rate_title': 'Taxa d’Estalvi Familiar Mensual',
-    'cat.savings_rate_sub': 'Percentatge dels teus ingressos nets que aconsegueixes retenir cada mes.',
-    'cat.rate_excellent': 'Excel·lent (Estalvi > 20%)',
-    'cat.rate_healthy': 'Saludable (Estalvi 10% - 20%)',
-    'cat.rate_tight': 'Ajustat (Estalvi 0% - 10%)',
-    'cat.rate_deficit': 'En Dèficit (Despeses superen ingressos)',
-    'cat.rate_desc_excellent': 'Enhorabona! Retens una proporció molt alta d’ingressos, blindant el patrimoni familiar.',
-    'cat.rate_desc_healthy': 'Bon equilibri. Mantens un matalàs creixent mes a mes per a imprevistos i inversió.',
-    'cat.rate_desc_tight': 'Arribes a fi de mes, però qualsevol imprevist podria comprometre els teus estalvis.',
-    'cat.rate_desc_deficit': 'Atenció: Estàs consumint part de les teves reserves per a cobrir despeses ordinàries.',
+    'cat.housing': 'Habitatge i Lloguer',
+    'cat.supermarket': 'Supermercat i Alimentació',
+    'cat.utilities': 'Llum, Aigua, Gas i Internet',
+    'cat.transport': 'Transport i Carburant',
+    'cat.dining': 'Restaurants i Oci',
+    'cat.shopping': 'Compres i Comerç',
+    'cat.health': 'Salut i Farmàcia',
+    'cat.education': 'Educació i Cursos',
+    'cat.subscriptions': 'Subscripcions i Streaming',
+    'cat.insurance': 'Assegurances i Impostos',
+    'cat.cash': 'Caixers i Efectiu',
+    'cat.transfers': 'Transferències i Pagaments',
+    'cat.other_expense': 'Altres Despeses',
+    'cat.salary': 'Nòmina i Salaris',
+    'cat.investments': 'Inversions i Dividends',
+    'cat.other_income': 'Altres Ingressos',
 
-    // Objectiu de Matalàs
-    'target.title': 'Objectiu del "Matalàs de Tranquil·litat"',
-    'target.desc': 'L’estàndard d’or de l’economia familiar recomana tenir entre 6 i 12 mesos de despeses essencials en liquiditat immediata.',
-    'target.choice_6': '6 Mesos (Bàsic)',
-    'target.choice_12': '12 Mesos (Recomanat)',
-    'target.choice_24': '24 Mesos (Màxima Pau)',
-    'target.needed_label': 'Capital necessari per a {months} mesos:',
-    'target.current_label': 'Matalàs actual:',
-    'target.achieved': 'Meta Aconseguida! Tens un matalàs òptim de tranquil·litat.',
-    'target.missing': 'Et falten {amount} per a assolir el teu objectiu de {months} mesos de pau mental.',
-    'target.progress': 'Progrés de cobertura:',
+    'rule503020.title': 'Salut Pressupostària · Regla 50/30/20',
+    'rule503020.desc': 'Distribució equilibrada: 50% Necessitats, 30% Desitjos, 20% Estalvi i inversió.',
+    'rule503020.needs': 'Necessitats (50%)',
+    'rule503020.wants': 'Desitjos i Oci (30%)',
+    'rule503020.savings': 'Estalvi / Inversió (20%)',
+    'rule503020.target': 'Meta estàndard: {target}%',
+    'rule503020.real': 'Real a la teva economia: {real}% ({amount} €)',
+    'rule503020.status_optimal': 'Equilibrat',
+    'rule503020.status_warning': 'Atenció',
+    'rule503020.status_alert': 'Desviat',
 
-    // Categories
-    'cat.housing': 'Habitatge, Hipoteca i Lloguer',
-    'cat.supermarket': 'Alimentació i Supermercat',
-    'cat.utilities': 'Subministraments (Llum, Aigua, Gas, Internet)',
-    'cat.health_insurance': 'Salut, Assegurances i Farmàcia',
-    'cat.transport': 'Transport, Combustible i Viatges',
-    'cat.leaks': 'Fugues i Subscripcions Detectades',
-    'cat.leisure': 'Oci, Restauració i Compres',
-    'cat.income': 'Nòmines i Rendes Ingressades',
-    'cat.other': 'Altres Despeses i Diversos',
+    'recurring.title': 'Detector de Despeses Fixes i Recurrents',
+    'recurring.desc': 'Identificació automàtica de quotes mensuals fixes.',
+    'recurring.monthly_total': 'Compromís fix mensual:',
+    'recurring.yearly_total': 'Compromís fix anual:',
+    'recurring.detected_count': '{count} subscripcions i quotes detectades',
+    'recurring.potential_savings': 'Marge d’optimització cancel·lant serveis prescindibles: fins a {amount} €/mes',
 
-    // Cost d'Oportunitat
-    'opp.tag': 'Palanca d’Estalvi i Interès Compost',
-    'opp.title': 'Cost d’Oportunitat al 7% Anual',
-    'opp.rate_pill': 'Rendibilitat de Referència: 7% Anual Compost',
-    'opp.desc': 'Els diners que es filtren en petites quotes sedentàries tenen un cost ocult enorme si es reinverteixen en un fons indexat global diversificat.',
-    'opp.slider_label': 'Simula redirigir aquest estalvi mensual cap a un fons indexat:',
-    'opp.presets_caption': 'Dreceres ràpides:',
-    'opp.detected_leaks_btn': 'Fugues detectades ({amount})',
-    'opp.horizon_10': 'Horitzó 10 Anys',
-    'opp.horizon_15': 'Horitzó 15 Anys',
-    'opp.future_capital': 'Capital Acumulat Estimat',
-    'opp.contributed': 'Capital Aportat de la Teva Butxaca:',
-    'opp.interest_earned': 'Interessos Guanyats pel Mercat:',
-    'opp.compound_badge': '+{pct}% de Rendiment Generat',
-    'opp.explanation_10': 'Si elimines aquestes fugues i inverteixes {amount}/mes en un fons indexat al 7%, en 10 anys disposaràs de {future} (havent aportat només {contributed}).',
-    'opp.explanation_15': 'Gràcies al poder de l’interès compost exponencial, en 15 anys els teus diners es multiplicaran fins a assolir {future}, generant {interest} en interessos passius.',
+    'stress.title': 'Simulador d’Estrès Financer (Xocs i Imprevistos)',
+    'stress.desc': 'Posa a prova la solidesa de la teva economia davant caigudes d’ingressos o inflació.',
+    'stress.income_drop': 'Caiguda d’ingressos mensuals:',
+    'stress.unexpected_expense': 'Despesa imprevista puntual:',
+    'stress.inflation': 'Pujada de despeses per inflació:',
+    'stress.result_runway': 'Runway en aquest escenari d’estrès:',
+    'stress.result_months': '{months} mesos d’autonomia',
+    'stress.resilience_high': 'Resiliència Alta: La teva economia absorbiria aquest xoc sense problemes.',
+    'stress.resilience_med': 'Resiliència Moderada: El matalàs resistiria però requeriria ajustar despeses.',
+    'stress.resilience_low': 'Resiliència Crítica: En aquest escenari la liquiditat s’esgotaria en menys de 6 mesos.',
 
-    // Top 8 Despeses
-    'top.badge': 'Auditoria d’Impacte',
-    'top.title': 'Top 8 Majors Sortides i Rebuts',
-    'top.subtitle': 'Els pagaments de major volum registrats als teus extractes bancaris.',
+    'goals.title': 'Seguiment de Metes Familiars',
+    'goals.desc': 'Defineix objectius d’estalvi i visualitza el temps exacte per assolir-los.',
+    'goals.add_btn': 'Afegir Nova Meta',
+    'goals.name_placeholder': 'Nom de la meta (ex. Reparació cotxe, Vacances)',
+    'goals.amount_placeholder': 'Import objectiu en €',
+    'goals.target_date': 'Al teu ritme d’estalvi actual ({rate} €/mes), assoliràs aquesta meta en {months} mesos ({date}).',
+    'goals.progress': 'Progrés actual:',
 
-    // Taula de Moviments
-    'table.title': 'Extracte Consolidat de Moviments',
-    'table.subtitle': 'Mostrant {filtered} de {total} transaccions auditades.',
-    'table.search_placeholder': 'Cercar concepte, comerç o banc...',
-    'table.all_banks': 'Totes les entitats ({count})',
-    'table.tab_all': 'Tots ({count})',
-    'table.tab_expenses': 'Despeses',
-    'table.tab_income': 'Ingressos',
-    'table.tab_leaks': 'Fugues Detectades',
-    'table.empty': 'No s’han trobat moviments amb els filtres seleccionats.',
-    'table.th_date': 'Data',
-    'table.th_bank': 'Entitat',
-    'table.th_concept': 'Concepte / Descripció',
-    'table.th_category': 'Categoria / Alerta',
-    'table.th_amount': 'Import',
-    'table.page_prev': '← Anterior',
-    'table.page_next': 'Següent →',
-    'table.page_of': 'Pàgina {current} de {total}',
+    'vault.title': 'Bòveda d’Auditories a Memòria Local',
+    'vault.subtitle': 'Emmagatzematge 100% al teu navegador (Zero-Knowledge). Guarda múltiples versions o recupera auditories.',
+    'vault.save_current': 'Guardar estat actual',
+    'vault.audit_name': 'Nom de l’auditoria / escenari:',
+    'vault.save_btn': 'Guardar a memòria',
+    'vault.list_title': 'Auditories guardades en aquest dispositiu',
+    'vault.empty': 'Encara no has guardat cap auditoria a la memòria d’aquest navegador.',
+    'vault.load_btn': 'Carregar',
+    'vault.delete_btn': 'Eliminar',
+    'vault.export_backup': 'Exportar Còpia de Seguretat JSON',
+    'vault.import_backup': 'Importar Còpia de Seguretat JSON',
+    'vault.close': 'Tancar',
 
-    // Exportació
-    'export.excel_btn': 'Exportar Excel Formatejat (.xls)',
-    'export.excel_tooltip': 'Descarrega un full de càlcul amb format visual, colors, totals i fórmules',
-    'export.print_btn': 'Imprimir / Desar en PDF',
-    'export.print_tooltip': 'Obre la vista d’impressió optimitzada per a guardar en PDF o imprimir en paper',
-    'export.generating': 'Generant document...',
-
-    // Estratègia i Consells Personalitzats
-    'tips.section_title': 'Estratègia Financera Personalitzada i Consells a Mida',
-    'tips.section_desc': 'Recomanacions intel·ligents generades en temps real a partir de l’anàlisi exclusiu dels teus extractes i hàbits.',
-    'tips.badge_timing': 'Planificació i Tresoreria',
-    'tips.timing_title': 'Desconcentra despeses grans: Paga trimestral o semestralment',
-    'tips.timing_desc': 'Hem detectat {count} rebuts de gran import ({names}) que concentren {amount} en poc temps. Contacta amb les teves asseguradores i companyies per fraccionar el pagament (IBI, assegurança de cotxe, llar, revisions) de forma semestral o trimestral. Evitaràs caigudes brusques de liquiditat en un sol mes i guanyaràs marge de maniobra davant d’imprevistos.',
-    'tips.badge_urgency': 'Alerta de Seguretat',
-    'tips.critical_title': 'Prioritat #1: Construir el Mur de 6 Mesos ({months} mesos actuals)',
-    'tips.critical_desc': 'Amb una despesa mensual de {monthlyExpenses}, el teu matalàs actual et protegeix durant {months} mesos. Recomanem acumular {needed} addicionals abans de comprometre fons en compres no essencials.',
-    'tips.badge_optim': 'Optimització de Capital',
-    'tips.oversized_title': 'Excedent de Seguretat: El teu matalàs cobreix {years} anys',
-    'tips.oversized_desc': 'Distingeixes {months} mesos de cobertura ({years} anys). Mantenir més de 12-18 mesos de liquiditat en un compte corrent al 0% pateix l’erosió de la inflació. Considera moure l’excedent de {excess} cap a comptes remunerats o fons indexats globals.',
-    'tips.badge_leaks': 'Poda Directa de Fugues',
-    'tips.leaks_title': 'Estalvi Immediat: Recupera {yearly} l’any',
-    'tips.leaks_desc': 'Detectem {count} cobraments de subscripcions i quotes recurrents ({names}) per un total de {monthly}/mes. Cancel·lar les que no facis servir alliberarà {yearly} l’any a la teva butxaca sense esforç.',
-    'tips.badge_budget': 'Habitatge i Esforç',
-    'tips.housing_title': 'Ràtio d’Habitatge al {pct}% dels teus Ingressos',
-    'tips.housing_desc': 'Els teus costos fixos d’habitatge sumen {amount}/mes ({pct}% d’ingressos). Els economistes recomanen mantenir aquest ràtio per sota del 30-35% per tenir estabilitat financera.',
-    'tips.badge_habit': 'Hàbit Familiar',
-    'tips.pay_first_title': 'Automatitza: Paga’t a tu primer el dia 1 de cada mes',
-    'tips.pay_first_desc': 'Programa una transferència automàtica de {amount}/mes cap a una guardiola o llibreta separada el mateix dia que entra la teva nòmina o pensió. Si estalvies al principi en comptes d’esperar a final de mes, l’estalvi es consolida automàticament.',
-    'tips.badge_method': 'Filtre Emocional',
-    'tips.rule_72_title': 'Regla de les 72 Hores per a Despeses No Essencials',
-    'tips.rule_72_desc': 'Per a qualsevol caprici o despesa superior a 100 €, espera 3 dies abans de comprar. Més del 70% de les compres per impuls es descarten un cop transcorregut aquest temps de refredament.',
-
-    // Footer
-    'footer.privacy': 'Privacitat Absoluta: Cap dada bancària no viatja a servidors ni es guarda en galetes ni emmagatzematge local.',
-    'footer.disclaimer': 'Aquesta eina és un simulador matemàtic privat i local per a assistència financera familiar. No constitueix assessorament regulat.',
-    'footer.copyright': '© {year} Trujillo AI • Ecosistema d’Enginyeria i Guies Tècniques'
+    'auth.title': 'Com et diem?',
+    'auth.desc': 'Indica el teu nom per personalitzar les teves auditories en aquest dispositiu. Sense contrasenyes ni correus obligatoris.',
+    'auth.input_label': 'El teu nom:',
+    'auth.submit': 'Guardar i Continuar',
+    'auth.studio_link': 'Tinc compte a Trujillo AI Studio'
   }
 };
+
+// Memoria dinámica en tiempo de ejecución para traducciones al vuelo
+const DYNAMIC_TRANSLATIONS_CACHE = new Map<string, string>();
 
 interface I18nContextType {
   language: LanguageId;
   setLanguage: (lang: LanguageId) => void;
   t: (key: string, params?: Record<string, string | number>) => string;
+  isTranslating: boolean;
 }
 
 const I18nContext = createContext<I18nContextType | null>(null);
 
-function detectInitialLanguage(): LanguageId {
-  try {
-    const saved = localStorage.getItem('atm_lang');
-    if (saved === 'es' || saved === 'en' || saved === 'ca') {
-      return saved;
-    }
-  } catch (e) {}
-
-  if (typeof navigator !== 'undefined') {
-    const nav = (navigator.language || 'es').toLowerCase();
-    if (nav.startsWith('ca')) return 'ca';
-    if (nav.startsWith('en')) return 'en';
-  }
-  return 'es';
-}
-
 export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<LanguageId>(detectInitialLanguage);
+  const [language, setLanguageState] = useState<LanguageId>('es');
+  const [isTranslating, setIsTranslating] = useState<boolean>(false);
+  const [, setRerenderTrigger] = useState<number>(0);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('atm_lang') as LanguageId;
+      if (saved && SUPPORTED_LANGUAGES.some((l) => l.id === saved)) {
+        setLanguageState(saved);
+        document.documentElement.lang = saved;
+        document.documentElement.dir = saved === 'ar' ? 'rtl' : 'ltr';
+      }
+    } catch (e) {}
+  }, []);
 
   const setLanguage = (lang: LanguageId) => {
     setLanguageState(lang);
     try {
       localStorage.setItem('atm_lang', lang);
       document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
     } catch (e) {}
-    document.dispatchEvent(new CustomEvent('atm:lang', { detail: { lang } }));
-  };
 
-  useEffect(() => {
-    try {
-      document.documentElement.lang = language;
-    } catch (e) {}
-  }, [language]);
-
-  const t = (key: string, params?: Record<string, string | number>): string => {
-    const dict = TRANSLATIONS[language] || TRANSLATIONS.es;
-    let text = dict[key] || TRANSLATIONS.es[key] || key;
-
-    if (params) {
-      for (const [paramKey, paramVal] of Object.entries(params)) {
-        text = text.replace(new RegExp(`\\{${paramKey}\\}`, 'g'), String(paramVal));
-      }
+    // Si el idioma no tiene diccionario estático completo (fr, de, it, pt, zh, ja, ar),
+    // disparamos traducción dinámica para las claves visibles
+    if (!['es', 'en', 'ca'].includes(lang)) {
+      triggerDynamicTranslation(lang);
     }
-    return text;
   };
+
+  // Traductor dinámico para los idiomas sin diccionario estático completo
+  const triggerDynamicTranslation = async (targetLang: LanguageId) => {
+    setIsTranslating(true);
+    try {
+      const baseDict = TRANSLATIONS['es'];
+      const keysToTranslate = Object.keys(baseDict).filter(
+        (key) => !DYNAMIC_TRANSLATIONS_CACHE.has(`${targetLang}::${key}`)
+      );
+
+      if (keysToTranslate.length === 0) {
+        setIsTranslating(false);
+        return;
+      }
+
+      // Procesar en lotes de 25
+      const batch = keysToTranslate.slice(0, 30);
+      const texts = batch.map((k) => baseDict[k]);
+
+      // Consultar endpoint Cloudflare Function /api/guides/translate
+      const res = await fetch('/api/guides/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tl: targetLang, q: texts })
+      }).catch(() => null);
+
+      if (res && res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data && Array.isArray(data.texts)) {
+          data.texts.forEach((translatedText: string, idx: number) => {
+            if (translatedText && batch[idx]) {
+              DYNAMIC_TRANSLATIONS_CACHE.set(`${targetLang}::${batch[idx]}`, translatedText);
+            }
+          });
+          setRerenderTrigger((prev) => prev + 1);
+        }
+      }
+    } catch (err) {
+      console.warn('Dynamic translation warning:', err);
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  const t = useCallback(
+    (key: string, params?: Record<string, string | number>): string => {
+      let text: string | undefined;
+
+      // 1. Revisar caché dinámica
+      const dynamicKey = `${language}::${key}`;
+      if (DYNAMIC_TRANSLATIONS_CACHE.has(dynamicKey)) {
+        text = DYNAMIC_TRANSLATIONS_CACHE.get(dynamicKey);
+      }
+
+      // 2. Revisar diccionarios estáticos
+      if (!text && TRANSLATIONS[language] && TRANSLATIONS[language][key]) {
+        text = TRANSLATIONS[language][key];
+      }
+
+      // 3. Fallback al inglés si no es español
+      if (!text && TRANSLATIONS['en'] && TRANSLATIONS['en'][key]) {
+        text = TRANSLATIONS['en'][key];
+      }
+
+      // 4. Fallback al español por defecto
+      if (!text && TRANSLATIONS['es'] && TRANSLATIONS['es'][key]) {
+        text = TRANSLATIONS['es'][key];
+      }
+
+      // 5. Clave directa si no existe traducción
+      if (!text) {
+        text = key;
+      }
+
+      // Reemplazo de variables {param}
+      if (params) {
+        Object.entries(params).forEach(([k, val]) => {
+          text = text!.replace(new RegExp(`\\{${k}\\}`, 'g'), String(val));
+        });
+      }
+
+      return text;
+    },
+    [language]
+  );
 
   return (
-    <I18nContext.Provider value={{ language, setLanguage, t }}>
+    <I18nContext.Provider value={{ language, setLanguage, t, isTranslating }}>
       {children}
     </I18nContext.Provider>
   );
 };
 
-export function useI18n(): I18nContextType {
+export const useI18n = (): I18nContextType => {
   const context = useContext(I18nContext);
   if (!context) {
-    // Fallback safe dummy context
-    return {
-      language: 'es',
-      setLanguage: () => {},
-      t: (key: string) => TRANSLATIONS.es[key] || key
-    };
+    throw new Error('useI18n must be used within an I18nProvider');
   }
   return context;
-}
+};
+export default useI18n;
