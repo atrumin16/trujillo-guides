@@ -32,7 +32,23 @@ const SavingsMainContent: React.FC = () => {
   const [parseResults, setParseResults] = useState<ParseResult[]>([]);
 
   useEffect(() => {
-    setUserName(getStoredUserName());
+    const stored = getStoredUserName();
+    if (stored) setUserName(stored);
+
+    // Auto-detect ecosystem SSO session from shared domain cookie
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.user?.name) {
+          setStoredUserName(data.user.name);
+          setUserName(data.user.name);
+          try {
+            localStorage.setItem('trujillo_ai_user', JSON.stringify(data.user));
+            localStorage.setItem('auth_user', JSON.stringify(data.user));
+          } catch (e) {}
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleAddResults = (newResults: ParseResult[]) => {

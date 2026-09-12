@@ -273,6 +273,55 @@
     }
   }
 
+  window.addEventListener('message', function (event) {
+    if (event.data && event.data.type === 'AUTH_SUCCESS' && event.data.token) {
+      setSharedToken(event.data.token, event.data.user);
+      closeAuth();
+      location.reload();
+    }
+  });
+
+  function bindGuidesEmailForm() {
+    var form = document.getElementById('guides-email-form');
+    if (!form || form.getAttribute('data-bound')) return;
+    form.setAttribute('data-bound', 'true');
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var emailEl = document.getElementById('guides-login-email');
+      var passEl = document.getElementById('guides-login-password');
+      var errEl = document.getElementById('guides-email-error');
+      var btn = document.getElementById('btn-guides-email-submit');
+      if (!emailEl || !passEl) return;
+      if (errEl) errEl.style.display = 'none';
+      if (btn) { btn.disabled = true; btn.textContent = 'Accediendo...'; }
+      try {
+        var res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailEl.value.trim().toLowerCase(), password: passEl.value })
+        });
+        var data = await res.json();
+        if (res.ok && data.token) {
+          setSharedToken(data.token, data.user);
+          closeAuth();
+          location.reload();
+        } else {
+          if (errEl) {
+            errEl.textContent = data.error || 'Credenciales incorrectas';
+            errEl.style.display = 'block';
+          }
+        }
+      } catch (err) {
+        if (errEl) {
+          errEl.textContent = 'Error de conexión';
+          errEl.style.display = 'block';
+        }
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Iniciar sesión'; }
+      }
+    });
+  }
+
   function authModalHtml() {
     var t = typeof window.atmT === 'function' ? window.atmT : function (k) { return k; };
     return '<div class="auth-modal" id="auth-modal" hidden>' +
@@ -286,6 +335,12 @@
       '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>' +
       '<span>Continuar con X</span></button>' +
       '</div>' +
+      '<form id="guides-email-form" style="display:flex;flex-direction:column;gap:8px;width:100%;margin-bottom:12px;">' +
+      '<input type="email" id="guides-login-email" placeholder="Correo electrónico" required style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.2);color:inherit;font-size:13px;box-sizing:border-box;">' +
+      '<input type="password" id="guides-login-password" placeholder="Contraseña" required style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.2);color:inherit;font-size:13px;box-sizing:border-box;">' +
+      '<button type="submit" id="btn-guides-email-submit" style="padding:9px;border-radius:8px;background:var(--primary,#38bdf8);color:#000;font-weight:600;font-size:13px;border:none;cursor:pointer;">Iniciar sesión con correo</button>' +
+      '<div id="guides-email-error" style="display:none;font-size:12px;color:#fca5a5;text-align:center;padding:2px 0;"></div>' +
+      '</form>' +
       '<div style="display:flex;align-items:center;gap:10px;margin:4px 0 14px;color:var(--text-muted,#71717a);font-size:12px;width:100%;">' +
       '<span style="flex:1;height:1px;background:var(--border,rgba(255,255,255,0.1));"></span>' +
       '<span>o usa un nombre local</span>' +
@@ -304,6 +359,7 @@
   function ensureAuthModal() {
     if (document.getElementById('auth-modal')) return;
     document.body.insertAdjacentHTML('beforeend', authModalHtml());
+    bindGuidesEmailForm();
   }
 
   function openAuth() {
@@ -311,6 +367,7 @@
     var modal = document.getElementById('auth-modal');
     if (!modal) return;
     modal.hidden = false;
+    bindGuidesEmailForm();
     mountGoogleInGuides();
     var input = modal.querySelector('[name="guestName"]');
     if (input) {
