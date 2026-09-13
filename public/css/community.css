@@ -591,7 +591,8 @@
   box-sizing: border-box;
 }
 
-.write-preview {
+.write-preview,
+#editor-preview-container {
   padding: 24px;
   min-height: 380px;
   max-width: 100%;
@@ -602,7 +603,8 @@
   color: var(--text-primary);
 }
 
-.write-preview[hidden] {
+.write-preview[hidden],
+#editor-preview-container[hidden] {
   display: none !important;
 }
 

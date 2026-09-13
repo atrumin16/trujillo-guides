@@ -183,59 +183,147 @@
     pill.textContent = words + ' palabras · ~' + mins + ' min lectura · ' + chars + ' caracteres';
   }
 
-  // --- Toolbar Insertion Helper ---
-  function insertSnippet(before, after, defaultText) {
-    var ta = document.getElementById('write-textarea');
-    if (!ta) return;
-    var start = ta.selectionStart;
-    var end = ta.selectionEnd;
-    var sel = ta.value.substring(start, end);
-    var insertVal = sel || defaultText || '';
-    var rep = before + insertVal + after;
-    ta.setRangeText(rep, start, end, 'end');
-    ta.focus();
+  // --- Textarea Text Manipulation Logic ---
+  function wrapSelection(el, before, after, defaultText) {
+    if (!el) return;
+    var start = el.selectionStart;
+    var end = el.selectionEnd;
+    var val = el.value;
+    var selected = val.substring(start, end);
+    var insertText = selected || defaultText || '';
+    var rep = before + insertText + after;
+    el.setRangeText(rep, start, end, 'end');
+    el.focus();
+    if (!selected && defaultText) {
+      el.setSelectionRange(start + before.length, start + before.length + defaultText.length);
+    } else {
+      el.setSelectionRange(start + before.length, start + before.length + insertText.length);
+    }
+    updateMetrics();
+    scheduleAutoSave();
+  }
+
+  function insertLinePrefix(el, prefix) {
+    if (!el) return;
+    var start = el.selectionStart;
+    var end = el.selectionEnd;
+    var val = el.value;
+    var lineStart = val.lastIndexOf('\n', start - 1) + 1;
+    if (start === end) {
+      el.setRangeText(prefix, lineStart, lineStart, 'end');
+      var newPos = start + prefix.length;
+      el.setSelectionRange(newPos, newPos);
+    } else {
+      var selected = val.substring(lineStart, end);
+      var lines = selected.split('\n');
+      var prefixed = lines.map(function (l) { return prefix + l; }).join('\n');
+      el.setRangeText(prefixed, lineStart, end, 'end');
+      el.setSelectionRange(lineStart, lineStart + prefixed.length);
+    }
+    el.focus();
+    updateMetrics();
+    scheduleAutoSave();
+  }
+
+  function insertLink(el) {
+    if (!el) return;
+    var start = el.selectionStart;
+    var end = el.selectionEnd;
+    var val = el.value;
+    var selected = val.substring(start, end);
+    if (selected) {
+      var rep = '[' + selected + '](url)';
+      el.setRangeText(rep, start, end, 'end');
+      el.focus();
+      el.setSelectionRange(start + selected.length + 3, start + selected.length + 6);
+    } else {
+      var rep = '[texto](url)';
+      el.setRangeText(rep, start, end, 'end');
+      el.focus();
+      el.setSelectionRange(start + 1, start + 6);
+    }
+    updateMetrics();
+    scheduleAutoSave();
+  }
+
+  function insertTicker(el) {
+    if (!el) return;
+    var start = el.selectionStart;
+    var end = el.selectionEnd;
+    var val = el.value;
+    var selected = val.substring(start, end).trim();
+    var term = selected ? selected.replace(/^\$/, '').toUpperCase() : 'TICKER';
+    var rep = '$' + term;
+    el.setRangeText(rep, start, end, 'end');
+    el.focus();
+    el.setSelectionRange(start + 1, start + 1 + term.length);
+    updateMetrics();
+    scheduleAutoSave();
+  }
+
+  function insertTable(el) {
+    if (!el) return;
+    var start = el.selectionStart;
+    var end = el.selectionEnd;
+    var val = el.value;
+    var needsNewline = start > 0 && val.charAt(start - 1) !== '\n';
+    var prefix = needsNewline ? '\n\n' : (start === 0 ? '' : '\n');
+    var template = prefix + '| Columna 1 | Columna 2 |\n| :--- | :--- |\n| Valor A | Valor B |\n\n';
+    el.setRangeText(template, start, end, 'end');
+    el.focus();
+    updateMetrics();
+    scheduleAutoSave();
+  }
+
+  function insertCode(el) {
+    if (!el) return;
+    var start = el.selectionStart;
+    var end = el.selectionEnd;
+    var val = el.value;
+    var selected = val.substring(start, end);
+    var codeBody = selected || 'echo "Hola mundo"';
+    var needsNewline = start > 0 && val.charAt(start - 1) !== '\n';
+    var prefix = needsNewline ? '\n\n' : (start === 0 ? '' : '\n');
+    var template = prefix + '```bash\n' + codeBody + '\n```\n';
+    el.setRangeText(template, start, end, 'end');
+    el.focus();
+    if (!selected) {
+      el.setSelectionRange(start + prefix.length + 8, start + prefix.length + 8 + codeBody.length);
+    }
     updateMetrics();
     scheduleAutoSave();
   }
 
   function handleTool(tool) {
+    var ta = document.getElementById('write-textarea');
+    if (!ta) return;
     switch (tool) {
       case 'bold':
-        insertSnippet('**', '**', 'negrita');
+        wrapSelection(ta, '**', '**', 'negrita');
         break;
       case 'italic':
-        insertSnippet('*', '*', 'cursiva');
+        wrapSelection(ta, '_', '_', 'cursiva');
         break;
       case 'h2':
-        insertSnippet('\n## ', '\n', 'Título de sección');
+        insertLinePrefix(ta, '## ');
         break;
       case 'h3':
-        insertSnippet('\n### ', '\n', 'Subtítulo');
+        insertLinePrefix(ta, '### ');
         break;
       case 'link':
-        insertSnippet('[', '](https://...)', 'texto del enlace');
+        insertLink(ta);
         break;
       case 'ticker':
-        var ta = document.getElementById('write-textarea');
-        if (!ta) return;
-        var start = ta.selectionStart;
-        var end = ta.selectionEnd;
-        var sel = ta.value.substring(start, end).trim();
-        if (sel) {
-          var clean = sel.replace(/^\$/, '').toUpperCase();
-          insertSnippet('$', '', clean);
-        } else {
-          insertSnippet('$', '', 'TICKER');
-        }
+        insertTicker(ta);
         break;
       case 'table':
-        insertSnippet('\n\n| Métrica / Parámetro | Valor Actual | Referencia / Benchmark |\n| :--- | :--- | :--- |\n| Crecimiento Ingresos | +15.4% YoY | +12.0% Consenso |\n| Margen Operativo | 42.1% | 40.0% Objetivo |\n| Free Cash Flow | $21.5B | $19.8B FY23 |\n\n', '', '');
+        insertTable(ta);
         break;
       case 'callout':
-        insertSnippet('\n\n> [!NOTE]\n> Escribe aquí la información destacada o apunte técnico relevante.\n\n', '', '');
+        insertLinePrefix(ta, '> ');
         break;
       case 'code':
-        insertSnippet('\n\n```typescript\n', '\n```\n\n', '// Código o comando');
+        insertCode(ta);
         break;
     }
   }
@@ -301,7 +389,7 @@
   // --- Dual Mode Preview Compiler ---
   function updatePreview() {
     var ta = document.getElementById('write-textarea');
-    var pv = document.getElementById('write-preview');
+    var pv = document.getElementById('editor-preview-container') || document.getElementById('write-preview');
     if (!ta || !pv) return;
     var raw = ta.value || '';
     var refs = getReferences();
@@ -335,7 +423,7 @@
     var tabWrite = document.getElementById('tab-write');
     var tabPreview = document.getElementById('tab-preview');
     var ta = document.getElementById('write-textarea');
-    var pv = document.getElementById('write-preview');
+    var pv = document.getElementById('editor-preview-container') || document.getElementById('write-preview');
     if (!tabWrite || !tabPreview || !ta || !pv) return;
 
     if (mode === 'preview') {
@@ -439,6 +527,7 @@
   // --- Main Initializer / Loader ---
   async function load() {
     paintKinds('guide');
+    bindEditorEvents();
     updateMetrics();
 
     var slug = slugFromQuery();
@@ -496,10 +585,70 @@
     }
 
     updateMetrics();
+    bindEditorEvents();
 
     if (heading) heading.textContent = t('editGuide');
     if (del) del.hidden = false;
     if (ai) ai.href = studioUrl(data.title || '');
+  }
+
+  function bindEditorEvents() {
+    var ta = document.getElementById('write-textarea');
+    if (ta && !ta._hasInputListener) {
+      ta._hasInputListener = true;
+      ta.addEventListener('input', function () {
+        updateMetrics();
+        scheduleAutoSave();
+      });
+    }
+
+    var toolButtons = document.querySelectorAll('.studio-tool-btn, .editor-toolbar button, button[data-action], button[data-tool]');
+    toolButtons.forEach(function (btn) {
+      btn.setAttribute('type', 'button');
+      if (!btn._hasClickBound) {
+        btn._hasClickBound = true;
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var tool = btn.dataset.tool || btn.dataset.action;
+          if (tool) handleTool(tool);
+        });
+      }
+    });
+
+    var tabWrite = document.getElementById('tab-write');
+    if (tabWrite && !tabWrite._hasClickBound) {
+      tabWrite.setAttribute('type', 'button');
+      tabWrite._hasClickBound = true;
+      tabWrite.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setEditorTab('write');
+      });
+    }
+
+    var tabPreview = document.getElementById('tab-preview');
+    if (tabPreview && !tabPreview._hasClickBound) {
+      tabPreview.setAttribute('type', 'button');
+      tabPreview._hasClickBound = true;
+      tabPreview.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setEditorTab('preview');
+      });
+    }
+
+    var addRefBtn = document.getElementById('btn-add-ref') || document.getElementById('add-reference-btn');
+    if (addRefBtn && !addRefBtn._hasClickBound) {
+      addRefBtn.setAttribute('type', 'button');
+      addRefBtn._hasClickBound = true;
+      addRefBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        addReferenceRow();
+        scheduleAutoSave();
+      });
+    }
   }
 
   // --- Global Event Delegation ---
@@ -519,6 +668,7 @@
     // Toolbar buttons
     var toolBtn = e.target.closest('.studio-tool-btn, .editor-toolbar button, button[data-action], button[data-tool]');
     if (toolBtn) {
+      e.preventDefault();
       var tool = toolBtn.dataset.tool || toolBtn.dataset.action;
       if (tool) {
         handleTool(tool);
@@ -527,15 +677,32 @@
     }
 
     // Tabs
-    if (e.target.closest('#tab-write')) { setEditorTab('write'); return; }
-    if (e.target.closest('#tab-preview')) { setEditorTab('preview'); return; }
+    if (e.target.closest('#tab-write')) {
+      e.preventDefault();
+      setEditorTab('write');
+      return;
+    }
+    if (e.target.closest('#tab-preview')) {
+      e.preventDefault();
+      setEditorTab('preview');
+      return;
+    }
 
     // Draft restore & discard
-    if (e.target.closest('#draft-restore-btn')) { restoreDraft(); return; }
-    if (e.target.closest('#draft-discard-btn')) { discardDraft(); return; }
+    if (e.target.closest('#draft-restore-btn')) {
+      e.preventDefault();
+      restoreDraft();
+      return;
+    }
+    if (e.target.closest('#draft-discard-btn')) {
+      e.preventDefault();
+      discardDraft();
+      return;
+    }
 
     // References: Add row
     if (e.target.closest('#add-reference-btn, #btn-add-ref')) {
+      e.preventDefault();
       addReferenceRow();
       scheduleAutoSave();
       return;
@@ -544,6 +711,7 @@
     // References: Delete row
     var refDel = e.target.closest('.ref-delete-btn');
     if (refDel) {
+      e.preventDefault();
       var row = refDel.closest('.ref-row');
       if (row) row.remove();
       scheduleAutoSave();
@@ -552,11 +720,13 @@
 
     // Custom File Trigger Buttons
     if (e.target.closest('#btn-import-file')) {
+      e.preventDefault();
       var f1 = document.getElementById('import-file');
       if (f1) f1.click();
       return;
     }
     if (e.target.closest('#btn-attach-files')) {
+      e.preventDefault();
       var f2 = document.getElementById('attach-files');
       if (f2) f2.click();
       return;
