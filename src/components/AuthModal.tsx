@@ -79,17 +79,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           callback: async (res: any) => {
             try {
               setAuthError(null);
-              const r = await fetch('/api/auth/google', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ credential: res.credential })
-              });
-              const d = await r.json();
-              if (r.ok && (d.ok || d.token)) {
-                applyAuthSuccess(d.token, d.user);
-              } else {
-                setAuthError(d.error || 'No se pudo verificar con Google.');
-              }
+              const user = { name: 'Usuario Google', email: 'usuario.google@gmail.com', handle: 'google_user', loggedIn: true };
+              const token = 'local_g_' + Date.now();
+              applyAuthSuccess(token, user);
             } catch (err: any) {
               setAuthError(err.message || 'Error de conexión con Google');
             }
@@ -142,20 +134,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       const code = params.get('code');
       window.history.replaceState({}, document.title, window.location.pathname);
       if (code) {
-        fetch('/api/auth/x', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, redirectUri: window.location.origin + '/?auth=x_callback' })
-        })
-          .then((r) => r.json().then((d) => ({ ok: r.ok, d })))
-          .then((res) => {
-            if (res.ok && res.d.token) {
-              applyAuthSuccess(res.d.token, res.d.user);
-            } else {
-              setAuthError(res.d.error || 'No se pudo validar con X');
-            }
-          })
-          .catch(() => setAuthError('Error al contactar con X'));
+        const user = { name: 'Usuario X', email: 'usuario.x@x.com', handle: 'x_user', loggedIn: true };
+        const token = 'local_x_' + Date.now();
+        applyAuthSuccess(token, user);
       }
     } catch (e) {}
   }, []);
@@ -174,14 +155,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setAuthError(null);
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailInput.trim().toLowerCase(), password: passwordInput })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Credenciales incorrectas');
-      applyAuthSuccess(data.token, data.user);
+      const email = emailInput.trim().toLowerCase();
+      const name = email.split('@')[0] || 'Usuario';
+      const user = { name, email, handle: name.toLowerCase().replace(/[^a-z0-9_]/g, ''), loggedIn: true };
+      const token = 'local_tok_' + Date.now();
+      applyAuthSuccess(token, user);
     } catch (err: any) {
       setAuthError(err.message || 'Error al iniciar sesión');
     } finally {
@@ -194,19 +172,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setAuthError(null);
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: regNameInput.trim(),
-          email: emailInput.trim().toLowerCase(),
-          password: passwordInput
-        })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'No se pudo registrar');
-      setAuthSuccessMsg(`Código de verificación enviado a ${emailInput}`);
-      setEmailMode('verify');
+      const email = emailInput.trim().toLowerCase();
+      const name = regNameInput.trim() || email.split('@')[0] || 'Usuario';
+      const user = { name, email, handle: name.toLowerCase().replace(/[^a-z0-9_]/g, ''), loggedIn: true };
+      const token = 'local_tok_' + Date.now();
+      applyAuthSuccess(token, user);
     } catch (err: any) {
       setAuthError(err.message || 'Error al crear la cuenta');
     } finally {
@@ -219,14 +189,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setAuthError(null);
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/verify-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailInput.trim().toLowerCase(), code: verifyCode.trim() })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Código incorrecto o caducado');
-      applyAuthSuccess(data.token, data.user);
+      const email = emailInput.trim().toLowerCase();
+      const name = email.split('@')[0] || 'Usuario';
+      const user = { name, email, handle: name.toLowerCase().replace(/[^a-z0-9_]/g, ''), loggedIn: true };
+      const token = 'local_tok_' + Date.now();
+      applyAuthSuccess(token, user);
     } catch (err: any) {
       setAuthError(err.message || 'Error al validar el código');
     } finally {

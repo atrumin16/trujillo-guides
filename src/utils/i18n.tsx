@@ -618,23 +618,21 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const batch = keysToTranslate.slice(0, 30);
       const texts = batch.map((k) => baseDict[k]);
 
-      // Consultar endpoint Cloudflare Function /api/guides/translate
-      const res = await fetch('/api/guides/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tl: targetLang, q: texts })
-      }).catch(() => null);
+      // Consultar endpoint Google Translate directo en cliente (0 Workers)
+      const joined = texts.join('\n⟦§⟧\n');
+      const gUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(targetLang)}&dt=t&q=${encodeURIComponent(joined)}`;
+      const res = await fetch(gUrl).catch(() => null);
 
       if (res && res.ok) {
-        const data = await res.json().catch(() => null);
-        if (data && Array.isArray(data.texts)) {
-          data.texts.forEach((translatedText: string, idx: number) => {
-            if (translatedText && batch[idx]) {
-              DYNAMIC_TRANSLATIONS_CACHE.set(`${targetLang}::${batch[idx]}`, translatedText);
-            }
-          });
-          setRerenderTrigger((prev) => prev + 1);
-        }
+        const g = await res.json().catch(() => null);
+        const t = (g && g[0]) ? g[0].map((row: any) => row && row[0] ? row[0] : '').join('') : joined;
+        const out = t.split(/\n⟦§⟧\n/);
+        out.forEach((translatedText: string, idx: number) => {
+          if (translatedText && batch[idx]) {
+            DYNAMIC_TRANSLATIONS_CACHE.set(`${targetLang}::${batch[idx]}`, translatedText.trim());
+          }
+        });
+        setRerenderTrigger((prev) => prev + 1);
       }
     } catch (err) {
       console.warn('Dynamic translation warning:', err);

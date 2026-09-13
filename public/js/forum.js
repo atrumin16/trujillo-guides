@@ -41,13 +41,40 @@
     if (tagged && tagged.getAttribute('data-slug')) return tagged.getAttribute('data-slug');
     var p = (location.pathname || '').replace(/\/+$/, '');
     var m = p.match(/^\/g\/([a-z0-9-]+)$/i) || p.match(/^\/guides\/([a-z0-9-]+)$/i);
-    return m ? m[1].toLowerCase() : '';
+    if (m) return m[1].toLowerCase();
+    try {
+      var sp = new URLSearchParams(location.search);
+      var q = sp.get('id') || sp.get('slug') || sp.get('g');
+      if (q) return q.toLowerCase();
+    } catch (e) {}
+    return '';
   }
   function esc(s) {
     return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
   function when(ts) {
     try { return new Date(ts).toLocaleString(); } catch (e) { return ''; }
+  }
+
+  function getFiles(slug) {
+    try {
+      return JSON.parse(localStorage.getItem('atm_files_' + slug) || '[]');
+    } catch (e) { return []; }
+  }
+  function saveFiles(slug, files) {
+    try {
+      localStorage.setItem('atm_files_' + slug, JSON.stringify(files));
+    } catch (e) {}
+  }
+  function getComments(slug) {
+    try {
+      return JSON.parse(localStorage.getItem('atm_comments_' + slug) || '[]');
+    } catch (e) { return []; }
+  }
+  function saveComments(slug, comments) {
+    try {
+      localStorage.setItem('atm_comments_' + slug, JSON.stringify(comments));
+    } catch (e) {}
   }
 
   var ICON_REPLY = '<svg class="btn-ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>';
@@ -73,7 +100,9 @@
   }
 
   function fileUrl(slug, id, preview) {
-    return '/api/guides/files?slug=' + encodeURIComponent(slug) + '&id=' + encodeURIComponent(id) + (preview ? '&preview=1' : '');
+    var files = getFiles(slug);
+    var found = files.find(function (f) { return f.id === id; });
+    return (found && found.data) ? found.data : '#';
   }
 
   function previewKind(f) {
@@ -137,21 +166,28 @@
     var modal = ensurePreview();
     modal.querySelector('[data-preview-title]').textContent = name;
     var dl = modal.querySelector('[data-preview-dl]');
-    dl.href = fileUrl(slug, id, false);
+    var src = fileUrl(slug, id, false);
+    dl.href = src;
     dl.setAttribute('download', name);
     var body = modal.querySelector('[data-preview-body]');
-    var src = fileUrl(slug, id, true);
     if (kind === 'image') {
       body.innerHTML = '<img src="' + src + '" alt="' + esc(name) + '">';
     } else if (kind === 'pdf') {
       body.innerHTML = '<iframe src="' + src + '" title="' + esc(name) + '"></iframe>';
     } else if (kind === 'text') {
-      body.innerHTML = '<p class="lede">' + t('preview') + '…</p>';
-      fetch(src).then(function (r) { return r.text(); }).then(function (txt) {
-        body.innerHTML = '<pre>' + esc(txt.slice(0, 20000)) + '</pre>';
-      }).catch(function () {
-        body.innerHTML = '<p class="lede" data-i18n="previewFail">' + t('previewFail') + '</p>';
-      });
+      var txt = '';
+      try {
+        if (src.indexOf(';base64,') !== -1) {
+          txt = decodeURIComponent(escape(atob(src.split(',')[1])));
+        } else if (src.indexOf(',') !== -1) {
+          txt = decodeURIComponent(src.split(',')[1]);
+        } else {
+          txt = src;
+        }
+      } catch (err) {
+        txt = 'Error al descodificar archivo de texto.';
+      }
+      body.innerHTML = '<pre>' + esc(txt.slice(0, 20000)) + '</pre>';
     } else {
       body.innerHTML = '<p class="lede" data-i18n="previewFail">' + t('previewFail') + '</p>';
     }
@@ -181,10 +217,10 @@
           '<header><img src="' + esc(c.picture || '/avatar.png') + '" alt="" width="28" height="28">' +
           '<strong>' + esc(c.name) + '</strong>' +
           (c.handle ? ' <a href="/u/@' + esc(c.handle) + '">@' + esc(c.handle) + '</a>' : '') +
-          '<time>' + esc(when(c.createdAt)) + (c.editedAt ? ' · ' + t('edited') : '') + '</time></header>' +
+          '<time>' + esc(when(c.createdAt || c.created)) + (c.editedAt || c.edited ? ' · ' + t('edited') : '') + '</time></header>' +
           '<p data-c-text>' + esc(c.text) + '</p>' +
           '<div class="comment-actions">' +
-          '<button type="button" class="text-btn vote-mini" data-c-up="' + esc(c.id) + '" title="' + t('like') + '"><svg class="vote-ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11v8a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h2z"/><path d="M7 11V8a3 3 0 0 1 3-3h1v6h6.2a1.8 1.8 0 0 1 1.76 2.17l-1.05 5.1A1.8 1.8 0 0 1 16.15 20H9a2 2 0 0 1-2-2v-7z"/></svg> ' + (c.score || 0) + '</button>' +
+          '<button type="button" class="text-btn vote-mini" data-c-up="' + esc(c.id) + '" title="' + t('like') + '"><svg class="vote-ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11v8a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h2z"/><path d="M7 11V8a3 3 0 0 1 3-3h1v6h6.2a1.8 1.8 0 0 1 1.76 2.17l-1.05 5.1A1.8 1.8 0 0 1 16.15 20H9a2 2 0 0 1-2-2v-7z"/></svg> ' + (c.score || c.votes || 0) + '</button>' +
           '<button type="button" class="text-btn" data-reply="' + esc(c.id) + '" data-i18n-title="reply" title="' + t('reply') + '" aria-label="' + t('reply') + '">' + ICON_REPLY + '</button>' +
           (own ? '<button type="button" class="text-btn" data-edit-c="' + esc(c.id) + '" data-i18n-title="edit" title="' + t('edit') + '" aria-label="' + t('edit') + '">' + ICON_WAND + '</button>' : '') +
           (own ? '<button type="button" class="text-btn" data-del-c="' + esc(c.id) + '" data-i18n-title="delete" title="' + t('delete') + '" aria-label="' + t('delete') + '">' + ICON_TRASH + '</button>' : '') +
@@ -195,20 +231,14 @@
     return walk('');
   }
 
-  async function load(slug, root) {
+  function load(slug, root) {
     var me = window.__taMe || null;
     var filesBox = root.querySelector('[data-files]');
     var thread = root.querySelector('[data-thread]');
-    try {
-      var fRes = await fetch('/api/guides/files?slug=' + encodeURIComponent(slug), { headers: headers(false) });
-      var fData = await fRes.json();
-      renderFiles(filesBox, fData.files, slug, me);
-    } catch (e) {}
-    try {
-      var cRes = await fetch('/api/guides/comments?slug=' + encodeURIComponent(slug), { headers: headers(false) });
-      var cData = await cRes.json();
-      thread.innerHTML = tree(cData.comments || [], me) || '<p class="lede" data-i18n="noComments">' + t('noComments') + '</p>';
-    } catch (e) {}
+    var files = getFiles(slug);
+    renderFiles(filesBox, files, slug, me);
+    var comments = getComments(slug);
+    thread.innerHTML = tree(comments, me) || '<p class="lede" data-i18n="noComments">' + t('noComments') + '</p>';
     document.dispatchEvent(new CustomEvent('atm:content'));
   }
 
@@ -254,27 +284,35 @@
     var name = form.name.value.trim();
     var parentId = form.parentId.value;
     if (!slug || !text) return;
-    if (!name && !(window.__taMe && (window.__taMe.name || window.__taMe.handle))) {
+    var authorName = name || (window.__taMe && (window.__taMe.name || window.__taMe.handle)) ||
+      (typeof window.atmGuestName === 'function' ? window.atmGuestName() : '') ||
+      (function () { try { return localStorage.getItem('atm_guest_name') || ''; } catch (e) { return ''; } })();
+    if (!authorName) {
       if (typeof window.atmOpenAuth === 'function') window.atmOpenAuth();
       else alert(t('yourName'));
       return;
     }
-    try { if (name) localStorage.setItem('atm_guest_name', name); } catch (err) {}
-    fetch('/api/guides/comments', {
-      method: 'POST',
-      headers: headers(true),
-      credentials: 'same-origin',
-      body: JSON.stringify({ slug: slug, text: text, name: name, parentId: parentId })
-    }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
-      .then(function (res) {
-        if (!res.ok) {
-          alert(res.d.error === 'login' ? t('needLogin') : (res.d.error || 'Error'));
-          return;
-        }
-        form.text.value = '';
-        form.parentId.value = '';
-        load(slug, root);
-      }).catch(function () {});
+    try { if (authorName) localStorage.setItem('atm_guest_name', authorName); } catch (err) {}
+    var comments = getComments(slug);
+    var c = {
+      id: 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+      slug: slug,
+      text: text,
+      name: authorName,
+      handle: (window.__taMe && window.__taMe.handle) || '',
+      picture: (window.__taMe && window.__taMe.picture) || '/avatar.png',
+      createdAt: Date.now(),
+      created: Date.now(),
+      score: 0,
+      votes: 0,
+      parentId: parentId || '',
+      voter: clientId()
+    };
+    comments.push(c);
+    saveComments(slug, comments);
+    form.text.value = '';
+    form.parentId.value = '';
+    load(slug, root);
   });
 
   document.addEventListener('change', function (e) {
@@ -284,7 +322,7 @@
     var slug = root && root.getAttribute('data-slug');
     var file = input.files[0];
     var hint = root.querySelector('[data-hint]');
-    if (file.size > 380000) {
+    if (file.size > 2500000) {
       if (hint) hint.textContent = t('fileTooBig');
       return;
     }
@@ -299,32 +337,24 @@
     var reader = new FileReader();
     reader.onload = function () {
       var data = String(reader.result || '');
-      fetch('/api/guides/files', {
-        method: 'POST',
-        headers: headers(true),
-        credentials: 'same-origin',
-        body: JSON.stringify({
-          slug: slug,
-          name: file.name,
-          type: file.type,
-          ext: (file.name.split('.').pop() || ''),
-          data: data,
-          authorName: author,
-          guestName: author
-        })
-      }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, status: r.status, d: d }; }); })
-        .then(function (res) {
-          if (res.d && res.d.error === 'name') {
-            if (typeof window.atmOpenAuth === 'function') window.atmOpenAuth();
-            return;
-          }
-          if (!res.ok) {
-            if (hint) hint.textContent = t('fileError');
-            return;
-          }
-          input.value = '';
-          load(slug, root);
-        }).catch(function () {});
+      var files = getFiles(slug);
+      var f = {
+        id: 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+        slug: slug,
+        name: file.name,
+        type: file.type,
+        ext: (file.name.split('.').pop() || '').toLowerCase(),
+        size: file.size,
+        data: data,
+        handle: (window.__taMe && window.__taMe.handle) || '',
+        nameBy: author,
+        createdAt: Date.now(),
+        voter: clientId()
+      };
+      files.push(f);
+      saveFiles(slug, files);
+      input.value = '';
+      load(slug, root);
     };
     reader.readAsDataURL(file);
   });
@@ -334,12 +364,15 @@
     if (cup) {
       var box = cup.closest('#guide-forum');
       var slug = box && box.getAttribute('data-slug');
-      fetch('/api/guides/comments', {
-        method: 'POST',
-        headers: headers(true),
-        credentials: 'same-origin',
-        body: JSON.stringify({ slug: slug, id: cup.getAttribute('data-c-up'), vote: 'up' })
-      }).then(function () { load(slug, box); });
+      var cId = cup.getAttribute('data-c-up');
+      var comments = getComments(slug);
+      var target = comments.find(function (c) { return c.id === cId; });
+      if (target) {
+        target.score = (target.score || target.votes || 0) + 1;
+        target.votes = target.score;
+        saveComments(slug, comments);
+        load(slug, box);
+      }
       return;
     }
     var delC = e.target.closest('[data-del-c]');
@@ -347,12 +380,11 @@
       var box = delC.closest('#guide-forum');
       var slug = box && box.getAttribute('data-slug');
       if (!await confirmModal(t('confirmDeleteComment'))) return;
-      fetch('/api/guides/comments', {
-        method: 'DELETE',
-        headers: headers(true),
-        credentials: 'same-origin',
-        body: JSON.stringify({ slug: slug, id: delC.getAttribute('data-del-c') })
-      }).then(function () { load(slug, box); });
+      var cId = delC.getAttribute('data-del-c');
+      var comments = getComments(slug);
+      comments = comments.filter(function (c) { return c.id !== cId; });
+      saveComments(slug, comments);
+      load(slug, box);
       return;
     }
     var editC = e.target.closest('[data-edit-c]');
@@ -382,12 +414,16 @@
       var areaS = artS && artS.querySelector('textarea.forum-edit');
       var text = areaS ? areaS.value.trim() : '';
       if (!text) return;
-      fetch('/api/guides/comments', {
-        method: 'POST',
-        headers: headers(true),
-        credentials: 'same-origin',
-        body: JSON.stringify({ slug: slugS, id: saveC.getAttribute('data-save-c'), text: text })
-      }).then(function () { load(slugS, boxS); });
+      var cId = saveC.getAttribute('data-save-c');
+      var comments = getComments(slugS);
+      var target = comments.find(function (c) { return c.id === cId; });
+      if (target) {
+        target.text = text;
+        target.editedAt = Date.now();
+        target.edited = Date.now();
+        saveComments(slugS, comments);
+        load(slugS, boxS);
+      }
       return;
     }
     var reply = e.target.closest('[data-reply]');
@@ -415,12 +451,11 @@
     if (!del) return;
     var box = del.closest('#guide-forum');
     var slug = box && box.getAttribute('data-slug');
-    fetch('/api/guides/files', {
-      method: 'DELETE',
-      headers: headers(true),
-      credentials: 'same-origin',
-      body: JSON.stringify({ slug: slug, id: del.getAttribute('data-del-file') })
-    }).then(function () { load(slug, box); });
+    var fId = del.getAttribute('data-del-file');
+    var files = getFiles(slug);
+    files = files.filter(function (f) { return f.id !== fId; });
+    saveFiles(slug, files);
+    load(slug, box);
   });
 
   document.addEventListener('atm:me', function () {

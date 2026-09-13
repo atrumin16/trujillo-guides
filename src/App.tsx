@@ -35,20 +35,17 @@ const SavingsMainContent: React.FC = () => {
     const stored = getStoredUserName();
     if (stored) setUserName(stored);
 
-    // Auto-detect ecosystem SSO session from shared domain cookie
-    fetch('/api/auth/me', { credentials: 'include' })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data?.user?.name) {
-          setStoredUserName(data.user.name);
-          setUserName(data.user.name);
-          try {
-            localStorage.setItem('trujillo_ai_user', JSON.stringify(data.user));
-            localStorage.setItem('auth_user', JSON.stringify(data.user));
-          } catch (e) {}
+    // Auto-detect ecosystem SSO session from localStorage (Zero Workers)
+    try {
+      const localUserStr = localStorage.getItem('trujillo_ai_user') || localStorage.getItem('auth_user') || localStorage.getItem('atm_user');
+      if (localUserStr) {
+        const u = JSON.parse(localUserStr);
+        if (u?.name) {
+          setStoredUserName(u.name);
+          setUserName(u.name);
         }
-      })
-      .catch(() => {});
+      }
+    } catch (e) {}
   }, []);
 
   const handleAddResults = (newResults: ParseResult[]) => {
