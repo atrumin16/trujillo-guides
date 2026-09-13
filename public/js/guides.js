@@ -19,10 +19,37 @@
     return (root || document).querySelector(sel);
   }
 
+  var SLUG_ALIASES = {
+    'enterprise-email': 'correo-corporativo-startups',
+    'infraestructura-de-correo-corporativo-para-start': 'correo-corporativo-startups',
+    'infraestructura-de-correo-corporativo-para-startups-a-coste-0': 'correo-corporativo-startups',
+    'desglose-de-cartera-y-simulador-de-berkshire-hat': 'desglose-cartera-berkshire-brk',
+    'desglose-de-cartera-y-simulador-de-berkshire-hathaway': 'desglose-cartera-berkshire-brk',
+    'desglose-cartera-berkshire': 'desglose-cartera-berkshire-brk',
+    'berkshire': 'desglose-cartera-berkshire-brk',
+    'msft': 'informe-msft',
+    'microsoft': 'informe-msft',
+    'glosario': 'it-glossary',
+    'glossary': 'it-glossary',
+    'glossari': 'it-glossary'
+  };
+
   function slugFromPath() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var qId = params.get('id') || params.get('slug') || params.get('g');
+      if (qId) {
+        var cleanQ = qId.toLowerCase().trim();
+        return SLUG_ALIASES[cleanQ] || cleanQ;
+      }
+    } catch (e) {}
     var p = window.location.pathname || '';
     var m = p.match(/\/(?:guides|g|s)\/([a-z0-9-]+)/i);
-    return m ? m[1].toLowerCase() : '';
+    if (m && m[1]) {
+      var cleanP = m[1].toLowerCase().trim();
+      return SLUG_ALIASES[cleanP] || cleanP;
+    }
+    return '';
   }
 
   function absGuideShort(data) {
@@ -1110,8 +1137,9 @@
 
     if (!sidebar) return;
 
-    if (!sidebar.querySelector('.article-toc')) {
-      var tocNav = document.createElement('nav');
+    sidebar.querySelectorAll('.article-toc').forEach(function (el) { el.remove(); });
+
+    var tocNav = document.createElement('nav');
       tocNav.className = 'article-toc';
       tocNav.setAttribute('aria-label', 'Tabla de contenidos');
 
@@ -1214,6 +1242,8 @@
     autoEnhanceArticle();
     document.addEventListener('atm:content', autoEnhanceArticle);
   }
+
+  window.atmRerenderGuide = boot;
 
   function loadMarked(cb) {
     if (window.marked) { cb(); return; }

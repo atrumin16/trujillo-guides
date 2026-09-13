@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ATM Docs · Trujillo Guides</title>
+  <meta name="description" content="Technical engineering guides, financial analysis, and production architectures by Alberto Trujillo Mingorance.">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <meta name="theme-color" content="#030712">
+  <script src="/js/theme-boot.js?v=pub4"></script>
+  <link rel="stylesheet" href="/css/tokens.css?v=pub4">
+  <link rel="stylesheet" href="/style.css?v=pub4">
+  <link rel="stylesheet" href="/css/community.css?v=pub4">
+</head>
+<body class="docs-body community-body">
+  <header class="docs-topbar">
+    <a href="/" class="brand">
+      <img src="/avatar.png" alt="" class="brand-avatar" width="28" height="28">
+      <span>ATM Docs</span>
+    </a>
+    <div class="topbar-actions"></div>
+  </header>
+
+  <div class="guide-container doc-page has-toc-sidebar" id="guide-viewer">
+    <header class="doc-header">
+      <a href="/" class="back-nav">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Volver al Hub de Guías
+      </a>
+
+      <h1 class="page-title" id="viewer-title">Cargando guía...</h1>
+      <div id="guide-meta-bar" class="poster meta-bar poster-bar">
+        <div class="poster-author">
+          <span class="poster-avatar" id="viewer-avatar">AT</span>
+          <span class="poster-name" id="viewer-author">Alberto Trujillo</span>
+          <a class="poster-handle" id="viewer-handle" href="/u/@atrumin16">@atrumin16</a>
+        </div>
+        <div class="poster-right">
+          <time class="poster-date meta-chip" id="viewer-date">2026</time>
+          <button type="button" class="copy-link poster-copy meta-chip" id="copy-link">
+            <svg class="tool-ic" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <span>Copiar enlace</span>
+          </button>
+        </div>
+      </div>
+
+      <p class="page-subtitle" id="viewer-subtitle"></p>
+    </header>
+
+    <div class="doc-layout">
+      <aside class="doc-sidebar" id="viewer-sidebar"></aside>
+      <div class="doc-content">
+        <article id="guide-body" class="md-body doc"></article>
+        <aside id="guide-attachments" class="attach-list" hidden></aside>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/markdown" id="guide-markdown"></script>
+  <script type="application/json" id="guide-payload">{"attachments":[],"widgets":[]}</script>
+
+  <!-- High-Speed In-Memory Catalog & SPA Client Router (0ms Latency, 0 Workers) -->
+  <script>
+    (function () {
+      var ALIASES = {
+        'enterprise-email': 'correo-corporativo-startups',
+        'infraestructura-de-correo-corporativo-para-start': 'correo-corporativo-startups',
+        'infraestructura-de-correo-corporativo-para-startups-a-coste-0': 'correo-corporativo-startups',
+        'correo-corporativo': 'correo-corporativo-startups',
+        'desglose-de-cartera-y-simulador-de-berkshire-hat': 'desglose-cartera-berkshire-brk',
+        'desglose-de-cartera-y-simulador-de-berkshire-hathaway': 'desglose-cartera-berkshire-brk',
+        'desglose-cartera-berkshire': 'desglose-cartera-berkshire-brk',
+        'berkshire': 'desglose-cartera-berkshire-brk',
+        'msft': 'informe-msft',
+        'microsoft': 'informe-msft',
+        'glosario': 'it-glossary',
+        'glossary': 'it-glossary',
+        'glossari': 'it-glossary'
+      };
+
+      function resolveSlug() {
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var qId = params.get('id') || params.get('slug') || params.get('g');
+          if (qId) {
+            var cleanQ = qId.toLowerCase().trim();
+            return ALIASES[cleanQ] || cleanQ;
+          }
+        } catch (e) {}
+        var p = window.location.pathname || '';
+        var m = p.match(/\/(?:guides|g|s)\/([a-z0-9-]+)/i);
+        if (m && m[1]) {
+          var cleanP = m[1].toLowerCase().trim();
+          return ALIASES[cleanP] || cleanP;
+        }
+        return 'correo-corporativo-startups';
+      }
+
+      function applyGuide(guide) {
+        if (!guide) {
+          document.getElementById('viewer-title').textContent = 'Guía no encontrada';
+          document.getElementById('viewer-subtitle').textContent = 'El documento solicitado no existe o ha sido reubicado.';
+          document.getElementById('guide-body').innerHTML = '<div style="padding: 40px 0; text-align: center;"><p style="margin-bottom: 20px; color: #94a3b8;">No se ha encontrado ninguna guía para esta ruta.</p><a href="/" class="btn-primary" style="display: inline-block; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: 600;">Volver al Hub</a></div>';
+          return;
+        }
+
+        document.title = guide.title + ' · ATM Docs';
+        var titleEl = document.getElementById('viewer-title');
+        if (typeof window.formatTitleTickers === 'function') {
+          titleEl.innerHTML = window.formatTitleTickers(guide.title);
+        } else {
+          titleEl.textContent = guide.title;
+        }
+
+        var subEl = document.getElementById('viewer-subtitle');
+        if (subEl) subEl.textContent = guide.summary || '';
+
+        var authorEl = document.getElementById('viewer-author');
+        if (authorEl) authorEl.textContent = guide.authorName || 'Alberto Trujillo';
+
+        var handleEl = document.getElementById('viewer-handle');
+        if (handleEl) {
+          var h = guide.handle ? '@' + String(guide.handle).replace(/^@/, '') : '@atrumin16';
+          handleEl.textContent = h;
+          handleEl.href = '/u/' + h;
+        }
+
+        var dateEl = document.getElementById('viewer-date');
+        if (dateEl) dateEl.textContent = guide.date || '2026';
+
+        var copyBtn = document.getElementById('copy-link');
+        if (copyBtn) copyBtn.setAttribute('data-slug', guide.slug);
+
+        var metaBar = document.getElementById('guide-meta-bar');
+        if (metaBar) metaBar.setAttribute('data-slug', guide.slug);
+
+        var mdEl = document.getElementById('guide-markdown');
+        if (mdEl) mdEl.textContent = guide.content || '';
+
+        if (window.__atmGuidesLoaded && typeof window.atmRerenderGuide === 'function') {
+          window.atmRerenderGuide();
+        }
+      }
+
+      var currentSlug = resolveSlug();
+
+      fetch('/data/guides.json', { cache: 'default' })
+        .then(function (r) {
+          if (!r.ok) return fetch('/community-index.json').then(function (res) { return res.json(); });
+          return r.json();
+        })
+        .then(function (data) {
+          var list = (data && (data.guides || data.items)) || [];
+          var found = list.find(function (g) {
+            var s = String(g.slug || '').toLowerCase();
+            return s === currentSlug || ALIASES[s] === currentSlug;
+          });
+          if (found) {
+            applyGuide(found);
+          } else if (list.length > 0) {
+            applyGuide(list[0]);
+          }
+        })
+        .catch(function () {});
+    })();
+  </script>
+
+  <script src="/js/i18n.js?v=pub4"></script>
+  <script src="/js/chrome.js?v=pub4"></script>
+  <script src="/js/social.js?v=pub4"></script>
+  <script src="/js/forum.js?v=pub4"></script>
+  <script src="/js/translate.js?v=pub4"></script>
+  <script src="/js/marked.min.js"></script>
+  <script src="/js/guides.js?v=pub4"></script>
+</body>
+</html>

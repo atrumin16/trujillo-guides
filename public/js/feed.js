@@ -3,9 +3,9 @@
 
   var STATIC_CATALOG = [
     {
-      slug: 'infraestructura-de-correo-corporativo-para-start',
+      slug: 'correo-corporativo-startups',
       title: 'Infraestructura de Correo Corporativo para Startups a Coste 0 €',
-      href: '/guides/enterprise-email/',
+      href: '/g/correo-corporativo-startups',
       handle: 'atrumin16',
       authorName: 'Alberto Trujillo Mingorance',
       authorPicture: 'https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c',
@@ -16,7 +16,7 @@
       up: 3,
       pinned: true,
       fixada: true,
-      summary: 'Arquitectura de correo corporativo e identidad para startups sin Google Workspace.',
+      summary: 'Arquitectura de correo corporativo e identidad para startups sin Google Workspace: enrutamiento en Edge, DKIM 2048-bit y avatares verificados.',
       date: '11 sep 2026',
       updatedAt: 1789222141213,
       static: true
@@ -41,9 +41,9 @@
       static: false
     },
     {
-      slug: 'desglose-de-cartera-y-simulador-de-berkshire-hat',
+      slug: 'desglose-cartera-berkshire-brk',
       title: 'Desglossament de Cartera i Simulador de Berkshire Hathaway ($BRK.B)',
-      href: '/g/desglose-de-cartera-y-simulador-de-berkshire-hat',
+      href: '/g/desglose-cartera-berkshire-brk',
       handle: 'atrumin16',
       authorName: 'Alberto Trujillo Mingorance',
       authorPicture: 'https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c',
@@ -62,7 +62,7 @@
     {
       slug: 'it-glossary',
       title: 'Glossari Interactiu de Sistemes i Informàtica',
-      href: '/guides/it-glossary/',
+      href: '/g/it-glossary',
       handle: 'atrumin16',
       authorName: 'Alberto Trujillo Mingorance',
       authorPicture: 'https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c',
@@ -409,10 +409,10 @@
     // 2. Render immediately from in-memory catalog (0 latency, 0 worker requests)
     render();
 
-    // 3. Static CDN refresh from /community-index.json (0 worker requests)
-    fetch('/community-index.json', { cache: 'default' })
+    // 3. Static CDN refresh from /data/guides.json (0 worker requests)
+    fetch('/data/guides.json', { cache: 'default' })
       .then(function (r) {
-        if (!r.ok) throw new Error('community-index status ' + r.status);
+        if (!r.ok) return fetch('/community-index.json').then(function (res) { return res.json(); });
         return r.json();
       })
       .then(function (data) {
