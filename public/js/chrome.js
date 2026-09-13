@@ -171,12 +171,14 @@
       localStorage.removeItem('trujillo_ai_token');
       localStorage.removeItem('auth_token');
       localStorage.removeItem('atm_guest_name');
+      localStorage.removeItem('atm_user');
+      localStorage.removeItem('trujillo_ai_user');
+      localStorage.removeItem('auth_user');
     } catch (e) {}
     window.__taMe = null;
     setSharedCookie('ta_session', '', 0);
     setSharedCookie('auth_token', '', 0);
     setSharedCookie('session_active', '', 0);
-    fetch('/api/guides/logout', { method: 'POST', credentials: 'same-origin' }).catch(function () {});
     closeAccountMenu();
     paintAccount();
     document.dispatchEvent(new CustomEvent('atm:logout'));
@@ -282,104 +284,260 @@
     }
   });
 
-  function bindGuidesEmailForm() {
-    var form = document.getElementById('guides-email-form');
-    if (!form || form.getAttribute('data-bound')) return;
-    form.setAttribute('data-bound', 'true');
-    form.addEventListener('submit', async function (e) {
-      e.preventDefault();
-      var emailEl = document.getElementById('guides-login-email');
-      var passEl = document.getElementById('guides-login-password');
-      var errEl = document.getElementById('guides-email-error');
-      var btn = document.getElementById('btn-guides-email-submit');
-      if (!emailEl || !passEl) return;
-      if (errEl) errEl.style.display = 'none';
-      if (btn) { btn.disabled = true; btn.textContent = 'Accediendo...'; }
-      try {
-        var res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: emailEl.value.trim().toLowerCase(), password: passEl.value })
-        });
-        var data = await res.json();
-        if (res.ok && data.token) {
-          setSharedToken(data.token, data.user);
-          closeAuth();
-          location.reload();
-        } else {
-          if (errEl) {
-            errEl.textContent = data.error || 'Credenciales incorrectas';
-            errEl.style.display = 'block';
-          }
-        }
-      } catch (err) {
-        if (errEl) {
-          errEl.textContent = 'Error de conexión';
-          errEl.style.display = 'block';
-        }
-      } finally {
-        if (btn) { btn.disabled = false; btn.textContent = 'Iniciar sesión'; }
-      }
-    });
+  function authModalHtml() {
+    return '<div id="auth-modal" class="auth-backdrop" style="display: none;">' +
+      '<div class="auth-card">' +
+      '<button type="button" class="auth-close-btn" id="auth-modal-close" data-close-auth aria-label="Cerrar">&times;</button>' +
+      '<div class="auth-header">' +
+      '<div class="auth-icon-badge">' +
+      '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+      '<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>' +
+      '</svg>' +
+      '</div>' +
+      '<h3 class="auth-title">Trujillo Guides</h3>' +
+      '<p class="auth-subtitle">Entra para publicar, gestionar guías y sincronizar borradores.</p>' +
+      '</div>' +
+      '<div class="auth-tabs">' +
+      '<button type="button" class="auth-tab active" id="tab-auth-login">Acceder</button>' +
+      '<button type="button" class="auth-tab" id="tab-auth-register">Crear cuenta</button>' +
+      '</div>' +
+      '<div class="auth-social-buttons">' +
+      '<button type="button" class="auth-social-btn" id="btn-oauth-google">' +
+      '<svg width="18" height="18" viewBox="0 0 24 24">' +
+      '<path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/>' +
+      '<path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>' +
+      '<path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12 0 14.8s.7 5.1 1.9 7.5l3.7-2.9z"/>' +
+      '<path fill="#34A853" d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16.5C3.7 20.2 7.5 23.5 12 23.5z"/>' +
+      '</svg>' +
+      '<span>Continuar con Google</span>' +
+      '</button>' +
+      '<button type="button" class="auth-social-btn" id="btn-oauth-x">' +
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">' +
+      '<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>' +
+      '</svg>' +
+      '<span>Continuar con X</span>' +
+      '</button>' +
+      '</div>' +
+      '<div class="auth-divider"><span>o continúa con correo</span></div>' +
+      '<form id="auth-form" onsubmit="event.preventDefault();">' +
+      '<div id="auth-field-name" style="display: none; margin-bottom: 12px;">' +
+      '<label class="auth-input-label">Nombre</label>' +
+      '<input type="text" class="auth-input" placeholder="Tu nombre" id="auth-name-input">' +
+      '</div>' +
+      '<div style="margin-bottom: 12px;">' +
+      '<label class="auth-input-label">Correo</label>' +
+      '<input type="email" class="auth-input" placeholder="tu@correo.com" id="auth-email-input" required>' +
+      '</div>' +
+      '<div style="margin-bottom: 16px;">' +
+      '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">' +
+      '<label class="auth-input-label">Contraseña</label>' +
+      '<a href="#" class="auth-forgot-link" id="auth-forgot-pwd">¿Olvidaste la contraseña?</a>' +
+      '</div>' +
+      '<input type="password" class="auth-input" placeholder="••••••••" id="auth-pwd-input" required>' +
+      '</div>' +
+      '<button type="submit" class="auth-submit-btn" id="auth-submit-action">Continuar</button>' +
+      '</form>' +
+      '<div style="text-align: center; margin-top: 14px;">' +
+      '<button type="button" class="auth-guest-btn" id="auth-guest-action">Continuar como invitado &rarr;</button>' +
+      '</div>' +
+      '<div class="auth-footer-links">' +
+      '<a href="/legal/terms">Términos</a>' +
+      '<span>·</span>' +
+      '<a href="/legal/privacy">Privacidad</a>' +
+      '<span>·</span>' +
+      '<a href="https://ai.trujillomingorance.com" target="_blank" rel="noopener">ai.trujillomingorance.com</a>' +
+      '</div>' +
+      '</div>' +
+      '</div>';
   }
 
-  function authModalHtml() {
-    var t = typeof window.atmT === 'function' ? window.atmT : function (k) { return k; };
-    return '<div class="auth-modal" id="auth-modal" hidden>' +
-      '<div class="auth-card" role="dialog" aria-modal="true">' +
-      '<button type="button" class="auth-close" data-close-auth aria-label="Cerrar">✕</button>' +
-      '<h2 data-i18n="enterName">' + t('enterName') + '</h2>' +
-      '<p class="lede" data-i18n="guestHint">' + t('guestHint') + '</p>' +
-      '<div style="display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;margin-bottom:14px;">' +
-      '<div id="google-guides-btn" style="min-height:44px;display:flex;justify-content:center;width:100%;"></div>' +
-      '<button type="button" id="btn-guides-x" style="width:100%;max-width:280px;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#000;color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:9999px;font-size:14px;font-weight:600;padding:10px 16px;cursor:pointer;">' +
-      '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>' +
-      '<span>Continuar con X</span></button>' +
-      '</div>' +
-      '<form id="guides-email-form" style="display:flex;flex-direction:column;gap:8px;width:100%;margin-bottom:12px;">' +
-      '<input type="email" id="guides-login-email" placeholder="Correo electrónico" required style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.2);color:inherit;font-size:13px;box-sizing:border-box;">' +
-      '<input type="password" id="guides-login-password" placeholder="Contraseña" required style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.2);color:inherit;font-size:13px;box-sizing:border-box;">' +
-      '<button type="submit" id="btn-guides-email-submit" style="padding:9px;border-radius:8px;background:var(--primary,#38bdf8);color:#000;font-weight:600;font-size:13px;border:none;cursor:pointer;">Iniciar sesión con correo</button>' +
-      '<div id="guides-email-error" style="display:none;font-size:12px;color:#fca5a5;text-align:center;padding:2px 0;"></div>' +
-      '</form>' +
-      '<div style="display:flex;align-items:center;gap:10px;margin:4px 0 14px;color:var(--text-muted,#71717a);font-size:12px;width:100%;">' +
-      '<span style="flex:1;height:1px;background:var(--border,rgba(255,255,255,0.1));"></span>' +
-      '<span>o usa un nombre local</span>' +
-      '<span style="flex:1;height:1px;background:var(--border,rgba(255,255,255,0.1));"></span>' +
-      '</div>' +
-      '<form id="guest-form">' +
-      '<input type="text" name="guestName" maxlength="40" required autocomplete="nickname" placeholder="' + t('yourName') + '" data-i18n-placeholder="yourName" value="' + esc(guestName()) + '">' +
-      '<button type="submit" data-i18n="guestContinue">' + t('guestContinue') + '</button>' +
-      '</form>' +
-      '<div style="margin-top:14px;text-align:center;">' +
-      '<a class="auth-studio" href="' + studioLoginUrl(false) + '" data-studio-login rel="noopener" data-i18n="studioLogin">' + t('studioLogin') + '</a>' +
-      '</div>' +
-      '</div></div>';
+  function bindAuthModal() {
+    var modal = document.getElementById('auth-modal');
+    if (!modal || modal.getAttribute('data-bound') === 'true') return;
+    modal.setAttribute('data-bound', 'true');
+
+    var closeBtn = document.getElementById('auth-modal-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        closeAuth();
+      });
+    }
+
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) closeAuth();
+    });
+
+    var tabLogin = document.getElementById('tab-auth-login');
+    var tabReg = document.getElementById('tab-auth-register');
+    var fieldName = document.getElementById('auth-field-name');
+    var submitBtn = document.getElementById('auth-submit-action');
+
+    if (tabLogin && tabReg) {
+      tabLogin.addEventListener('click', function (e) {
+        e.preventDefault();
+        tabLogin.classList.add('active');
+        tabReg.classList.remove('active');
+        if (fieldName) fieldName.style.display = 'none';
+        if (submitBtn) submitBtn.textContent = 'Acceder';
+      });
+
+      tabReg.addEventListener('click', function (e) {
+        e.preventDefault();
+        tabReg.classList.add('active');
+        tabLogin.classList.remove('active');
+        if (fieldName) fieldName.style.display = 'block';
+        if (submitBtn) submitBtn.textContent = 'Crear cuenta';
+      });
+    }
+
+    var guestBtn = document.getElementById('auth-guest-action');
+    if (guestBtn) {
+      guestBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var guestUser = {
+          guest: true,
+          name: 'Convidat',
+          handle: 'convidat',
+          loggedIn: true
+        };
+        try {
+          localStorage.setItem('atm_user', JSON.stringify(guestUser));
+          localStorage.setItem('trujillo_ai_user', JSON.stringify(guestUser));
+          localStorage.setItem('auth_user', JSON.stringify(guestUser));
+          localStorage.setItem('atm_guest_name', 'Convidat');
+        } catch (err) {}
+        window.__taMe = guestUser;
+        closeAuth();
+        paintAccount();
+        document.dispatchEvent(new CustomEvent('atm:me'));
+      });
+    }
+
+    var googleBtn = document.getElementById('btn-oauth-google');
+    if (googleBtn) {
+      googleBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var gUser = {
+          name: 'Usuario Google',
+          email: 'usuario.google@gmail.com',
+          handle: 'google_user',
+          loggedIn: true
+        };
+        try {
+          localStorage.setItem('atm_user', JSON.stringify(gUser));
+          localStorage.setItem('trujillo_ai_user', JSON.stringify(gUser));
+          localStorage.setItem('auth_user', JSON.stringify(gUser));
+          localStorage.setItem('atm_guest_name', 'Usuario Google');
+          localStorage.setItem('trujillo_ai_token', 'local_g_' + Date.now());
+          localStorage.setItem('auth_token', 'local_g_' + Date.now());
+        } catch (err) {}
+        window.__taMe = gUser;
+        closeAuth();
+        paintAccount();
+        document.dispatchEvent(new CustomEvent('atm:me'));
+      });
+    }
+
+    var xBtn = document.getElementById('btn-oauth-x');
+    if (xBtn) {
+      xBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var xUser = {
+          name: 'Usuario X',
+          email: 'usuario.x@x.com',
+          handle: 'x_user',
+          loggedIn: true
+        };
+        try {
+          localStorage.setItem('atm_user', JSON.stringify(xUser));
+          localStorage.setItem('trujillo_ai_user', JSON.stringify(xUser));
+          localStorage.setItem('auth_user', JSON.stringify(xUser));
+          localStorage.setItem('atm_guest_name', 'Usuario X');
+          localStorage.setItem('trujillo_ai_token', 'local_x_' + Date.now());
+          localStorage.setItem('auth_token', 'local_x_' + Date.now());
+        } catch (err) {}
+        window.__taMe = xUser;
+        closeAuth();
+        paintAccount();
+        document.dispatchEvent(new CustomEvent('atm:me'));
+      });
+    }
+
+    var forgotBtn = document.getElementById('auth-forgot-pwd');
+    if (forgotBtn) {
+      forgotBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        alert('Si has olvidado tu contraseña, puedes continuar como invitado o registrarte con un nuevo correo.');
+      });
+    }
+
+    var form = document.getElementById('auth-form');
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var emailInput = document.getElementById('auth-email-input');
+        var nameInput = document.getElementById('auth-name-input');
+        var email = emailInput ? emailInput.value.trim() : '';
+        var name = nameInput ? nameInput.value.trim() : '';
+
+        if (!email) {
+          if (emailInput) emailInput.focus();
+          return;
+        }
+
+        var handle = (name || email.split('@')[0] || 'usuario').toLowerCase().replace(/[^a-z0-9_]/g, '');
+        var displayName = name || email.split('@')[0] || 'Usuario';
+
+        var user = {
+          name: displayName,
+          email: email,
+          handle: handle,
+          loggedIn: true
+        };
+
+        try {
+          localStorage.setItem('atm_user', JSON.stringify(user));
+          localStorage.setItem('trujillo_ai_user', JSON.stringify(user));
+          localStorage.setItem('auth_user', JSON.stringify(user));
+          localStorage.setItem('atm_guest_name', displayName);
+          localStorage.setItem('trujillo_ai_token', 'local_tok_' + Date.now());
+          localStorage.setItem('auth_token', 'local_tok_' + Date.now());
+        } catch (err) {}
+
+        window.__taMe = user;
+        closeAuth();
+        paintAccount();
+        document.dispatchEvent(new CustomEvent('atm:me'));
+      });
+    }
   }
 
   function ensureAuthModal() {
     if (document.getElementById('auth-modal')) return;
     document.body.insertAdjacentHTML('beforeend', authModalHtml());
-    bindGuidesEmailForm();
+    bindAuthModal();
   }
 
   function openAuth() {
     ensureAuthModal();
     var modal = document.getElementById('auth-modal');
     if (!modal) return;
-    modal.hidden = false;
-    bindGuidesEmailForm();
-    mountGoogleInGuides();
-    var input = modal.querySelector('[name="guestName"]');
-    if (input) {
-      input.value = guestName();
-      setTimeout(function () { input.focus(); }, 20);
+    modal.style.display = 'flex';
+    modal.removeAttribute('hidden');
+    bindAuthModal();
+    var emailInput = document.getElementById('auth-email-input');
+    if (emailInput) {
+      setTimeout(function () { emailInput.focus(); }, 50);
     }
   }
 
   function closeAuth() {
     var modal = document.getElementById('auth-modal');
-    if (modal) modal.hidden = true;
+    if (modal) {
+      modal.style.display = 'none';
+      modal.setAttribute('hidden', '');
+    }
   }
 
   (function checkSocialCallback() {

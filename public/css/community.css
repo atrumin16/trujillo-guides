@@ -139,7 +139,6 @@
   color: var(--text-primary);
 }
 
-.auth-modal,
 .file-preview {
   position: fixed;
   inset: 0;
@@ -150,63 +149,218 @@
   justify-content: center;
   padding: 20px;
 }
-.auth-modal[hidden],
 .file-preview[hidden] { display: none !important; }
 
-.auth-card,
 .file-preview-card {
   position: relative;
-  width: min(440px, 100%);
+  width: min(920px, 100%);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 28px 24px 22px;
   box-shadow: var(--shadow-dropdown, 0 16px 40px rgba(0,0,0,.5));
 }
-.file-preview-card { width: min(920px, 100%); max-height: 90vh; display: flex; flex-direction: column; }
-.auth-card h2 { margin: 0 0 8px; font-size: 1.25rem; }
-.auth-card .lede { margin-bottom: 16px; }
-#guest-form { display: grid; gap: 10px; }
-#guest-form input {
-  width: 100%;
-  background: var(--bg-code);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  border-radius: 10px;
-  padding: 11px 14px;
-  font-size: 14px;
-}
-#guest-form button {
-  display: inline-flex;
+
+/* Backdrop con desenfoque */
+.auth-backdrop,
+.auth-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: 0;
-  background: var(--accent-pill);
-  color: var(--accent-pill-text);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
+  z-index: 9999;
+  padding: 16px;
 }
-.auth-studio {
-  display: inline-block;
-  margin-top: 14px;
-  font-size: 12px;
-  color: var(--text-secondary);
+.auth-backdrop[hidden],
+.auth-modal[hidden] { display: none !important; }
+
+/* Tarjeta contenedora idéntica a Trujillo AI */
+.auth-card {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  background: #0b1120 !important;
+  border: 1px solid #1e293b !important;
+  border-radius: 16px !important;
+  padding: 28px 24px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
+  color: #f8fafc !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+  box-sizing: border-box !important;
 }
+
+.auth-close-btn,
 .auth-close {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 32px;
-  height: 32px;
-  border: 0;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 16px;
+  top: 14px;
+  right: 14px;
+  background: transparent !important;
+  border: none !important;
+  color: #64748b !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
 }
+.auth-close-btn:hover,
+.auth-close:hover { color: #f8fafc !important; }
+
+.auth-header { text-align: center; margin-bottom: 20px; }
+.auth-icon-badge {
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 10px;
+  background: #030712;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #38bdf8;
+}
+.auth-title { font-size: 19px !important; font-weight: 700 !important; margin: 0 0 6px !important; letter-spacing: -0.02em !important; color: #f8fafc !important; }
+.auth-subtitle { font-size: 13px !important; color: #94a3b8 !important; margin: 0 !important; line-height: 1.4 !important; }
+
+/* Tabs Acceder / Crear cuenta */
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #030712;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid #1e293b;
+  margin-bottom: 18px;
+  gap: 4px;
+}
+.auth-tab {
+  background: transparent !important;
+  border: none !important;
+  color: #94a3b8 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 7px !important;
+  border-radius: 7px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  text-align: center;
+}
+.auth-tab.active {
+  background: #ffffff !important;
+  color: #030712 !important;
+}
+
+/* Botones OAuth */
+.auth-social-buttons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.auth-social-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  padding: 9px 14px !important;
+  background: #030712 !important;
+  border: 1px solid #1e293b !important;
+  border-radius: 8px !important;
+  color: #f8fafc !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  box-sizing: border-box !important;
+}
+.auth-social-btn:hover {
+  background: #111827 !important;
+  border-color: #334155 !important;
+}
+
+/* Divisor */
+.auth-divider {
+  position: relative;
+  text-align: center;
+  margin: 16px 0;
+}
+.auth-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #1e293b;
+}
+.auth-divider span {
+  position: relative;
+  background: #0b1120;
+  padding: 0 10px;
+  font-size: 11px;
+  color: #64748b;
+  text-transform: lowercase;
+}
+
+/* Inputs de texto */
+.auth-input-label { display: block; font-size: 12px; font-weight: 500; color: #94a3b8; margin-bottom: 4px; }
+.auth-input {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  background: #030712 !important;
+  border: 1px solid #1e293b !important;
+  border-radius: 8px !important;
+  padding: 9px 12px !important;
+  color: #f8fafc !important;
+  font-size: 13px !important;
+  outline: none !important;
+  transition: border-color 0.15s ease !important;
+}
+.auth-input:focus { border-color: #38bdf8 !important; }
+.auth-forgot-link { font-size: 11px; color: #64748b; text-decoration: none; }
+.auth-forgot-link:hover { color: #38bdf8; }
+
+/* Botón principal de submit */
+.auth-submit-btn {
+  width: 100% !important;
+  background: #ffffff !important;
+  color: #030712 !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  padding: 10px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: background 0.15s ease !important;
+  box-sizing: border-box !important;
+}
+.auth-submit-btn:hover { background: #e2e8f0 !important; }
+
+.auth-guest-btn {
+  background: transparent !important;
+  border: none !important;
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  padding: 4px !important;
+}
+.auth-guest-btn:hover { color: #f8fafc !important; }
+
+.auth-footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 11px;
+  color: #475569;
+}
+.auth-footer-links a { color: #475569; text-decoration: none; }
+.auth-footer-links a:hover { color: #94a3b8; }
+
 .file-preview-card header {
   display: flex;
   align-items: center;
@@ -424,8 +578,7 @@
 }
 
 .write-form input[type="text"],
-.write-form input[type="url"],
-.write-form select {
+.write-form input[type="url"] {
   width: 100%;
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -438,7 +591,6 @@
 }
 
 .write-form input:focus,
-.write-form select:focus,
 .write-form textarea:focus {
   outline: none;
   border-color: #38bdf8 !important;
@@ -2741,50 +2893,42 @@ button.btn-primary:hover {
   background: #1d4ed8 !important;
 }
 
-/* 1. CORRECCIÓN DE LOS SELECTORES (IDIOMA Y NIVEL TÉCNICO) */
+/* Eliminación definitiva de flechas superpuestas */
 select,
 select.form-input {
   appearance: none !important;
   -webkit-appearance: none !important;
-  width: 100% !important;
-  max-width: 320px !important;
-  background-color: transparent !important;
-  color: #0f172a !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
-  padding: 6px 32px 6px 12px !important;
-  border: 1px solid #cbd5e1 !important;
-  border-radius: 8px !important;
-  outline: none !important;
-  cursor: pointer !important;
-  box-shadow: none !important;
-  /* Flecha única y centrada a la derecha */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
+  background-color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
   background-repeat: no-repeat !important;
   background-position: right 10px center !important;
-  background-size: 14px !important;
+  background-size: 14px 14px !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  padding: 7px 32px 7px 12px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
 }
 
-select:focus {
+select:focus,
+select.form-input:focus {
   border-color: #38bdf8 !important;
+  outline: none !important;
   box-shadow: 0 0 0 1px #38bdf8 !important;
 }
 
 .dark select,
-.dark select.form-input,
-[data-theme="dark"] select,
-[data-theme="dark"] select.form-input {
+.dark select.form-input {
+  background-color: #0f172a !important;
+  border-color: #1e293b !important;
   color: #f8fafc !important;
-  border-color: #334155 !important;
-  background-color: transparent !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
-  background-repeat: no-repeat !important;
-  background-position: right 10px center !important;
-  background-size: 14px !important;
 }
 
 .dark select:focus,
-[data-theme="dark"] select:focus {
+.dark select.form-input:focus {
   border-color: #38bdf8 !important;
 }
 
