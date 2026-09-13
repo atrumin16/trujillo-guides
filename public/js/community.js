@@ -39,7 +39,7 @@
   function renderMarkdownBlocks() {
     if (!window.marked) return;
     if (typeof marked.setOptions === 'function') {
-      marked.setOptions({ gfm: true, breaks: true });
+      marked.setOptions({ gfm: true, breaks: true, html: true, pedantic: false });
     }
     document.querySelectorAll('[data-markdown], .md-body').forEach(function (el) {
       var src = el.getAttribute('data-markdown') || el.textContent || '';
@@ -208,6 +208,7 @@
 
     pres.forEach(function (pre) {
       if (pre.classList.contains('mermaid')) return;
+      if (pre.querySelector('#brk-calculator') || (pre.textContent && (pre.textContent.indexOf('id="brk-calculator"') !== -1 || pre.textContent.indexOf("id='brk-calculator'") !== -1))) return;
       if (pre.parentElement && pre.parentElement.classList.contains('code-block-wrap')) return;
 
       var codeEl = pre.querySelector('code');

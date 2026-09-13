@@ -141,7 +141,9 @@ export function renderMarkdown(md) {
       const nl = parts[i].indexOf('\n');
       const fence = (nl === -1 ? '' : parts[i].slice(0, nl)).trim().toLowerCase();
       const code = (nl === -1 ? parts[i] : parts[i].slice(nl + 1)).replace(/\n$/, '');
-      if (fence === 'mermaid') {
+      if (parts[i].indexOf('id="brk-calculator"') !== -1 || parts[i].indexOf("id='brk-calculator'") !== -1) {
+        html += code + '\n';
+      } else if (fence === 'mermaid') {
         html += '<pre class="mermaid">' + esc(code) + '</pre>';
       } else {
         const langTag = fence ? fence.toUpperCase() : 'TXT';

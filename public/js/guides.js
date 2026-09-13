@@ -57,7 +57,22 @@
   }
 
   function preprocess(md) {
-    return String(md || '').replace(/\r\n/g, '\n')
+    var text = String(md || '').replace(/\r\n/g, '\n');
+
+    // 1. Unwrap any #brk-calculator widget wrapped in ```html ... ``` or ```xml ... ``` or ``` ... ```
+    text = text.replace(/```(?:html|xml)?\s*(<div[\s\S]*?id=["']brk-calculator["'][\s\S]*?<\/div>)\s*```/gi, function (_, widgetHtml) {
+      return '\n\n' + widgetHtml.trim() + '\n\n';
+    });
+
+    // 2. Remove leading 4-space markdown code indentation from #brk-calculator block
+    text = text.replace(/(^[ \t]{4,}<div[\s\S]*?id=["']brk-calculator["'][\s\S]*?<\/div>)/gim, function (match) {
+      return match.split('\n').map(function (line) {
+        return line.replace(/^[ \t]{4}/, '');
+      }).join('\n');
+    });
+
+    // 3. TradingView widgets
+    return text
       .replace(/^<(?:TradingViewWidget|tradingview)\s+symbol=["']([^"']+)["'](?:\s+interval=["']([^"']+)["'])?[^>]*\/?\s*>$/gim,
         function (_, sym, iv) {
           return '<div data-widget="tradingview" data-symbol="' + sym + '" data-interval="' + (iv || 'D') + '"></div>\n';
@@ -70,7 +85,7 @@
   function configureMarked() {
     if (!window.marked) return false;
     if (typeof marked.setOptions === 'function') {
-      marked.setOptions({ gfm: true, breaks: true });
+      marked.setOptions({ gfm: true, breaks: true, html: true, pedantic: false });
     }
     if (typeof marked.use === 'function') {
       marked.use({
@@ -400,7 +415,7 @@
     if (!text) return '';
     const tickerRegex = /\(?\$([A-Z0-9]+(?:\.[A-Z0-9]+)?)\)?/g;
     return text.replace(tickerRegex, (match, ticker) => {
-      return `<span class="ticker-badge" style="display: inline-flex; align-items: center; padding: 0.12rem 0.45rem; border-radius: 6px; font-size: 0.85em; font-family: monospace; font-weight: 700; background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); margin: 0 0.2rem; vertical-align: middle;">$${ticker}</span>`;
+      return `<span class="ticker-badge">$${ticker}</span>`;
     });
   }
   window.formatTitleTickers = formatTitleTickers;
@@ -434,7 +449,7 @@
     var walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT, {
       acceptNode: function (node) {
         var p = node.parentElement;
-        if (!p || SKIP_TICKER[p.tagName] || p.classList.contains('ticker-badge') || (p.closest && p.closest('.ticker-badge'))) return NodeFilter.FILTER_REJECT;
+        if (!p || SKIP_TICKER[p.tagName] || p.classList.contains('ticker-badge') || (p.closest && (p.closest('.ticker-badge') || p.closest('#brk-calculator') || p.closest('.brk-calc-container')))) return NodeFilter.FILTER_REJECT;
         if (!/\$(?:[A-Z0-9]{1,6}(?:\.[A-Z0-9]+)?|\d{4,5})/.test(node.nodeValue || '')) return NodeFilter.FILTER_REJECT;
         return NodeFilter.FILTER_ACCEPT;
       }
@@ -451,7 +466,7 @@
         if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
         frag.appendChild(document.createTextNode(m[1]));
         var a = document.createElement('a');
-        a.className = 'ticker';
+        a.className = 'ticker ticker-badge';
         a.href = 'https://www.tradingview.com/symbols/' + encodeURIComponent(m[2]) + '/';
         a.rel = 'noopener';
         a.target = '_blank';
@@ -526,6 +541,24 @@
   }
 
   /* 6. Markdown Parser Execution */
+  function unwrapInteractiveWidgets(target) {
+    if (!target) return;
+    var pres = target.querySelectorAll('pre');
+    pres.forEach(function (pre) {
+      var code = pre.querySelector('code');
+      var txt = code ? (code.textContent || '') : (pre.textContent || '');
+      if (txt.indexOf('id="brk-calculator"') !== -1 || txt.indexOf("id='brk-calculator'") !== -1) {
+        var wrap = pre.closest('.code-block-wrap') || pre;
+        var temp = document.createElement('div');
+        temp.innerHTML = txt.trim();
+        var calc = temp.querySelector('#brk-calculator') || (temp.firstElementChild && temp.firstElementChild.id === 'brk-calculator' ? temp.firstElementChild : null) || temp.firstElementChild;
+        if (calc && wrap.parentNode) {
+          wrap.parentNode.replaceChild(calc, wrap);
+        }
+      }
+    });
+  }
+
   function renderMarkdown(root) {
     var src = readMarkdown();
     if (!src.trim() || !window.marked) {
@@ -539,13 +572,122 @@
       target.removeAttribute('data-markdown');
     }
     target.innerHTML = html;
+    unwrapInteractiveWidgets(target);
     executeScripts(target);
     wrapTables(target);
   }
 
+  function initBrkCalculator(root) {
+    var scope = root || document;
+    var container = scope.querySelector('#brk-calculator');
+    if (!container || container.getAttribute('data-calc-bound')) return;
+    container.setAttribute('data-calc-bound', '1');
+
+    var cashRange = container.querySelector('#brk-cash-range');
+    var cashVal = container.querySelector('#brk-cash-val');
+    var portRange = container.querySelector('#brk-portfolio-range');
+    var portVal = container.querySelector('#brk-portfolio-val');
+    var ebitRange = container.querySelector('#brk-ebit-range');
+    var ebitVal = container.querySelector('#brk-ebit-val');
+    var multRange = container.querySelector('#brk-multiple-range');
+    var multVal = container.querySelector('#brk-multiple-val');
+    var priceInput = container.querySelector('#brk-price-input');
+
+    var intrinsicEl = container.querySelector('#brk-intrinsic-share');
+    var marginVal = container.querySelector('#brk-margin-val');
+    var marginBadge = container.querySelector('#brk-margin-badge');
+    var totalEnterprise = container.querySelector('#brk-total-enterprise');
+    var barCash = container.querySelector('#brk-bar-cash');
+    var barPort = container.querySelector('#brk-bar-port');
+    var barOps = container.querySelector('#brk-bar-ops');
+    var legendCash = container.querySelector('#brk-legend-cash');
+    var legendPort = container.querySelector('#brk-legend-port');
+    var legendOps = container.querySelector('#brk-legend-ops');
+    var psCash = container.querySelector('#brk-ps-cash');
+    var psPort = container.querySelector('#brk-ps-port');
+    var psOps = container.querySelector('#brk-ps-ops');
+
+    // Equivalent Class B Shares: ~2.160 billion shares
+    var SHARES_B = 2.160;
+
+    function recalculate() {
+      var cash = parseFloat(cashRange ? cashRange.value : 300) || 0;
+      var port = parseFloat(portRange ? portRange.value : 285) || 0;
+      var ebit = parseFloat(ebitRange ? ebitRange.value : 42) || 0;
+      var mult = parseFloat(multRange ? multRange.value : 13.5) || 0;
+      var mktPrice = parseFloat(priceInput ? priceInput.value : 460) || 1;
+
+      if (cashVal) cashVal.textContent = '$' + cash.toFixed(1) + ' B';
+      if (portVal) portVal.textContent = '$' + port.toFixed(1) + ' B';
+      if (ebitVal) ebitVal.textContent = '$' + ebit.toFixed(1) + ' B';
+      if (multVal) multVal.textContent = mult.toFixed(1) + 'x';
+
+      var opsValue = ebit * mult;
+      var totalValue = cash + port + opsValue;
+      var intrinsicShare = totalValue / SHARES_B;
+
+      if (intrinsicEl) intrinsicEl.textContent = '$' + intrinsicShare.toFixed(2);
+      if (totalEnterprise) totalEnterprise.textContent = '$' + totalValue.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' B';
+
+      // Margin of Safety: (Intrinsic - MarketPrice) / Intrinsic * 100
+      var marginPct = ((intrinsicShare - mktPrice) / intrinsicShare) * 100;
+      if (marginVal) {
+        var sign = marginPct >= 0 ? '+' : '';
+        marginVal.textContent = sign + marginPct.toFixed(1) + '%';
+        marginVal.style.color = marginPct >= 0 ? '#34d399' : '#f87171';
+      }
+      if (marginBadge) {
+        if (marginPct > 15) {
+          marginBadge.textContent = 'Marge Protector Alt';
+          marginBadge.style.color = '#34d399';
+          marginBadge.style.background = 'rgba(52, 211, 153, 0.12)';
+          marginBadge.style.borderColor = 'rgba(52, 211, 153, 0.3)';
+        } else if (marginPct >= 0) {
+          marginBadge.textContent = 'Infravalorada';
+          marginBadge.style.color = '#38bdf8';
+          marginBadge.style.background = 'rgba(56, 189, 248, 0.12)';
+          marginBadge.style.borderColor = 'rgba(56, 189, 248, 0.3)';
+        } else {
+          marginBadge.textContent = 'Sobrevalorada';
+          marginBadge.style.color = '#f87171';
+          marginBadge.style.background = 'rgba(248, 113, 113, 0.12)';
+          marginBadge.style.borderColor = 'rgba(248, 113, 113, 0.3)';
+        }
+      }
+
+      // Proportional visual breakdown
+      var pctCash = totalValue > 0 ? (cash / totalValue) * 100 : 0;
+      var pctPort = totalValue > 0 ? (port / totalValue) * 100 : 0;
+      var pctOps = totalValue > 0 ? (opsValue / totalValue) * 100 : 0;
+
+      if (barCash) barCash.style.width = pctCash.toFixed(1) + '%';
+      if (barPort) barPort.style.width = pctPort.toFixed(1) + '%';
+      if (barOps) barOps.style.width = pctOps.toFixed(1) + '%';
+
+      if (legendCash) legendCash.textContent = '$' + cash.toFixed(1) + 'B (' + pctCash.toFixed(1) + '%)';
+      if (legendPort) legendPort.textContent = '$' + port.toFixed(1) + 'B (' + pctPort.toFixed(1) + '%)';
+      if (legendOps) legendOps.textContent = '$' + opsValue.toFixed(1) + 'B (' + pctOps.toFixed(1) + '%)';
+
+      // Per share metrics
+      if (psCash) psCash.textContent = '$' + (cash / SHARES_B).toFixed(2);
+      if (psPort) psPort.textContent = '$' + (port / SHARES_B).toFixed(2);
+      if (psOps) psOps.textContent = '$' + (opsValue / SHARES_B).toFixed(2);
+    }
+
+    [cashRange, portRange, ebitRange, multRange, priceInput].forEach(function (input) {
+      if (!input) return;
+      input.addEventListener('input', recalculate);
+      input.addEventListener('change', recalculate);
+    });
+
+    recalculate();
+  }
+  window.initBrkCalculator = initBrkCalculator;
+
   function enhance(root) {
     linkifyTickers(root);
     mountTradingView(root);
+    initBrkCalculator(root);
     var payload = readPayload();
     if (!document.querySelector('.attach-list .attach-card')) {
       renderAttachments(payload.attachments, document.getElementById('guide-attachments'));
@@ -749,6 +891,7 @@
 
     pres.forEach(function (pre) {
       if (pre.classList.contains('mermaid')) return;
+      if (pre.querySelector('#brk-calculator') || (pre.textContent && (pre.textContent.indexOf('id="brk-calculator"') !== -1 || pre.textContent.indexOf("id='brk-calculator'") !== -1))) return;
       if (pre.parentElement && pre.parentElement.classList.contains('code-block-wrap')) return;
 
       var codeEl = pre.querySelector('code');

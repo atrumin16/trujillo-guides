@@ -1429,30 +1429,48 @@ span.guide-card-avatar {
   color: #34d399;
 }
 
-/* Universal Ticker Badge for Headings and Card Titles */
-.ticker-badge {
-  background: rgba(56, 189, 248, 0.12);
-  color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  padding: 2px 6px;
-  border-radius: 6px;
-  font-weight: 700;
-  font-size: 0.82em;
-  display: inline-block;
-  vertical-align: middle;
-  line-height: 1.25;
-  letter-spacing: 0.02em;
-  margin: 0 2px;
+/* Universal Ticker Badge for Headings, Cards and Body Text */
+.ticker-badge,
+.ticker,
+.md-body .ticker-badge,
+.md-body .ticker,
+p .ticker-badge,
+p .ticker,
+h1 .ticker-badge,
+.page-title .ticker-badge,
+.guide-title .ticker-badge {
+  background: rgba(56, 189, 248, 0.12) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: 0.85em !important;
+  padding: 1px 5px !important;
+  border-radius: 5px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  vertical-align: middle !important;
+  line-height: 1.3 !important;
+  text-decoration: none !important;
+  margin: 0 2px !important;
+  transition: all 0.15s ease !important;
+}
+
+.ticker-badge:hover,
+.ticker:hover,
+.md-body .ticker-badge:hover,
+.md-body .ticker:hover {
+  background: rgba(56, 189, 248, 0.22) !important;
+  border-color: rgba(56, 189, 248, 0.6) !important;
+  color: #7dd3fc !important;
 }
 
 h1 .ticker-badge,
 .page-title .ticker-badge,
 .guide-title .ticker-badge {
-  font-size: 0.72em;
-  padding: 3px 8px;
-  border-radius: 8px;
-  border-width: 1.5px;
+  font-size: 0.72em !important;
+  padding: 2px 7px !important;
+  border-radius: 6px !important;
 }
 
 .guides-list {
@@ -1953,24 +1971,7 @@ article.doc code:not(pre code),
   border: 1px solid var(--border-subtle, var(--border));
 }
 
-/* Tickers / TradingView */
-.ticker {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: var(--bg-card-subtle);
-  border: 1px solid var(--border);
-  color: var(--accent, #38bdf8);
-  font-size: 12px;
-  font-weight: 650;
-  text-decoration: none;
-  font-family: var(--font-mono, ui-monospace, monospace);
-}
-
-.ticker:hover { border-color: var(--border-focus); }
-
+/* Tickers / TradingView (Styles unified in universal ticker badge section) */
 .tv-wrap {
   margin: 24px 0;
   border: 1px solid var(--border);
@@ -2785,4 +2786,313 @@ select:focus {
   border-color: #38bdf8;
   color: #0f172a;
 }
+
+/* Berkshire Hathaway Intrinsic Value Simulator (#brk-calculator) */
+#brk-calculator,
+.brk-calc-container {
+  background: #090e1a;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 32px 0;
+  display: block !important;
+}
+
+.brk-calc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.brk-calc-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.brk-calc-title svg {
+  color: #38bdf8;
+  flex-shrink: 0;
+}
+
+.brk-calc-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+@media (max-width: 860px) {
+  .brk-calc-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.brk-calc-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.brk-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.brk-field-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brk-field-header label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.brk-field-val {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  font-size: 13px;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.brk-field-hint {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.brk-calc-inputs .calc-slider {
+  width: 100%;
+  height: 6px;
+  background: #1e293b;
+  border-radius: 4px;
+  accent-color: #38bdf8;
+  cursor: pointer;
+  margin: 4px 0;
+}
+
+.brk-price-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  background: #0f172a;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+.brk-price-input-wrap .brk-currency {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  color: #38bdf8;
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.brk-num-input {
+  background: transparent;
+  border: none;
+  color: #f8fafc;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  width: 80px;
+  padding: 2px 0;
+  outline: none;
+}
+
+.brk-calc-results {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: rgba(8, 14, 26, 0.6);
+  border: 1px solid rgba(30, 41, 59, 0.8);
+  border-radius: 10px;
+  padding: 18px;
+}
+
+.brk-main-card {
+  text-align: center;
+  padding: 16px 12px;
+  background: rgba(56, 189, 248, 0.05);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 8px;
+}
+
+.brk-card-title {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.brk-intrinsic-price {
+  font-size: 34px;
+  font-weight: 800;
+  color: #38bdf8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.brk-intrinsic-sub {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 6px;
+}
+
+.brk-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.brk-stat-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.brk-stat-label {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.brk-stat-val {
+  font-size: 20px;
+  font-weight: 800;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #f8fafc;
+}
+
+.brk-stat-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  border: 1px solid transparent;
+}
+
+.brk-stat-desc {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.brk-breakdown-box {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.brk-breakdown-title {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.brk-progress-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #1e293b;
+  margin-bottom: 10px;
+}
+
+.brk-bar-seg {
+  height: 100%;
+  transition: width 0.2s ease;
+}
+
+.brk-seg-cash { background: #38bdf8; }
+.brk-seg-port { background: #818cf8; }
+.brk-seg-ops { background: #34d399; }
+
+.brk-breakdown-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+.brk-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.brk-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.brk-dot-cash { background: #38bdf8; }
+.brk-dot-port { background: #818cf8; }
+.brk-dot-ops { background: #34d399; }
+
+.brk-per-share-matrix {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  border-top: 1px solid #1e293b;
+  padding-top: 10px;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .brk-per-share-matrix {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+}
+
+.brk-ps-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brk-ps-label {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.brk-ps-item strong {
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #e2e8f0;
+}
+
 

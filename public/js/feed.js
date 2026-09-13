@@ -96,7 +96,7 @@
     if (!text) return '';
     const tickerRegex = /\(?\$([A-Z0-9]+(?:\.[A-Z0-9]+)?)\)?/g;
     return text.replace(tickerRegex, (match, ticker) => {
-      return `<span class="ticker-badge" style="display: inline-flex; align-items: center; padding: 0.12rem 0.45rem; border-radius: 6px; font-size: 0.85em; font-family: monospace; font-weight: 700; background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); margin: 0 0.2rem; vertical-align: middle;">$${ticker}</span>`;
+      return `<span class="ticker-badge">$${ticker}</span>`;
     });
   }
   window.formatTitleTickers = formatTitleTickers;
