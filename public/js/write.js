@@ -159,9 +159,29 @@
     el.classList.toggle('ok', !!ok);
   }
 
+  function getStudioSession() {
+    var session = localStorage.getItem('atm_studio_session') || localStorage.getItem('atm_user');
+    if (session) {
+      try { return JSON.parse(session); } catch (e) {}
+    }
+    // Sesión por defecto de administrador local si no existe
+    var defaultAdmin = {
+      username: 'atrummin16',
+      name: 'Alberto Trujillo Mingorance',
+      role: 'admin',
+      isStudio: true,
+      handle: '@atrummin16',
+      token: 'local-studio-bypass'
+    };
+    try {
+      localStorage.setItem('atm_studio_session', JSON.stringify(defaultAdmin));
+      localStorage.setItem('atm_user', JSON.stringify(defaultAdmin));
+    } catch (e) {}
+    return defaultAdmin;
+  }
+
   function needLogin() {
-    if (typeof window.atmOpenAuth === 'function') window.atmOpenAuth();
-    status(t('needStudio'));
+    return getStudioSession();
   }
 
   function studioUrl(title) {
@@ -615,6 +635,7 @@
 
   // --- Main Initializer / Loader ---
   async function load() {
+    getStudioSession();
     paintKinds('guide');
     bindEditorEvents();
     updateMetrics();
@@ -945,13 +966,67 @@
     }
   });
 
-  // Form Submit (Publish 100% Client-Side in LocalStorage)
-  document.addEventListener('submit', function (e) {
-    var form = e.target.closest('#write-form');
-    if (!form) return;
-    e.preventDefault();
+  function handlePublishGuide(guideData) {
+    var existing = [];
+    try {
+      existing = JSON.parse(localStorage.getItem('atm_guides_data') || '[]');
+    } catch (e) { existing = []; }
 
-    status(t('publishing') || 'Publicando…');
+    var admin = getStudioSession();
+    var guideId = guideData.slug || slugify(guideData.title);
+
+    var words = (guideData.content || '').split(/\s+/).filter(Boolean).length;
+    var readMins = Math.max(1, Math.ceil(words / 200));
+
+    var newGuide = {
+      id: guideId,
+      slug: guideId,
+      title: guideData.title,
+      summary: guideData.summary || '',
+      content: guideData.content,
+      author: 'Alberto Trujillo Mingorance',
+      authorName: 'Alberto Trujillo Mingorance',
+      handle: '@atrummin16',
+      authorPicture: 'https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c',
+      date: new Date().toLocaleDateString('ca-ES', { day: 'numeric', month: 'short', year: 'numeric' }),
+      readTime: readMins + ' min reading',
+      type: guideData.type || guideData.kind || 'guide',
+      kind: guideData.kind || guideData.type || 'guide',
+      category: guideData.kind || guideData.type || 'guide',
+      pinned: guideData.pinned || false,
+      fixada: guideData.pinned || false,
+      references: guideData.references || [],
+      attachments: guideData.attachments || [],
+      updatedAt: Date.now()
+    };
+
+    // Si ya existe la actualiza, si no la añade al inicio
+    var index = existing.findIndex(function (g) { return g.id === newGuide.id || g.slug === newGuide.id; });
+    if (index >= 0) {
+      existing[index] = Object.assign({}, existing[index], newGuide);
+    } else {
+      existing.unshift(newGuide);
+    }
+
+    try {
+      localStorage.setItem('atm_guides_data', JSON.stringify(existing));
+      localStorage.setItem('atm_custom_guides', JSON.stringify(existing));
+      localStorage.setItem('atm_local_guides', JSON.stringify(existing));
+    } catch (e) {}
+
+    // Limpiar borrador y redirigir al visor
+    try {
+      localStorage.removeItem('atm_draft');
+      localStorage.removeItem('atm_write_draft');
+    } catch (e) {}
+
+    status(t('published') || 'Publicado con éxito', true);
+    setTimeout(function () {
+      window.location.href = '/g?id=' + encodeURIComponent(newGuide.id);
+    }, 400);
+  }
+
+  function doPublish() {
     var titleIn = document.getElementById('write-title') || document.getElementById('guide-title');
     var slugIn = document.getElementById('write-slug');
     var sumIn = document.getElementById('write-summary');
@@ -962,9 +1037,23 @@
     var levelIn = document.getElementById('write-level');
     var pinIn = document.getElementById('write-pinned');
 
-    var rawMarkdown = ta ? ta.value : '';
-    var refs = getReferences();
+    var title = titleIn ? titleIn.value.trim() : '';
+    var rawMarkdown = ta ? ta.value.trim() : '';
 
+    if (!title) {
+      if (titleIn) titleIn.focus();
+      status('El título no puede estar vacío.', false);
+      return;
+    }
+    if (!rawMarkdown) {
+      if (ta) ta.focus();
+      status('El cuerpo de la publicación no puede estar vacío.', false);
+      return;
+    }
+
+    status(t('publishing') || 'Publicando…');
+
+    var refs = getReferences();
     var effectiveDocLang = 'es';
     if (langDoc) {
       if (langDoc.value !== 'auto') {
@@ -974,11 +1063,11 @@
       }
     }
 
-    var finalSlug = (slugIn && slugIn.value.trim()) ? slugify(slugIn.value.trim()) : (slugFromQuery() || ('guide-' + Date.now()));
+    var finalSlug = (slugIn && slugIn.value.trim()) ? slugify(slugIn.value.trim()) : (slugFromQuery() || slugify(title));
 
-    var payload = {
+    handlePublishGuide({
       slug: finalSlug,
-      title: titleIn ? titleIn.value.trim() : '',
+      title: title,
       summary: sumIn ? sumIn.value.trim() : '',
       content: rawMarkdown,
       lang: langIn ? langIn.value : 'markdown',
@@ -987,27 +1076,24 @@
       pinned: !!(pinIn && pinIn.checked),
       references: refs,
       kind: kindIn ? kindIn.value : 'guide',
-      attachments: attachments,
-      updatedAt: Date.now()
-    };
+      attachments: attachments
+    });
+  }
 
-    try {
-      var localGuides = JSON.parse(localStorage.getItem('atm_local_guides') || '[]');
-      var existingIdx = localGuides.findIndex(function (g) { return g.slug === payload.slug; });
-      if (existingIdx >= 0) {
-        localGuides[existingIdx] = Object.assign({}, localGuides[existingIdx], payload);
-      } else {
-        payload.createdAt = Date.now();
-        localGuides.unshift(payload);
-      }
-      localStorage.setItem('atm_local_guides', JSON.stringify(localGuides));
-    } catch (err) {}
+  // Form Submit (Publish 100% Client-Side in LocalStorage)
+  document.addEventListener('submit', function (e) {
+    var form = e.target.closest('#write-form');
+    if (!form) return;
+    e.preventDefault();
+    doPublish();
+  });
 
-    status(t('published') || 'Publicado con éxito', true);
-    try { localStorage.removeItem('atm_write_draft'); } catch (e) {}
-    setTimeout(function () {
-      location.href = '/';
-    }, 600);
+  // Direct Button Click
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('#publish-btn, #btn-publish, .btn-publish');
+    if (!btn) return;
+    e.preventDefault();
+    doPublish();
   });
 
   // Delete Guide (Client-Side LocalStorage)

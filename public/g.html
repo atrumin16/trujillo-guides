@@ -144,6 +144,22 @@
 
       var currentSlug = resolveSlug();
 
+      // 1. Check localStorage first for recently published local guides
+      try {
+        var localList = JSON.parse(localStorage.getItem('atm_guides_data') || localStorage.getItem('atm_custom_guides') || localStorage.getItem('atm_local_guides') || '[]');
+        if (Array.isArray(localList)) {
+          var foundLocal = localList.find(function (g) {
+            var s = String(g.slug || g.id || '').toLowerCase();
+            return s === currentSlug || ALIASES[s] === currentSlug;
+          });
+          if (foundLocal) {
+            applyGuide(foundLocal);
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // 2. Fetch static catalog
       fetch('/data/guides.json', { cache: 'default' })
         .then(function (r) {
           if (!r.ok) return fetch('/community-index.json').then(function (res) { return res.json(); });
@@ -152,7 +168,7 @@
         .then(function (data) {
           var list = (data && (data.guides || data.items)) || [];
           var found = list.find(function (g) {
-            var s = String(g.slug || '').toLowerCase();
+            var s = String(g.slug || g.id || '').toLowerCase();
             return s === currentSlug || ALIASES[s] === currentSlug;
           });
           if (found) {

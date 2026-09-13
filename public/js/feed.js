@@ -372,13 +372,6 @@
     btn.href = '/write';
     btn.setAttribute('data-i18n', 'newGuide');
     btn.textContent = t('newGuide');
-    btn.addEventListener('click', function (e) {
-      var me = window.__taMe;
-      if (!(me && (me.handle || me.owner))) {
-        e.preventDefault();
-        if (typeof window.atmOpenAuth === 'function') window.atmOpenAuth();
-      }
-    });
     bar.appendChild(btn);
   }
 
@@ -396,6 +389,26 @@
     });
   }
 
+  function mergeLocalGuides(baseList) {
+    try {
+      var localList = JSON.parse(localStorage.getItem('atm_guides_data') || localStorage.getItem('atm_custom_guides') || '[]');
+      if (Array.isArray(localList) && localList.length) {
+        var merged = baseList.slice();
+        localList.forEach(function (lg) {
+          var targetSlug = String(lg.slug || lg.id || '').toLowerCase();
+          var existingIdx = merged.findIndex(function (g) { return String(g.slug || '').toLowerCase() === targetSlug; });
+          if (existingIdx >= 0) {
+            merged[existingIdx] = Object.assign({}, merged[existingIdx], lg);
+          } else {
+            merged.unshift(lg);
+          }
+        });
+        return merged;
+      }
+    } catch (e) {}
+    return baseList;
+  }
+
   function load() {
     var mount = document.getElementById('guides-feed') || document.getElementById('community-feed');
     if (!mount) return;
@@ -406,7 +419,9 @@
     paintComposer();
     fillAuthors();
 
-    // 2. Render immediately from in-memory catalog (0 latency, 0 worker requests)
+    // 2. Render immediately from in-memory catalog + local storage
+    allGuides = mergeLocalGuides(STATIC_CATALOG);
+    featuredGuides = allGuides.filter(isPinnedGuide);
     render();
 
     // 3. Static CDN refresh from /data/guides.json (0 worker requests)
@@ -418,8 +433,8 @@
       .then(function (data) {
         var items = listFrom(data);
         if (items && items.length) {
-          allGuides = items;
-          featuredGuides = items.filter(isPinnedGuide);
+          allGuides = mergeLocalGuides(items);
+          featuredGuides = allGuides.filter(isPinnedGuide);
           fillAuthors();
           render();
           document.dispatchEvent(new CustomEvent('atm:feedLoaded', { detail: data }));

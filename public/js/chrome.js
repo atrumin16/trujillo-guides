@@ -587,7 +587,7 @@
 
   async function checkSession() {
     try {
-      var rawUser = localStorage.getItem('trujillo_ai_user') || localStorage.getItem('auth_user');
+      var rawUser = localStorage.getItem('atm_studio_session') || localStorage.getItem('atm_user') || localStorage.getItem('trujillo_ai_user') || localStorage.getItem('auth_user');
       if (rawUser) {
         var user = JSON.parse(rawUser);
         if (user) {
