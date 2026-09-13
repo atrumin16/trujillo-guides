@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Publicar · ATM Docs</title>
+  <title>Studio · ATM Docs</title>
   <meta name="robots" content="noindex">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <meta name="theme-color" content="#0b0f14">
@@ -22,9 +22,18 @@
   </header>
   <main class="guide-container write-main">
     <a href="/" class="back-nav">← Índice</a>
-    <p class="kicker" data-i18n="publishKicker">Publicar en Guides</p>
-    <h1 class="page-title" id="write-heading" data-i18n="newGuide">Nueva publicación</h1>
-    <p class="lede" data-i18n="writeHint">Guías, posts, opiniones, análisis, briefs y notas. Markdown, HTML, código, datos o un archivo.</p>
+    <div class="studio-header-bar">
+      <div class="studio-heading-group">
+        <p class="kicker" data-i18n="publishKicker">Studio Enterprise · ATM Guides</p>
+        <h1 class="page-title" id="write-heading" data-i18n="newGuide">Nueva publicación</h1>
+        <p class="lede" data-i18n="writeHint">Guías, posts, opiniones, análisis financieros, briefs y notas técnicas.</p>
+      </div>
+      <div class="studio-draft-box" id="draft-box" hidden>
+        <span class="draft-indicator-text" id="draft-status-text">Borrador guardado localmente</span>
+        <button type="button" class="studio-btn-subtle" id="draft-restore-btn">Restaurar</button>
+        <button type="button" class="studio-btn-subtle btn-danger" id="draft-discard-btn">Descartar</button>
+      </div>
+    </div>
     <form id="write-form" class="write-form">
       <fieldset class="kind-set">
         <legend data-i18n="writeKind">Tipo</legend>
@@ -33,57 +42,131 @@
       </fieldset>
       <label>
         <span data-i18n="writeTitle">Título</span>
-        <input type="text" name="title" maxlength="120" required placeholder="Título de la pieza">
+        <input type="text" id="write-title" name="title" maxlength="120" required placeholder="Título de la publicación (ej. Análisis de Microsoft ($MSFT))">
       </label>
       <label>
-        <span data-i18n="writeSummary">Resumen</span>
-        <input type="text" name="summary" maxlength="220" placeholder="Una línea para la portada (opcional)">
+        <span>Enlace canónico permanente (Slug)</span>
+        <div class="slug-bar-wrap">
+          <span class="slug-prefix">https://guides.trujillomingorance.com/g/</span>
+          <input type="text" id="write-slug" name="slug" maxlength="48" placeholder="titulo-de-la-publicacion">
+        </div>
       </label>
-      <div class="write-row">
-        <label>
-          <span data-i18n="writeFormat">Formato del cuerpo</span>
-          <select name="lang" id="write-lang">
-            <option value="markdown">Markdown</option>
-            <option value="html">HTML</option>
-            <option value="plaintext">Texto</option>
-            <option value="javascript">JavaScript / TypeScript</option>
-            <option value="python">Python</option>
-            <option value="json">JSON</option>
-            <option value="csv">CSV / TSV / tabla</option>
-            <option value="svg">SVG</option>
-            <option value="mermaid">Mermaid</option>
-            <option value="yaml">YAML</option>
-            <option value="sql">SQL</option>
-            <option value="xml">XML</option>
-            <option value="css">CSS</option>
-            <option value="code">Código</option>
-          </select>
-        </label>
-        <label class="write-import">
-          <span data-i18n="importFile">Importar archivo</span>
-          <input type="file" id="import-file" accept=".md,.markdown,.html,.htm,.txt,.json,.csv,.tsv,.svg,.xml,.yml,.yaml,.js,.mjs,.ts,.py,.sql,.css,.mmd,.mermaid,.toml,.go,.rs,.java">
-        </label>
-      </div>
       <label>
-        <span data-i18n="writeBody">Contenido</span>
-        <textarea name="content" rows="20" required placeholder="Escribe o suelta un archivo aquí…"></textarea>
+        <span data-i18n="writeSummary">Resumen / Portada</span>
+        <input type="text" id="write-summary" name="summary" maxlength="220" placeholder="Una línea ejecutiva para portada y feeds (opcional)">
       </label>
-      <div class="write-drop" id="write-drop" tabindex="0">
-        <p data-i18n="dropHint">Suelta archivos aquí: el cuerpo se importa si es texto; imágenes y binarios se adjuntan.</p>
+      <input type="hidden" name="lang" id="write-lang" value="markdown">
+
+      <div class="studio-editor-box">
+        <div class="studio-toolbar">
+          <div class="studio-tool-group">
+            <button type="button" class="studio-tool-btn" data-tool="bold" title="Negrita (Ctrl+B)"><strong>B</strong></button>
+            <button type="button" class="studio-tool-btn" data-tool="italic" title="Cursiva (Ctrl+I)"><em>I</em></button>
+            <button type="button" class="studio-tool-btn" data-tool="h2" title="Encabezado H2">H2</button>
+            <button type="button" class="studio-tool-btn" data-tool="h3" title="Encabezado H3">H3</button>
+            <button type="button" class="studio-tool-btn" data-tool="link" title="Enlace">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            </button>
+            <button type="button" class="studio-tool-btn btn-ticker" data-tool="ticker" title="Ticker bursátil (ej. $MSFT)">$ Ticker</button>
+            <button type="button" class="studio-tool-btn" data-tool="table" title="Tabla financiera/métrica">Tabla</button>
+            <button type="button" class="studio-tool-btn" data-tool="callout" title="Callout destacado">Callout</button>
+            <button type="button" class="studio-tool-btn" data-tool="code" title="Bloque de código">Code</button>
+          </div>
+          <div class="studio-tool-group" style="margin-left: auto;">
+            <div class="metrics-pill" id="metrics-pill">0 palabras · ~0 min lectura · 0 caracteres</div>
+            <div class="studio-tabs">
+              <button type="button" class="studio-tab-btn is-active" id="tab-write">Escribir</button>
+              <button type="button" class="studio-tab-btn" id="tab-preview">Vista previa</button>
+            </div>
+          </div>
+        </div>
+        <textarea name="content" id="write-textarea" class="write-textarea" rows="22" required placeholder="Escribe tu artículo en Markdown… Soporta $TICKERS, tablas, código, citas y callouts."></textarea>
+        <div id="write-preview" class="write-preview guide-body" hidden></div>
       </div>
-      <div class="write-attach">
-        <span data-i18n="attachFiles">Imágenes y adjuntos</span>
-        <input type="file" id="attach-files" multiple accept=".png,.jpg,.jpeg,.webp,.gif,.avif,.svg,.pdf,.csv,.tsv,.xlsx,.xls,.docx,.doc,.pptx,.json,.txt,.zip,.html,.md">
+
+      <div class="unified-drop-zone" id="unified-drop-zone" tabindex="0">
+        <div class="drop-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+        </div>
+        <div>
+          <p class="drop-text-primary">Arrastra archivos aquí (.md, .txt, .json, .csv) o adjuntos (PDF, imágenes)</p>
+          <p class="drop-text-secondary">El contenido de texto se importará al editor; imágenes y documentos se adjuntarán a la entrega.</p>
+        </div>
+        <div class="drop-actions-row">
+          <button type="button" class="studio-btn-flat" id="btn-import-file">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Importar cuerpo
+          </button>
+          <button type="button" class="studio-btn-flat" id="btn-attach-files">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+            Adjuntar archivos
+          </button>
+        </div>
+        <input type="file" id="import-file" style="display: none;" accept=".md,.markdown,.html,.htm,.txt,.json,.csv,.tsv,.svg,.xml,.yml,.yaml,.js,.mjs,.ts,.py,.sql,.css,.mmd,.mermaid,.toml,.go,.rs,.java">
+        <input type="file" id="attach-files" style="display: none;" multiple accept=".png,.jpg,.jpeg,.webp,.gif,.avif,.svg,.pdf,.csv,.tsv,.xlsx,.xls,.docx,.doc,.pptx,.json,.txt,.zip,.html,.md">
         <ul id="attach-list" class="attach-pending"></ul>
       </div>
+
+      <section class="studio-section" id="references-section">
+        <div class="studio-section-header">
+          <div>
+            <h3 class="studio-section-title">Fuentes y Referencias Técnicas</h3>
+            <p class="studio-section-desc">Cita SEC filings, repositorios de GitHub, papers de ArXiv o documentación oficial vinculada.</p>
+          </div>
+          <button type="button" class="studio-btn-flat" id="add-reference-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Añadir referencia
+          </button>
+        </div>
+        <div id="references-list"></div>
+      </section>
+
+      <div class="metadata-grid">
+        <label>
+          <span>Idioma del contenido</span>
+          <select name="langDoc" id="write-lang-doc">
+            <option value="ca">Català (CA)</option>
+            <option value="es" selected>Español (ES)</option>
+            <option value="en">English (EN)</option>
+          </select>
+        </label>
+        <label>
+          <span>Nivel técnico</span>
+          <select name="level" id="write-level">
+            <option value="overview">Overview / Introductorio</option>
+            <option value="intermediate" selected>Intermedio</option>
+            <option value="deep-dive">Deep Dive / Avanzado</option>
+          </select>
+        </label>
+        <label class="studio-toggle">
+          <input type="checkbox" id="write-pinned" name="pinned" style="display:none;">
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <span class="switch-label">Fijar publicación en cabecera</span>
+        </label>
+      </div>
+
       <p class="write-status" id="write-status" hidden></p>
       <div class="write-actions">
-        <button type="submit" data-i18n="publish">Publicar</button>
-        <a class="text-btn" id="open-ai" href="https://ai.trujillomingorance.com/" rel="noopener" target="_blank" data-i18n="openAi">Abrir Trujillo AI</a>
-        <button type="button" class="text-btn" id="delete-guide" hidden data-i18n="delete">Borrar</button>
+        <button type="submit" id="publish-btn" data-i18n="publish">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          Publicar
+        </button>
+        <a class="studio-btn-flat" id="open-ai" href="https://ai.trujillomingorance.com/" rel="noopener" target="_blank" data-i18n="openAi">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+          Abrir a Trujillo AI Studio
+        </a>
+        <button type="button" class="studio-btn-subtle btn-danger" id="delete-guide" hidden data-i18n="delete">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          Borrar
+        </button>
       </div>
     </form>
   </main>
+  <script src="/js/marked.min.js?v=pub2"></script>
   <script src="/js/i18n.js?v=pub2"></script>
   <script src="/js/chrome.js?v=pub2"></script>
   <script src="/js/social.js?v=pub2"></script>

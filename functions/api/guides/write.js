@@ -135,6 +135,10 @@ export async function onRequestGet(context) {
     attachments: Array.isArray(extra.attachments) ? extra.attachments : [],
     kind: kindOf((record && record.category) || extra.kind),
     summary: extra.summary || '',
+    pinned: !!(extra.pinned || extra.fixada),
+    references: Array.isArray(extra.references) ? extra.references : [],
+    level: extra.level || 'intermediate',
+    langDoc: extra.langDoc || 'es',
     handle: (record && record.handle) || (stat && stat.handle) || session.handle,
     authorName: (record && record.authorName) || (stat && stat.authorName) || session.name,
     url: record ? ('/g/' + slug) : (stat ? ('/guides/' + slug + '/') : '/g/' + slug),
@@ -195,7 +199,16 @@ export async function onRequestPost(context) {
     authorPicture: String(session.picture || (existing && existing.authorPicture) || '/avatar.png').slice(0, 400),
     category: kind,
     date: (existing && existing.date) || new Date(now).toISOString().slice(0, 10),
-    extras: Object.assign({}, prevExtra, { attachments: attachments, kind: kind, summary: summary }),
+    extras: Object.assign({}, prevExtra, {
+      attachments: attachments,
+      kind: kind,
+      summary: summary,
+      pinned: !!(body && (body.pinned || body.fixada)),
+      fixada: !!(body && (body.pinned || body.fixada)),
+      references: (body && body.references) || [],
+      level: (body && body.level) || 'intermediate',
+      langDoc: (body && body.langDoc) || 'es'
+    }),
     createdAt: (existing && existing.createdAt) || now,
     updatedAt: now
   };
@@ -207,6 +220,7 @@ export async function onRequestPost(context) {
   if (indexRaw && index === null) return json({ error: 'index_corrupt' }, 500);
   if (pubRaw && pub === null) return json({ error: 'index_corrupt' }, 500);
 
+  const isPin = !!(body && (body.pinned || body.fixada));
   const card = {
     slug: slug,
     title: title,
@@ -216,7 +230,9 @@ export async function onRequestPost(context) {
     authorName: record.authorName,
     authorPicture: record.authorPicture,
     category: kind,
-    summary: summary
+    summary: summary,
+    pinned: isPin,
+    fixada: isPin
   };
 
   await kv.put('guide:' + handle + ':' + slug, JSON.stringify(record));
