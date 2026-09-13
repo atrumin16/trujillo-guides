@@ -594,7 +594,7 @@
   border-radius: 12px;
   padding: 18px 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
 }
@@ -612,13 +612,14 @@
 
 .guide-card:hover {
   border-color: #38bdf8 !important;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(56, 189, 248, 0.08);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.08);
+  transition: all 0.2s ease;
 }
 
 [data-theme="dark"] .guide-card:hover {
   border-color: #38bdf8 !important;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.08);
+  transition: all 0.2s ease;
 }
 
 .guide-card.is-pinned {

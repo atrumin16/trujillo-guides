@@ -167,16 +167,16 @@
       .replace(/"/g, '&quot;');
   }
 
-  // Universal Ticker Parser regex: catches ($TICKER), $TICKER, ($BRK.B), $8058, etc.
-  var TICKER_REGEX = /\(?\$([A-Z0-9]+(?:\.[A-Z0-9]+)?)\)?/g;
-
-  function formatTickerTitle(text) {
+  // Universal Ticker Parser regex: catches ($TICKER), $TICKER, ($BRK.B), $8058, $8001, $8031, $8053, etc.
+  function formatTitleTickers(text) {
     if (!text) return '';
-    return esc(text).replace(TICKER_REGEX, function (_, ticker) {
-      return '<span class="ticker-badge">$' + ticker + '</span>';
+    const tickerRegex = /\(?\$([A-Z0-9]+(?:\.[A-Z0-9]+)?)\)?/g;
+    return text.replace(tickerRegex, (match, ticker) => {
+      return `<span class="ticker-badge" style="display: inline-flex; align-items: center; padding: 0.12rem 0.45rem; border-radius: 6px; font-size: 0.85em; font-family: monospace; font-weight: 700; background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); margin: 0 0.2rem; vertical-align: middle;">$${ticker}</span>`;
     });
   }
-  window.formatTickerTitle = formatTickerTitle;
+  window.formatTitleTickers = formatTitleTickers;
+  window.formatTickerTitle = formatTitleTickers;
 
   function hrefOf(g) {
     return g.href || (g.static ? '/guides/' + g.slug + '/' : '/g/' + g.slug);
@@ -220,7 +220,7 @@
     var sel = document.getElementById('filter-scope');
     if (!sel) return 'totes';
     var urlParams = new URLSearchParams(window.location.search);
-    var viewParam = (urlParams.get('view') || urlParams.get('scope') || '').toLowerCase();
+    var viewParam = (urlParams.get('filtre') || urlParams.get('view') || urlParams.get('scope') || 'totes').toLowerCase();
     if (viewParam === 'destacades' || viewParam === 'featured') {
       sel.value = 'destacades';
       return 'destacades';
@@ -282,7 +282,7 @@
     // Title with universal ticker parser
     var h3 = document.createElement('h3');
     h3.className = 'guide-card-title';
-    h3.innerHTML = formatTickerTitle(g.title || g.slug);
+    h3.innerHTML = formatTitleTickers(g.title || g.slug);
     body.appendChild(h3);
 
     // Standardized bottom metadata row:

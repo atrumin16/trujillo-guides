@@ -349,7 +349,11 @@
 
     var targetH1 = articleH1 || outerH1 || $('h1');
     if (!targetH1) return;
-    applyTickerToElement(targetH1);
+    var titleEl = targetH1;
+    if (titleEl && !titleEl.getAttribute('data-ticker-parsed')) {
+      titleEl.setAttribute('data-ticker-parsed', '1');
+      titleEl.innerHTML = formatTitleTickers(titleEl.textContent || '');
+    }
 
     var slug = slugFromPath();
     var dateEl = document.querySelector('time, .poster-date, [data-date]');
@@ -392,15 +396,15 @@
   }
 
   /* 5. Tickers, TradingView & Attachments */
-  var TICKER_BADGE_REGEX = /\(?\$([A-Z0-9]+(?:\.[A-Z0-9]+)?)\)?/g;
-
-  function formatTickerTitle(str) {
-    if (!str) return '';
-    return esc(str).replace(TICKER_BADGE_REGEX, function (_, sym) {
-      return '<span class="ticker-badge">$' + sym + '</span>';
+  function formatTitleTickers(text) {
+    if (!text) return '';
+    const tickerRegex = /\(?\$([A-Z0-9]+(?:\.[A-Z0-9]+)?)\)?/g;
+    return text.replace(tickerRegex, (match, ticker) => {
+      return `<span class="ticker-badge" style="display: inline-flex; align-items: center; padding: 0.12rem 0.45rem; border-radius: 6px; font-size: 0.85em; font-family: monospace; font-weight: 700; background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); margin: 0 0.2rem; vertical-align: middle;">$${ticker}</span>`;
     });
   }
-  window.formatTickerTitle = formatTickerTitle;
+  window.formatTitleTickers = formatTitleTickers;
+  window.formatTickerTitle = formatTitleTickers;
 
   function applyTickerToElement(el) {
     if (!el || el.getAttribute('data-ticker-parsed')) return;
@@ -410,10 +414,10 @@
     }
     var raw = el.textContent || '';
     if (raw.indexOf('$') === -1) return;
-    var re = new RegExp(TICKER_BADGE_REGEX.source, 'g');
+    var re = /\(?\$([A-Z0-9]+(?:\.[A-Z0-9]+)?)\)?/;
     if (!re.test(raw)) return;
     el.setAttribute('data-ticker-parsed', '1');
-    el.innerHTML = formatTickerTitle(raw);
+    el.innerHTML = formatTitleTickers(raw);
   }
 
   function parseTitleAndCardTickers(root) {
@@ -1053,7 +1057,20 @@
     enhanceTocAndLayout(doc);
   }
 
+  function initFilterScope() {
+    var sel = document.getElementById('filter-scope');
+    if (!sel) return;
+    var params = new URLSearchParams(window.location.search);
+    var filterVal = (params.get('filtre') || params.get('view') || params.get('scope') || 'totes').toLowerCase();
+    if (filterVal === 'destacades' || filterVal === 'featured') {
+      sel.value = 'destacades';
+    } else {
+      sel.value = 'totes';
+    }
+  }
+
   function boot() {
+    initFilterScope();
     var root = document.getElementById('guide-body') ||
       document.querySelector('article.doc') ||
       document.querySelector('.guide-container') ||
