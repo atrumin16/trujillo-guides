@@ -222,8 +222,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     'vault.close': 'Cerrar',
 
     // Modal de Identificación
-    'auth.title': '¿Cómo te llamamos?',
-    'auth.desc': 'Indica tu nombre para personalizar tus auditorías y guardar tus presupuestos en este equipo. Sin contraseñas ni correos obligatorios.',
+    'auth.title': 'Trujillo Guides',
+    'auth.desc': 'Entra para publicar, gestionar guías y sincronizar borradores.',
     'auth.input_label': 'Tu nombre o alias:',
     'auth.submit': 'Guardar y Continuar',
     'auth.studio_link': 'Tengo cuenta en Trujillo AI Studio'
@@ -406,8 +406,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     'vault.import_backup': 'Import JSON Backup',
     'vault.close': 'Close',
 
-    'auth.title': 'What should we call you?',
-    'auth.desc': 'Enter your name or nickname to personalize your audits and save scenarios on this device. No password or email needed.',
+    'auth.title': 'Trujillo Guides',
+    'auth.desc': 'Sign in to publish, manage guides, and sync drafts.',
     'auth.input_label': 'Your name:',
     'auth.submit': 'Save & Continue',
     'auth.studio_link': 'I have an account in Trujillo AI Studio'
@@ -549,8 +549,8 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     'vault.import_backup': 'Importar Còpia de Seguretat JSON',
     'vault.close': 'Tancar',
 
-    'auth.title': 'Com et diem?',
-    'auth.desc': 'Indica el teu nom per personalitzar les teves auditories en aquest dispositiu. Sense contrasenyes ni correus obligatoris.',
+    'auth.title': 'Trujillo Guides',
+    'auth.desc': 'Entra per publicar, gestionar guies i sincronitzar esborranys.',
     'auth.input_label': 'El teu nom:',
     'auth.submit': 'Guardar i Continuar',
     'auth.studio_link': 'Tinc compte a Trujillo AI Studio'

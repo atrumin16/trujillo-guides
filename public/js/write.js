@@ -138,7 +138,10 @@
   }
 
   function slugFromQuery() {
-    try { return (new URLSearchParams(location.search).get('slug') || '').toLowerCase().trim(); } catch (e) { return ''; }
+    try {
+      var p = new URLSearchParams(location.search);
+      return (p.get('slug') || p.get('edit') || p.get('id') || '').toLowerCase().trim();
+    } catch (e) { return ''; }
   }
 
   function slugify(val) {
@@ -162,15 +165,22 @@
   function getStudioSession() {
     var session = localStorage.getItem('atm_studio_session') || localStorage.getItem('atm_user');
     if (session) {
-      try { return JSON.parse(session); } catch (e) {}
+      try {
+        var u = JSON.parse(session);
+        if (u) {
+          if (u.username === 'atrummin16') u.username = 'atrumin16';
+          if (u.handle === '@atrummin16') u.handle = '@atrumin16';
+          return u;
+        }
+      } catch (e) {}
     }
     // Sesión por defecto de administrador local si no existe
     var defaultAdmin = {
-      username: 'atrummin16',
+      username: 'atrumin16',
       name: 'Alberto Trujillo Mingorance',
       role: 'admin',
       isStudio: true,
-      handle: '@atrummin16',
+      handle: '@atrumin16',
       token: 'local-studio-bypass'
     };
     try {
@@ -668,15 +678,26 @@
 
     var data = null;
     try {
-      var localGuides = JSON.parse(localStorage.getItem('atm_local_guides') || '[]');
-      data = localGuides.find(function (g) { return g.slug === slug; });
+      var localGuides = JSON.parse(localStorage.getItem('atm_guides_data') || localStorage.getItem('atm_custom_guides') || localStorage.getItem('atm_local_guides') || '[]');
+      data = localGuides.find(function (g) { return (g.slug === slug || g.id === slug); });
       if (!data && window.__taFeedCache && Array.isArray(window.__taFeedCache.guides)) {
-        data = window.__taFeedCache.guides.find(function (g) { return g.slug === slug; });
+        data = window.__taFeedCache.guides.find(function (g) { return (g.slug === slug || g.id === slug); });
       }
     } catch (e) {}
 
     if (!data) {
-      status('No se ha encontrado la publicación en el almacenamiento local.', false);
+      try {
+        var r = await fetch('/data/guides.json');
+        if (r.ok) {
+          var cat = await r.json();
+          var list = (cat && (cat.guides || cat.items)) || [];
+          data = list.find(function (g) { return (g.slug === slug || g.id === slug); });
+        }
+      } catch (e) {}
+    }
+
+    if (!data) {
+      status('No se ha encontrado la publicación.', false);
       return;
     }
 
@@ -984,10 +1005,10 @@
       title: guideData.title,
       summary: guideData.summary || '',
       content: guideData.content,
-      author: 'Alberto Trujillo Mingorance',
-      authorName: 'Alberto Trujillo Mingorance',
-      handle: '@atrummin16',
-      authorPicture: 'https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c',
+      author: admin.name || 'Alberto Trujillo Mingorance',
+      authorName: admin.name || 'Alberto Trujillo Mingorance',
+      handle: admin.handle || '@atrumin16',
+      authorPicture: admin.picture || 'https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c',
       date: new Date().toLocaleDateString('ca-ES', { day: 'numeric', month: 'short', year: 'numeric' }),
       readTime: readMins + ' min reading',
       type: guideData.type || guideData.kind || 'guide',
@@ -1022,7 +1043,7 @@
 
     status(t('published') || 'Publicado con éxito', true);
     setTimeout(function () {
-      window.location.href = '/g?id=' + encodeURIComponent(newGuide.id);
+      window.location.href = '/g.html?id=' + encodeURIComponent(newGuide.id);
     }, 400);
   }
 

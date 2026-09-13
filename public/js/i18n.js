@@ -44,7 +44,7 @@ window.ATM_UI = {
     onlySaved: 'Guardadas', onlyFollowing: 'Siguiendo',
     login: 'Entrar', guestContinue: 'Continuar como invitado',
     guestHint: 'Solo el nombre. Sin correo ni contraseña.',
-    enterName: '¿Cómo te llamamos?', studioLogin: 'Tengo cuenta en Studio',
+    enterName: 'Trujillo Guides', studioLogin: 'Tengo cuenta en Studio',
     changeName: 'Cambiar nombre', preview: 'Ver', download: 'Descargar',
     previewFail: 'Este tipo no se puede previsualizar. Descárgalo si lo necesitas.',
     logout: 'Salir',

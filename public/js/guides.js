@@ -361,6 +361,7 @@
   }
 
   function reorderPoster() {
+    if (document.body.classList.contains('is-not-found') || document.querySelector('.is-not-found')) return;
     if (document.querySelector('.nf, .home-main') && !document.querySelector('.guide-container, article.doc, #guide-body')) return;
     if (!document.querySelector('.guide-container, .community-main, article.doc, #guide-body, .guide-content, .main-wrapper')) return;
 
@@ -1204,6 +1205,7 @@
   }
 
   function autoEnhanceArticle() {
+    if (document.body.classList.contains('is-not-found') || document.querySelector('.is-not-found')) return;
     parseTitleAndCardTickers(document);
     var doc = document.querySelector('article.doc, #guide-body, .guide-container, .guide-content, .md-body');
     if (!doc) return;
@@ -1227,6 +1229,7 @@
   }
 
   function boot() {
+    if (document.body.classList.contains('is-not-found') || document.querySelector('.is-not-found')) return;
     initFilterScope();
     var root = document.getElementById('guide-body') ||
       document.querySelector('article.doc') ||

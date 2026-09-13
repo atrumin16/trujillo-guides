@@ -5,7 +5,7 @@
     {
       slug: 'correo-corporativo-startups',
       title: 'Infraestructura de Correo Corporativo para Startups a Coste 0 €',
-      href: '/g/correo-corporativo-startups',
+      href: '/g.html?id=correo-corporativo-startups',
       handle: 'atrumin16',
       authorName: 'Alberto Trujillo Mingorance',
       authorPicture: 'https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c',
@@ -24,7 +24,7 @@
     {
       slug: 'informe-msft',
       title: "Informe d'anàlisi tècnica, estratègica i financera ($MSFT)",
-      href: '/g/informe-msft',
+      href: '/g.html?id=informe-msft',
       handle: 'atrumin16',
       authorName: 'Alberto Trujillo Mingorance',
       authorPicture: 'https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c',
@@ -43,7 +43,7 @@
     {
       slug: 'desglose-cartera-berkshire-brk',
       title: 'Desglossament de Cartera i Simulador de Berkshire Hathaway ($BRK.B)',
-      href: '/g/desglose-cartera-berkshire-brk',
+      href: '/g.html?id=desglose-cartera-berkshire-brk',
       handle: 'atrumin16',
       authorName: 'Alberto Trujillo Mingorance',
       authorPicture: 'https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c',
@@ -62,7 +62,7 @@
     {
       slug: 'it-glossary',
       title: 'Glossari Interactiu de Sistemes i Informàtica',
-      href: '/g/it-glossary',
+      href: '/g.html?id=it-glossary',
       handle: 'atrumin16',
       authorName: 'Alberto Trujillo Mingorance',
       authorPicture: 'https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c',
@@ -103,7 +103,8 @@
   window.formatTickerTitle = formatTitleTickers;
 
   function hrefOf(g) {
-    return g.href || (g.static ? '/guides/' + g.slug + '/' : '/g/' + g.slug);
+    var slug = g.slug || g.id || '';
+    return '/g.html?id=' + encodeURIComponent(slug);
   }
 
   function t(key) {

@@ -7,10 +7,10 @@
   <meta name="description" content="Technical engineering guides, financial analysis, and production architectures by Alberto Trujillo Mingorance.">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <meta name="theme-color" content="#030712">
-  <script src="/js/theme-boot.js?v=v6"></script>
-  <link rel="stylesheet" href="/css/tokens.css?v=v6">
-  <link rel="stylesheet" href="/style.css?v=v6">
-  <link rel="stylesheet" href="/css/community.css?v=v6">
+  <script src="/js/theme-boot.js?v=v7"></script>
+  <link rel="stylesheet" href="/css/tokens.css?v=v7">
+  <link rel="stylesheet" href="/style.css?v=v7">
+  <link rel="stylesheet" href="/css/community.css?v=v7">
 </head>
 <body class="docs-body community-body">
   <header class="docs-topbar">
@@ -78,29 +78,46 @@
         'glossari': 'it-glossary'
       };
 
-      function resolveSlug() {
+      function getCurrentGuideId() {
         try {
           var params = new URLSearchParams(window.location.search);
-          var qId = params.get('id') || params.get('slug') || params.get('g');
+          var qId = params.get('id') || params.get('slug') || params.get('g') || params.get('piece');
           if (qId) {
             var cleanQ = qId.toLowerCase().trim();
             return ALIASES[cleanQ] || cleanQ;
           }
         } catch (e) {}
         var p = window.location.pathname || '';
-        var m = p.match(/\/(?:guides|g|s)\/([a-z0-9-]+)/i);
+        var m = p.match(/\/(?:guides|g|s)\/([a-z0-9-._]+)/i);
         if (m && m[1]) {
-          var cleanP = m[1].toLowerCase().trim();
-          return ALIASES[cleanP] || cleanP;
+          var cleanP = m[1].toLowerCase().trim().replace(/\/+$/, '');
+          if (cleanP !== 'g.html' && cleanP !== 'g' && cleanP !== 'guides' && cleanP !== 's') {
+            return ALIASES[cleanP] || cleanP;
+          }
         }
-        return 'correo-corporativo-startups';
+        return null;
       }
 
       function applyGuide(guide) {
         if (!guide) {
-          document.getElementById('viewer-title').textContent = 'Guía no encontrada';
-          document.getElementById('viewer-subtitle').textContent = 'El documento solicitado no existe o ha sido reubicado.';
-          document.getElementById('guide-body').innerHTML = '<div style="padding: 40px 0; text-align: center;"><p style="margin-bottom: 20px; color: #94a3b8;">No se ha encontrado ninguna guía para esta ruta.</p><a href="/" class="btn-primary" style="display: inline-block; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: 600;">Volver al Hub</a></div>';
+          document.title = 'Pieza no encontrada · ATM Docs';
+          document.body.classList.add('is-not-found');
+          var titleEl = document.getElementById('viewer-title');
+          if (titleEl) titleEl.textContent = 'Pieza no encontrada';
+          var subEl = document.getElementById('viewer-subtitle');
+          if (subEl) subEl.textContent = 'El documento solicitado no existe o ha sido reubicado.';
+          var metaBar = document.getElementById('guide-meta-bar');
+          if (metaBar) metaBar.style.display = 'none';
+          var sidebar = document.getElementById('viewer-sidebar');
+          if (sidebar) sidebar.style.display = 'none';
+          var bodyEl = document.getElementById('guide-body');
+          if (bodyEl) {
+            bodyEl.innerHTML = '<div style="padding: 60px 20px; text-align: center; color: #94a3b8;">' +
+              '<h1 style="color: #f8fafc; font-size: 24px; margin-bottom: 12px;">Pieza no encontrada</h1>' +
+              '<p style="margin-bottom: 24px;">No se encontró ningún artículo con el identificador: <code style="color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 2px 6px; border-radius: 4px;">' + (currentSlug || 'desconocido') + '</code></p>' +
+              '<a href="/" style="color: #38bdf8; text-decoration: underline; font-weight: 500;">Volver al índice</a>' +
+              '</div>';
+          }
           return;
         }
 
@@ -129,10 +146,10 @@
         if (dateEl) dateEl.textContent = guide.date || '2026';
 
         var copyBtn = document.getElementById('copy-link');
-        if (copyBtn) copyBtn.setAttribute('data-slug', guide.slug);
+        if (copyBtn) copyBtn.setAttribute('data-slug', guide.slug || currentSlug);
 
         var metaBar = document.getElementById('guide-meta-bar');
-        if (metaBar) metaBar.setAttribute('data-slug', guide.slug);
+        if (metaBar) metaBar.setAttribute('data-slug', guide.slug || currentSlug);
 
         var mdEl = document.getElementById('guide-markdown');
         if (mdEl) mdEl.textContent = guide.content || '';
@@ -142,14 +159,19 @@
         }
       }
 
-      var currentSlug = resolveSlug();
+      var currentSlug = getCurrentGuideId();
+
+      if (!currentSlug) {
+        applyGuide(null);
+        return;
+      }
 
       // 1. Check localStorage first for recently published local guides
       try {
         var localList = JSON.parse(localStorage.getItem('atm_guides_data') || localStorage.getItem('atm_custom_guides') || localStorage.getItem('atm_local_guides') || '[]');
         if (Array.isArray(localList)) {
           var foundLocal = localList.find(function (g) {
-            var s = String(g.slug || g.id || '').toLowerCase();
+            var s = String(g.slug || g.id || '').toLowerCase().trim();
             return s === currentSlug || ALIASES[s] === currentSlug;
           });
           if (foundLocal) {
@@ -168,25 +190,27 @@
         .then(function (data) {
           var list = (data && (data.guides || data.items)) || [];
           var found = list.find(function (g) {
-            var s = String(g.slug || g.id || '').toLowerCase();
+            var s = String(g.slug || g.id || '').toLowerCase().trim();
             return s === currentSlug || ALIASES[s] === currentSlug;
           });
           if (found) {
             applyGuide(found);
-          } else if (list.length > 0) {
-            applyGuide(list[0]);
+          } else {
+            applyGuide(null);
           }
         })
-        .catch(function () {});
+        .catch(function () {
+          applyGuide(null);
+        });
     })();
   </script>
 
-  <script src="/js/i18n.js?v=v6"></script>
-  <script src="/js/chrome.js?v=v6"></script>
-  <script src="/js/social.js?v=v6"></script>
-  <script src="/js/forum.js?v=v6"></script>
-  <script src="/js/translate.js?v=v6"></script>
-  <script src="/js/marked.min.js?v=v6"></script>
-  <script src="/js/guides.js?v=v6"></script>
+  <script src="/js/i18n.js?v=v7"></script>
+  <script src="/js/chrome.js?v=v7"></script>
+  <script src="/js/social.js?v=v7"></script>
+  <script src="/js/forum.js?v=v7"></script>
+  <script src="/js/translate.js?v=v7"></script>
+  <script src="/js/marked.min.js?v=v7"></script>
+  <script src="/js/guides.js?v=v7"></script>
 </body>
 </html>

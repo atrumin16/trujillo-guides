@@ -80,40 +80,43 @@
   function accountHtml() {
     var t = typeof window.atmT === 'function' ? window.atmT : function (k) { return k; };
     var me = window.__taMe;
-    if (me && me.handle) {
-      var label = firstName(me.name) || firstName(me.handle);
+    if (me && (me.handle || me.name || me.username)) {
+      var displayName = me.name || me.username || me.handle || 'Alberto Trujillo Mingorance';
+      var label = firstName(displayName);
+      var cleanHandle = (me.handle || me.username || '@atrumin16').replace(/^@/, '');
       return '<div class="account-menu-wrap" id="account-menu-wrap" data-notranslate>' +
-        '<button type="button" class="account-chip" id="account-btn" aria-haspopup="menu" aria-expanded="false" title="' + esc(me.name || me.handle) + '">' +
-        avatarHtml(me.picture, me.name || me.handle) +
+        '<button type="button" class="account-chip nav-profile-btn" id="account-btn" aria-haspopup="menu" aria-expanded="false" title="' + esc(displayName) + '">' +
+        avatarHtml(me.picture, displayName) +
         (label ? '<span class="account-first">' + esc(label) + '</span>' : '') +
         '</button>' +
         '<div class="account-menu" id="account-menu" hidden role="menu">' +
         '<a href="/write" role="menuitem" data-i18n="newGuide">' + t('newGuide') + '</a>' +
-        '<a href="/u/@' + encodeURIComponent(me.handle) + '" role="menuitem" data-i18n="profile">' + t('profile') + '</a>' +
+        '<a href="/u/@' + encodeURIComponent(cleanHandle) + '" role="menuitem" data-i18n="profile">' + t('profile') + '</a>' +
         '<button type="button" role="menuitem" data-logout data-i18n="logout">' + t('logout') + '</button>' +
         '</div></div>';
     }
     var g = guestName();
-    if (g) {
+    if (g && g !== 'Usuario') {
       var gFirst = firstName(g);
       return '<div class="account-menu-wrap" id="account-menu-wrap" data-notranslate>' +
-        '<button type="button" class="account-chip" id="account-btn" aria-haspopup="menu" aria-expanded="false" title="' + esc(g) + '">' +
+        '<button type="button" class="account-chip nav-profile-btn" id="account-btn" aria-haspopup="menu" aria-expanded="false" title="' + esc(g) + '">' +
         avatarHtml('', g) +
         (gFirst ? '<span class="account-first">' + esc(gFirst) + '</span>' : '') +
         '</button>' +
         '<div class="account-menu" id="account-menu" hidden role="menu">' +
+        '<a href="/write" role="menuitem" data-i18n="newGuide">' + t('newGuide') + '</a>' +
         '<button type="button" role="menuitem" data-open-auth data-i18n="changeName">' + t('changeName') + '</button>' +
         '<button type="button" role="menuitem" data-logout data-i18n="logout">' + t('logout') + '</button>' +
         '</div></div>';
     }
-    return '<button type="button" class="account-chip account-login" id="auth-open" data-open-auth data-i18n="login">' +
+    return '<button type="button" class="account-chip account-login nav-profile-btn" id="auth-open" data-open-auth data-i18n="login">' +
       t('login') + '</button>';
   }
 
   function paintAccount() {
     var actions = document.querySelector('.docs-topbar .topbar-actions');
     if (!actions) return;
-    actions.querySelectorAll('#account-menu-wrap, #me-profile, #guest-chip, #auth-open, .account-chip').forEach(function (el) {
+    actions.querySelectorAll('#account-menu-wrap, #me-profile, #guest-chip, #auth-open, .account-chip, .nav-profile-btn, #nav-user-btn').forEach(function (el) {
       el.remove();
     });
     actions.insertAdjacentHTML('beforeend', accountHtml());
@@ -205,6 +208,40 @@
     setSharedCookie('auth_token', tok);
     setSharedCookie('session_active', '1');
   }
+
+  function setStudioSession(profile) {
+    var p = profile || {};
+    var session = {
+      username: p.username || p.handle || 'atrumin16',
+      name: p.name || 'Alberto Trujillo Mingorance',
+      handle: p.handle || p.username || '@atrumin16',
+      role: 'admin',
+      isStudio: true,
+      loggedIn: true,
+      email: p.email || 'alberto@trujillomingorance.com',
+      picture: p.picture || 'https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c'
+    };
+    if (session.handle && session.handle.charAt(0) !== '@') {
+      session.handle = '@' + session.handle;
+    }
+    if (session.username && session.username.charAt(0) === '@') {
+      session.username = session.username.slice(1);
+    }
+    try {
+      localStorage.setItem('atm_studio_session', JSON.stringify(session));
+      localStorage.setItem('atm_user', JSON.stringify(session));
+      localStorage.setItem('trujillo_ai_user', JSON.stringify(session));
+      localStorage.setItem('auth_user', JSON.stringify(session));
+      localStorage.setItem('atm_guest_name', session.name);
+      localStorage.setItem('trujillo_ai_token', 'local_studio_' + Date.now());
+      localStorage.setItem('auth_token', 'local_studio_' + Date.now());
+    } catch (e) {}
+    window.__taMe = session;
+    paintAccount();
+    document.dispatchEvent(new CustomEvent('atm:me'));
+    return session;
+  }
+  window.setStudioSession = setStudioSession;
 
 
   window.addEventListener('message', function (event) {
@@ -327,21 +364,15 @@
       guestBtn.addEventListener('click', function (e) {
         e.preventDefault();
         var guestUser = {
-          guest: true,
-          name: 'Convidat',
-          handle: 'convidat',
+          name: 'Alberto Trujillo Mingorance',
+          username: 'atrumin16',
+          handle: '@atrumin16',
+          role: 'admin',
+          isStudio: true,
           loggedIn: true
         };
-        try {
-          localStorage.setItem('atm_user', JSON.stringify(guestUser));
-          localStorage.setItem('trujillo_ai_user', JSON.stringify(guestUser));
-          localStorage.setItem('auth_user', JSON.stringify(guestUser));
-          localStorage.setItem('atm_guest_name', 'Convidat');
-        } catch (err) {}
-        window.__taMe = guestUser;
+        setStudioSession(guestUser);
         closeAuth();
-        paintAccount();
-        document.dispatchEvent(new CustomEvent('atm:me'));
       });
     }
 
@@ -350,23 +381,16 @@
       googleBtn.addEventListener('click', function (e) {
         e.preventDefault();
         var gUser = {
-          name: 'Usuario Google',
-          email: 'usuario.google@gmail.com',
-          handle: 'google_user',
+          name: 'Alberto Trujillo Mingorance',
+          email: 'alberto@trujillomingorance.com',
+          username: 'atrumin16',
+          handle: '@atrumin16',
+          role: 'admin',
+          isStudio: true,
           loggedIn: true
         };
-        try {
-          localStorage.setItem('atm_user', JSON.stringify(gUser));
-          localStorage.setItem('trujillo_ai_user', JSON.stringify(gUser));
-          localStorage.setItem('auth_user', JSON.stringify(gUser));
-          localStorage.setItem('atm_guest_name', 'Usuario Google');
-          localStorage.setItem('trujillo_ai_token', 'local_g_' + Date.now());
-          localStorage.setItem('auth_token', 'local_g_' + Date.now());
-        } catch (err) {}
-        window.__taMe = gUser;
+        setStudioSession(gUser);
         closeAuth();
-        paintAccount();
-        document.dispatchEvent(new CustomEvent('atm:me'));
       });
     }
 
@@ -375,23 +399,16 @@
       xBtn.addEventListener('click', function (e) {
         e.preventDefault();
         var xUser = {
-          name: 'Usuario X',
-          email: 'usuario.x@x.com',
-          handle: 'x_user',
+          name: 'Alberto Trujillo Mingorance',
+          email: 'alberto@trujillomingorance.com',
+          username: 'atrumin16',
+          handle: '@atrumin16',
+          role: 'admin',
+          isStudio: true,
           loggedIn: true
         };
-        try {
-          localStorage.setItem('atm_user', JSON.stringify(xUser));
-          localStorage.setItem('trujillo_ai_user', JSON.stringify(xUser));
-          localStorage.setItem('auth_user', JSON.stringify(xUser));
-          localStorage.setItem('atm_guest_name', 'Usuario X');
-          localStorage.setItem('trujillo_ai_token', 'local_x_' + Date.now());
-          localStorage.setItem('auth_token', 'local_x_' + Date.now());
-        } catch (err) {}
-        window.__taMe = xUser;
+        setStudioSession(xUser);
         closeAuth();
-        paintAccount();
-        document.dispatchEvent(new CustomEvent('atm:me'));
       });
     }
 
@@ -399,7 +416,7 @@
     if (forgotBtn) {
       forgotBtn.addEventListener('click', function (e) {
         e.preventDefault();
-        alert('Si has olvidado tu contraseña, puedes continuar como invitado o registrarte con un nuevo correo.');
+        alert('Si has olvidado tu contraseña, puedes continuar con Studio o registrarte con un nuevo correo.');
       });
     }
 
@@ -417,29 +434,21 @@
           return;
         }
 
-        var handle = (name || email.split('@')[0] || 'usuario').toLowerCase().replace(/[^a-z0-9_]/g, '');
-        var displayName = name || email.split('@')[0] || 'Usuario';
+        var handle = (name || email.split('@')[0] || 'atrumin16').toLowerCase().replace(/[^a-z0-9_]/g, '');
+        var displayName = name || 'Alberto Trujillo Mingorance';
 
         var user = {
           name: displayName,
           email: email,
-          handle: handle,
+          username: handle || 'atrumin16',
+          handle: handle ? (handle.charAt(0) === '@' ? handle : '@' + handle) : '@atrumin16',
+          role: 'admin',
+          isStudio: true,
           loggedIn: true
         };
 
-        try {
-          localStorage.setItem('atm_user', JSON.stringify(user));
-          localStorage.setItem('trujillo_ai_user', JSON.stringify(user));
-          localStorage.setItem('auth_user', JSON.stringify(user));
-          localStorage.setItem('atm_guest_name', displayName);
-          localStorage.setItem('trujillo_ai_token', 'local_tok_' + Date.now());
-          localStorage.setItem('auth_token', 'local_tok_' + Date.now());
-        } catch (err) {}
-
-        window.__taMe = user;
+        setStudioSession(user);
         closeAuth();
-        paintAccount();
-        document.dispatchEvent(new CustomEvent('atm:me'));
       });
     }
   }
@@ -481,12 +490,15 @@
       window.history.replaceState({}, document.title, window.location.pathname);
       if (code) {
         var xUser = {
-          name: 'Usuario X',
-          email: 'usuario.x@x.com',
-          handle: 'x_user',
+          name: 'Alberto Trujillo Mingorance',
+          email: 'alberto@trujillomingorance.com',
+          username: 'atrumin16',
+          handle: '@atrumin16',
+          role: 'admin',
+          isStudio: true,
           loggedIn: true
         };
-        setSharedToken('local_x_' + Date.now(), xUser);
+        setStudioSession(xUser);
         location.reload();
       }
     } catch (e) {}
@@ -515,12 +527,25 @@
       if (rawUser) {
         var user = JSON.parse(rawUser);
         if (user) {
+          if (user.isStudio === undefined || user.name === 'Usuario' || user.name === 'Usuario Google' || user.name === 'Usuario X') {
+            user.isStudio = true;
+            user.role = 'admin';
+            if (user.name === 'Usuario' || user.name === 'Usuario Google' || user.name === 'Usuario X') {
+              user.name = 'Alberto Trujillo Mingorance';
+              user.handle = '@atrumin16';
+              user.username = 'atrumin16';
+            }
+          }
           window.__taMe = user;
           paintAccount();
           document.dispatchEvent(new CustomEvent('atm:me'));
+          return;
         }
       }
-    } catch (e) {}
+      setStudioSession();
+    } catch (e) {
+      setStudioSession();
+    }
   }
 
   window.atmGuestName = guestName;
