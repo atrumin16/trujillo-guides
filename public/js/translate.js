@@ -77,27 +77,15 @@
     var key = tl + '::' + parts.join('\u0001');
     if (cache[key]) return Promise.resolve(cache[key]);
     var joined = parts.join('\n⟦§⟧\n');
-    return fetch('/api/guides/translate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tl: tl, q: [joined] })
-    }).then(function (r) { return r.json(); }).then(function (data) {
-      var raw = (data.texts && data.texts[0]) || '';
-      var out = raw.split(/\n⟦§⟧\n/);
-      if (!raw || raw === joined) {
-        return fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=' +
-          encodeURIComponent(tl) + '&dt=t&q=' + encodeURIComponent(joined))
-          .then(function (r) { return r.json(); })
-          .then(function (g) {
-            var t = (g && g[0]) ? g[0].map(function (row) { return row && row[0] ? row[0] : ''; }).join('') : joined;
-            out = t.split(/\n⟦§⟧\n/);
-            cache[key] = out;
-            return out;
-          }).catch(function () { return parts; });
-      }
-      cache[key] = out;
-      return out;
-    });
+    return fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=' +
+      encodeURIComponent(tl) + '&dt=t&q=' + encodeURIComponent(joined))
+      .then(function (r) { return r.json(); })
+      .then(function (g) {
+        var t = (g && g[0]) ? g[0].map(function (row) { return row && row[0] ? row[0] : ''; }).join('') : joined;
+        var out = t.split(/\n⟦§⟧\n/);
+        cache[key] = out;
+        return out;
+      }).catch(function () { return parts; });
   }
 
   function run() {

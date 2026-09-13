@@ -2788,6 +2788,30 @@ select:focus {
   border-color: #38bdf8 !important;
 }
 
+/* Badge sutil para indicador de autodetección de idioma */
+.badge-subtle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(56, 189, 248, 0.12) !important;
+  color: #0284c7 !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 1px 7px !important;
+  border-radius: 9999px !important;
+  margin-left: 6px !important;
+  vertical-align: middle !important;
+  line-height: 1.4 !important;
+}
+
+.dark .badge-subtle,
+[data-theme="dark"] .badge-subtle {
+  background: rgba(56, 189, 248, 0.14) !important;
+  color: #38bdf8 !important;
+  border-color: rgba(56, 189, 248, 0.35) !important;
+}
+
 /* 2. AISLAR MENÚS FLOTANTES (DROPDOWNS DE IDIOMAS, PERFIL, ETC.) */
 .dropdown-menu,
 .lang-menu,

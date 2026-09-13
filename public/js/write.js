@@ -33,6 +33,82 @@
   };
   var TEXT_EXT = /^(md|markdown|html|htm|txt|json|csv|tsv|svg|xml|ya?ml|js|mjs|ts|py|sql|css|mmd|toml|go|rs|java)$/i;
 
+  // Detección heurística en navegador por stopwords
+  var LANGUAGE_PROFILES = {
+    ca: { name: 'Català', flag: '🇦🇩', stopwords: ['amb', 'per', 'això', 'aquest', 'aquesta', 'molt', 'dels', 'les', 'quan', 'sobre', 'està', 'també'] },
+    es: { name: 'Español', flag: '🇪🇸', stopwords: ['con', 'para', 'este', 'esta', 'estos', 'estas', 'como', 'pero', 'más', 'también', 'cuando', 'entre'] },
+    en: { name: 'English', flag: '🇬🇧', stopwords: ['the', 'and', 'with', 'this', 'that', 'from', 'have', 'which', 'about', 'would', 'there', 'their'] },
+    fr: { name: 'Français', flag: '🇫🇷', stopwords: ['avec', 'pour', 'dans', 'cette', 'aussi', 'plus', 'comme', 'sont', 'faire', 'leur', 'nous'] },
+    de: { name: 'Deutsch', flag: '🇩🇪', stopwords: ['und', 'mit', 'für', 'nicht', 'eine', 'einer', 'dieser', 'dieses', 'auch', 'werden', 'haben'] },
+    it: { name: 'Italiano', flag: '🇮🇹', stopwords: ['con', 'per', 'questo', 'questa', 'sono', 'anche', 'come', 'più', 'nella', 'delle', 'tutto'] },
+    pt: { name: 'Português', flag: '🇵🇹', stopwords: ['com', 'para', 'este', 'esta', 'como', 'mais', 'também', 'quando', 'sobre', 'entre', 'pelos'] },
+    nl: { name: 'Nederlands', flag: '🇳🇱', stopwords: ['van', 'het', 'een', 'voor', 'niet', 'met', 'zijn', 'maar', 'deze', 'over', 'worden'] }
+  };
+
+  var langDebounceTimer = null;
+  var userManuallySelectedLang = false;
+  var autoDetectedLang = 'auto';
+
+  function detectLanguage(text) {
+    if (!text || text.trim().length < 25) return 'auto';
+
+    // Limpiar caracteres especiales y normalizar palabras a minúsculas
+    var tokens = text.toLowerCase().match(/\b[a-záàéèíóòúçñäöüß]+\b/gi) || [];
+    if (tokens.length < 5) return 'auto';
+
+    var tokenSet = new Set(tokens);
+    var bestLang = 'auto';
+    var maxMatches = 0;
+
+    for (var lang in LANGUAGE_PROFILES) {
+      if (!LANGUAGE_PROFILES.hasOwnProperty(lang)) continue;
+      var profile = LANGUAGE_PROFILES[lang];
+      var matches = 0;
+      for (var i = 0; i < profile.stopwords.length; i++) {
+        if (tokenSet.has(profile.stopwords[i])) matches++;
+      }
+      if (matches > maxMatches) {
+        maxMatches = matches;
+        bestLang = lang;
+      }
+    }
+
+    // Requiere un mínimo de 2 coincidencias claras
+    return maxMatches >= 2 ? bestLang : 'auto';
+  }
+
+  function updateAutoLanguage() {
+    var langSelect = document.getElementById('guide-lang') || document.getElementById('write-lang-doc');
+    var indicator = document.getElementById('auto-lang-indicator');
+    if (!langSelect) return;
+
+    if (userManuallySelectedLang && langSelect.value !== 'auto') {
+      if (indicator) indicator.innerHTML = '';
+      return;
+    }
+
+    var ta = document.getElementById('editor-body') || document.getElementById('write-textarea');
+    var titleIn = document.getElementById('guide-title') || document.getElementById('write-title');
+    var text = ((titleIn ? titleIn.value : '') + ' ' + (ta ? ta.value : '')).trim();
+
+    var detected = detectLanguage(text);
+    autoDetectedLang = detected;
+
+    if (indicator) {
+      if (detected !== 'auto' && LANGUAGE_PROFILES[detected]) {
+        var prof = LANGUAGE_PROFILES[detected];
+        indicator.innerHTML = '<span id="detected-lang-badge" class="badge-subtle">Detectat: ' + prof.name + ' (' + detected.toUpperCase() + ')</span>';
+      } else {
+        indicator.innerHTML = '';
+      }
+    }
+  }
+
+  function scheduleLanguageDetection() {
+    clearTimeout(langDebounceTimer);
+    langDebounceTimer = setTimeout(updateAutoLanguage, 300);
+  }
+
   function t(key) {
     return typeof window.atmT === 'function' ? window.atmT(key) : key;
   }
@@ -449,13 +525,14 @@
       try {
         var form = document.getElementById('write-form');
         if (!form) return;
+        var langSel = document.getElementById('guide-lang') || document.getElementById('write-lang-doc');
         var draft = {
-          title: (document.getElementById('write-title') || {}).value || '',
+          title: (document.getElementById('write-title') || document.getElementById('guide-title') || {}).value || '',
           slug: (document.getElementById('write-slug') || {}).value || '',
           summary: (document.getElementById('write-summary') || {}).value || '',
-          content: (document.getElementById('write-textarea') || {}).value || '',
+          content: (document.getElementById('write-textarea') || document.getElementById('editor-body') || {}).value || '',
           kind: (document.getElementById('write-kind') || {}).value || 'guide',
-          langDoc: (document.getElementById('write-lang-doc') || {}).value || 'es',
+          langDoc: langSel ? langSel.value : 'auto',
           level: (document.getElementById('write-level') || {}).value || 'intermediate',
           pinned: !!(document.getElementById('write-pinned') || {}).checked,
           references: getReferences(),
@@ -484,12 +561,12 @@
     try {
       var saved = JSON.parse(localStorage.getItem('atm_write_draft') || '{}');
       if (!saved) return;
-      var titleIn = document.getElementById('write-title');
+      var titleIn = document.getElementById('write-title') || document.getElementById('guide-title');
       var slugIn = document.getElementById('write-slug');
       var sumIn = document.getElementById('write-summary');
-      var ta = document.getElementById('write-textarea');
+      var ta = document.getElementById('write-textarea') || document.getElementById('editor-body');
       var kindIn = document.getElementById('write-kind');
-      var langDoc = document.getElementById('write-lang-doc');
+      var langDoc = document.getElementById('guide-lang') || document.getElementById('write-lang-doc');
       var levelIn = document.getElementById('write-level');
       var pinIn = document.getElementById('write-pinned');
 
@@ -498,7 +575,19 @@
       if (sumIn && saved.summary) sumIn.value = saved.summary;
       if (ta && saved.content) ta.value = saved.content;
       if (saved.kind) paintKinds(saved.kind);
-      if (langDoc && saved.langDoc) langDoc.value = saved.langDoc;
+      if (langDoc && saved.langDoc) {
+        langDoc.value = saved.langDoc;
+        if (saved.langDoc === 'auto') {
+          userManuallySelectedLang = false;
+          updateAutoLanguage();
+        } else {
+          userManuallySelectedLang = true;
+          var indicator = document.getElementById('auto-lang-indicator');
+          if (indicator) indicator.innerHTML = '';
+        }
+      } else {
+        updateAutoLanguage();
+      }
       if (levelIn && saved.level) levelIn.value = saved.level;
       if (pinIn) pinIn.checked = !!saved.pinned;
 
@@ -535,12 +624,12 @@
     var del = document.getElementById('delete-guide');
     var heading = document.getElementById('write-heading');
     var ai = document.getElementById('open-ai');
-    var titleIn = document.getElementById('write-title');
+    var titleIn = document.getElementById('write-title') || document.getElementById('guide-title');
     var slugIn = document.getElementById('write-slug');
     var sumIn = document.getElementById('write-summary');
-    var ta = document.getElementById('write-textarea');
+    var ta = document.getElementById('write-textarea') || document.getElementById('editor-body');
     var langIn = document.getElementById('write-lang');
-    var langDoc = document.getElementById('write-lang-doc');
+    var langDoc = document.getElementById('guide-lang') || document.getElementById('write-lang-doc');
     var levelIn = document.getElementById('write-level');
     var pinIn = document.getElementById('write-pinned');
 
@@ -552,23 +641,39 @@
           showDraftStatus(savedDraft.savedAt);
         }
       } catch (e) {}
+      updateAutoLanguage();
       return;
     }
 
-    var res = await fetch('/api/guides/write?slug=' + encodeURIComponent(slug), {
-      headers: headers(),
-      credentials: 'same-origin'
-    });
-    var data = await res.json().catch(function () { return {}; });
-    if (res.status === 401) { needLogin(); return; }
-    if (!res.ok) { status(data.error || t('fileError')); return; }
+    var data = null;
+    try {
+      var localGuides = JSON.parse(localStorage.getItem('atm_local_guides') || '[]');
+      data = localGuides.find(function (g) { return g.slug === slug; });
+      if (!data && window.__taFeedCache && Array.isArray(window.__taFeedCache.guides)) {
+        data = window.__taFeedCache.guides.find(function (g) { return g.slug === slug; });
+      }
+    } catch (e) {}
+
+    if (!data) {
+      status('No se ha encontrado la publicación en el almacenamiento local.', false);
+      return;
+    }
 
     if (titleIn) titleIn.value = data.title || '';
     if (slugIn) { slugIn.value = data.slug || ''; userEditedSlug = true; }
     if (sumIn) sumIn.value = data.summary || '';
     if (ta) ta.value = data.content || '';
     if (data.lang && langIn) langIn.value = data.lang;
-    if (data.langDoc && langDoc) langDoc.value = data.langDoc;
+    if (langDoc) {
+      if (data.langDoc && data.langDoc !== 'auto') {
+        langDoc.value = data.langDoc;
+        userManuallySelectedLang = true;
+      } else {
+        langDoc.value = 'auto';
+        userManuallySelectedLang = false;
+        updateAutoLanguage();
+      }
+    }
     if (data.level && levelIn) levelIn.value = data.level;
     if (pinIn) pinIn.checked = !!data.pinned;
 
@@ -586,6 +691,7 @@
 
     updateMetrics();
     bindEditorEvents();
+    updateAutoLanguage();
 
     if (heading) heading.textContent = t('editGuide');
     if (del) del.hidden = false;
@@ -593,11 +699,36 @@
   }
 
   function bindEditorEvents() {
-    var ta = document.getElementById('write-textarea');
+    var ta = document.getElementById('write-textarea') || document.getElementById('editor-body');
     if (ta && !ta._hasInputListener) {
       ta._hasInputListener = true;
       ta.addEventListener('input', function () {
         updateMetrics();
+        scheduleAutoSave();
+        scheduleLanguageDetection();
+      });
+    }
+
+    var titleIn = document.getElementById('write-title') || document.getElementById('guide-title');
+    if (titleIn && !titleIn._hasInputListener) {
+      titleIn._hasInputListener = true;
+      titleIn.addEventListener('input', function () {
+        scheduleLanguageDetection();
+      });
+    }
+
+    var langSel = document.getElementById('guide-lang') || document.getElementById('write-lang-doc');
+    if (langSel && !langSel._hasChangeBound) {
+      langSel._hasChangeBound = true;
+      langSel.addEventListener('change', function () {
+        if (langSel.value === 'auto') {
+          userManuallySelectedLang = false;
+          updateAutoLanguage();
+        } else {
+          userManuallySelectedLang = true;
+          var indicator = document.getElementById('auto-lang-indicator');
+          if (indicator) indicator.innerHTML = '';
+        }
         scheduleAutoSave();
       });
     }
@@ -745,7 +876,19 @@
       e.target.value = '';
       return;
     }
-    if (e.target.closest('#references-section, #write-lang-doc, #write-level, #write-pinned')) {
+    if (e.target.id === 'guide-lang' || e.target.id === 'write-lang-doc') {
+      if (e.target.value === 'auto') {
+        userManuallySelectedLang = false;
+        updateAutoLanguage();
+      } else {
+        userManuallySelectedLang = true;
+        var indicator = document.getElementById('auto-lang-indicator');
+        if (indicator) indicator.innerHTML = '';
+      }
+      scheduleAutoSave();
+      return;
+    }
+    if (e.target.closest('#references-section, #write-level, #write-pinned')) {
       scheduleAutoSave();
     }
   });
@@ -777,11 +920,12 @@
 
   // Form inputs handling
   document.addEventListener('input', function (e) {
-    if (e.target.id === 'write-textarea') {
+    if (e.target.id === 'write-textarea' || e.target.id === 'editor-body') {
       updateMetrics();
       scheduleAutoSave();
+      scheduleLanguageDetection();
     }
-    if (e.target.id === 'write-title') {
+    if (e.target.id === 'write-title' || e.target.id === 'guide-title') {
       var val = e.target.value || '';
       var ai = document.getElementById('open-ai');
       if (ai) ai.href = studioUrl(val);
@@ -790,6 +934,7 @@
         slugIn.value = slugify(val);
       }
       scheduleAutoSave();
+      scheduleLanguageDetection();
     }
     if (e.target.id === 'write-slug') {
       userEditedSlug = true;
@@ -800,79 +945,91 @@
     }
   });
 
-  // Form Submit
+  // Form Submit (Publish 100% Client-Side in LocalStorage)
   document.addEventListener('submit', function (e) {
     var form = e.target.closest('#write-form');
     if (!form) return;
     e.preventDefault();
 
-    var me = window.__taMe;
-    if (!(me && (me.handle || me.owner))) { needLogin(); return; }
-
-    status(t('publishing'));
-    var titleIn = document.getElementById('write-title');
+    status(t('publishing') || 'Publicando…');
+    var titleIn = document.getElementById('write-title') || document.getElementById('guide-title');
     var slugIn = document.getElementById('write-slug');
     var sumIn = document.getElementById('write-summary');
-    var ta = document.getElementById('write-textarea');
+    var ta = document.getElementById('write-textarea') || document.getElementById('editor-body');
     var kindIn = document.getElementById('write-kind');
     var langIn = document.getElementById('write-lang');
-    var langDoc = document.getElementById('write-lang-doc');
+    var langDoc = document.getElementById('guide-lang') || document.getElementById('write-lang-doc');
     var levelIn = document.getElementById('write-level');
     var pinIn = document.getElementById('write-pinned');
 
     var rawMarkdown = ta ? ta.value : '';
     var refs = getReferences();
 
+    var effectiveDocLang = 'es';
+    if (langDoc) {
+      if (langDoc.value !== 'auto') {
+        effectiveDocLang = langDoc.value;
+      } else if (autoDetectedLang !== 'auto') {
+        effectiveDocLang = autoDetectedLang;
+      }
+    }
+
+    var finalSlug = (slugIn && slugIn.value.trim()) ? slugify(slugIn.value.trim()) : (slugFromQuery() || ('guide-' + Date.now()));
+
     var payload = {
-      slug: (slugIn && slugIn.value.trim()) ? slugify(slugIn.value.trim()) : slugFromQuery(),
+      slug: finalSlug,
       title: titleIn ? titleIn.value.trim() : '',
       summary: sumIn ? sumIn.value.trim() : '',
       content: rawMarkdown,
       lang: langIn ? langIn.value : 'markdown',
-      langDoc: langDoc ? langDoc.value : 'es',
+      langDoc: effectiveDocLang,
       level: levelIn ? levelIn.value : 'intermediate',
       pinned: !!(pinIn && pinIn.checked),
       references: refs,
       kind: kindIn ? kindIn.value : 'guide',
-      attachments: attachments
+      attachments: attachments,
+      updatedAt: Date.now()
     };
 
-    fetch('/api/guides/write', {
-      method: 'POST',
-      headers: headers(),
-      credentials: 'same-origin',
-      body: JSON.stringify(payload)
-    }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, status: r.status, d: d }; }); })
-      .then(function (res) {
-        if (res.status === 401) { needLogin(); return; }
-        if (!res.ok) { status(res.d.error || t('fileError')); return; }
-        status(t('published'), true);
-        try { localStorage.removeItem('atm_write_draft'); } catch (e) {}
-        if (res.d.url) setTimeout(function () { location.href = res.d.url; }, 500);
-      }).catch(function () { status(t('fileError')); });
+    try {
+      var localGuides = JSON.parse(localStorage.getItem('atm_local_guides') || '[]');
+      var existingIdx = localGuides.findIndex(function (g) { return g.slug === payload.slug; });
+      if (existingIdx >= 0) {
+        localGuides[existingIdx] = Object.assign({}, localGuides[existingIdx], payload);
+      } else {
+        payload.createdAt = Date.now();
+        localGuides.unshift(payload);
+      }
+      localStorage.setItem('atm_local_guides', JSON.stringify(localGuides));
+    } catch (err) {}
+
+    status(t('published') || 'Publicado con éxito', true);
+    try { localStorage.removeItem('atm_write_draft'); } catch (e) {}
+    setTimeout(function () {
+      location.href = '/';
+    }, 600);
   });
 
-  // Delete Guide
+  // Delete Guide (Client-Side LocalStorage)
   document.addEventListener('click', async function (e) {
     if (!e.target.closest('#delete-guide')) return;
     e.preventDefault();
     if (!await confirmModal(t('confirmDelete'))) return;
-    fetch('/api/guides/write', {
-      method: 'DELETE',
-      headers: headers(),
-      credentials: 'same-origin',
-      body: JSON.stringify({ slug: slugFromQuery() })
-    }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
-      .then(function (res) {
-        if (!res.ok) { status(res.d.error || t('fileError')); return; }
-        try { localStorage.removeItem('atm_write_draft'); } catch (e) {}
-        location.href = '/';
-      });
+    try {
+      var localGuides = JSON.parse(localStorage.getItem('atm_local_guides') || '[]');
+      var s = slugFromQuery();
+      localGuides = localGuides.filter(function (g) { return g.slug !== s; });
+      localStorage.setItem('atm_local_guides', JSON.stringify(localGuides));
+      localStorage.removeItem('atm_write_draft');
+    } catch (err) {}
+    status('Eliminado con éxito', true);
+    setTimeout(function () {
+      location.href = '/';
+    }, 500);
   });
 
   document.addEventListener('atm:me', function () {
-    var me = window.__taMe;
-    if (!(me && (me.handle || me.owner))) needLogin();
+    // Client-side local authoring mode
   });
 
   document.addEventListener('atm:lang', function () {

@@ -306,26 +306,11 @@
         setTimeout(function () { label.textContent = prev || 'Copiar enlace'; }, 1600);
       }
 
-      if (slug) {
-        fetch('/api/guides/share', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ slug: slug })
-        })
-          .then(function (res) { return res.json(); })
-          .then(function (data) {
-            var shortUrl = absGuideShort(data);
-            copyTextToClipboard(shortUrl, done, function () {
-              window.prompt('Copiar enlace:', shortUrl);
-              done();
-            });
-          })
-          .catch(function () {
-            copyTextToClipboard(location.href, done);
-          });
-      } else {
-        copyTextToClipboard(location.href, done);
-      }
+      var shareUrl = location.href;
+      copyTextToClipboard(shareUrl, done, function () {
+        window.prompt('Copiar enlace:', shareUrl);
+        done();
+      });
     });
   }
 

@@ -151,20 +151,16 @@
     if (del) del.hidden = !isAuthor;
   }
 
-  async function post(path, body) {
-    var res = await fetch(path, {
-      method: 'POST',
-      headers: headers(),
-      credentials: 'same-origin',
-      body: JSON.stringify(body)
-    });
-    var data = await res.json().catch(function () { return {}; });
-    if (res.status === 401) {
-      if (typeof window.atmOpenAuth === 'function') window.atmOpenAuth();
-      throw new Error('login');
-    }
-    if (!res.ok) throw new Error(data.error || 'error');
-    return data;
+  function getSocialStats(slug) {
+    try {
+      return JSON.parse(localStorage.getItem('atm_social_' + slug) || '{}');
+    } catch (e) { return {}; }
+  }
+
+  function setSocialStats(slug, stats) {
+    try {
+      localStorage.setItem('atm_social_' + slug, JSON.stringify(stats));
+    } catch (e) {}
   }
 
   async function hydrate() {
@@ -182,14 +178,14 @@
       }
     }
     var me = null;
+    try {
+      me = JSON.parse(localStorage.getItem('trujillo_ai_user') || localStorage.getItem('auth_user') || 'null');
+    } catch (e) {}
     window.__taFollowing = [];
     try {
-      var meRes = await fetch('/api/guides/me', { headers: headers(), credentials: 'same-origin' });
-      var meData = await meRes.json().catch(function () { return {}; });
-      me = meData.me || null;
-      window.__taFollowing = (me && me.following) || [];
+      window.__taFollowing = JSON.parse(localStorage.getItem('atm_following') || '[]');
     } catch (e) {}
-    window.__taMe = me && me.handle ? me : me;
+    window.__taMe = me;
     document.dispatchEvent(new CustomEvent('atm:me'));
     var profile = document.getElementById('me-profile');
     if (profile && me && me.handle) {
@@ -197,36 +193,23 @@
       profile.href = '/u/@' + me.handle;
     }
     if (!bars.length) return;
-    try {
-      var singleSlug = bars.length === 1 ? (bars[0].getAttribute('data-slug') || slugFromPath()) : '';
-      var data;
-      if (!singleSlug && window.__taFeedCache) {
-        data = window.__taFeedCache;
-      } else {
-        var query = singleSlug ? '?slug=' + encodeURIComponent(singleSlug) : '?view=all';
-        var res = await fetch('/api/guides' + query, { headers: headers(), credentials: 'same-origin' });
-        data = await res.json().catch(function () { return {}; });
-        if (!singleSlug) window.__taFeedCache = data;
-      }
-      var map = Object.create(null);
-      (data.guides || data.featured || []).forEach(function (g) { if (g && g.slug) map[g.slug] = g; });
-      bars.forEach(function (b) {
-        var s = b.getAttribute('data-slug');
-        var g = map[s] || {};
-        var handle = b.getAttribute('data-handle') || g.handle || pageHandle();
-        if (handle) b.setAttribute('data-handle', handle);
-        var canPin = !!(me && (me.owner || (me.handle && handle && me.handle === handle)));
-        setBar(b, {
-          likes: g.likes || 0,
-          up: g.up || g.likes || 0,
-          down: g.down || 0,
-          liked: !!g.liked,
-          disliked: !!g.disliked,
-          pinned: !!g.pinned,
-          canPin: canPin
-        });
+
+    bars.forEach(function (b) {
+      var s = b.getAttribute('data-slug') || slugFromPath();
+      var stats = getSocialStats(s);
+      var handle = b.getAttribute('data-handle') || pageHandle();
+      if (handle) b.setAttribute('data-handle', handle);
+      var canPin = !!(me && (me.owner || (me.handle && handle && me.handle === handle)));
+      setBar(b, {
+        likes: stats.likes || 0,
+        up: stats.up || stats.likes || 0,
+        down: stats.down || 0,
+        liked: !!stats.liked,
+        disliked: !!stats.disliked,
+        pinned: !!stats.pinned,
+        canPin: canPin
       });
-    } catch (e) {}
+    });
   }
 
   document.addEventListener('click', async function (e) {
@@ -235,11 +218,43 @@
     var vote = e.target.closest('[data-vote]');
     if (vote && slug) {
       e.preventDefault();
-      post('/api/guides/like', { slug: slug, dir: vote.getAttribute('data-vote') }).then(function (data) {
-        document.querySelectorAll('.social-bar[data-slug="' + slug + '"]').forEach(function (b) {
-          setBar(b, Object.assign({ canPin: true }, data));
-        });
-      }).catch(function () {});
+      var dir = vote.getAttribute('data-vote');
+      var stats = getSocialStats(slug);
+      var up = stats.up || stats.likes || 0;
+      var down = stats.down || 0;
+      var wasLiked = !!stats.liked;
+      var wasDisliked = !!stats.disliked;
+
+      if (dir === 'up') {
+        if (wasLiked) {
+          stats.liked = false;
+          stats.up = Math.max(0, up - 1);
+        } else {
+          stats.liked = true;
+          stats.up = up + 1;
+          if (wasDisliked) {
+            stats.disliked = false;
+            stats.down = Math.max(0, down - 1);
+          }
+        }
+      } else if (dir === 'down') {
+        if (wasDisliked) {
+          stats.disliked = false;
+          stats.down = Math.max(0, down - 1);
+        } else {
+          stats.disliked = true;
+          stats.down = down + 1;
+          if (wasLiked) {
+            stats.liked = false;
+            stats.up = Math.max(0, up - 1);
+          }
+        }
+      }
+      stats.likes = stats.up;
+      setSocialStats(slug, stats);
+      document.querySelectorAll('.social-bar[data-slug="' + slug + '"]').forEach(function (b) {
+        setBar(b, Object.assign({ canPin: true }, stats));
+      });
       return;
     }
     var editBtn = e.target.closest('[data-edit]');
@@ -254,61 +269,48 @@
     if (delBtn && slug) {
       e.preventDefault();
       if (!await confirmModal(t('confirmDelete'))) return;
-      fetch('/api/guides/write', {
-        method: 'DELETE',
-        headers: headers(),
-        credentials: 'same-origin',
-        body: JSON.stringify({ slug: slug })
-      }).then(function (r) {
-        if (r.ok) location.href = '/';
-      });
+      try {
+        var localGuides = JSON.parse(localStorage.getItem('atm_local_guides') || '[]');
+        localGuides = localGuides.filter(function (g) { return g.slug !== slug; });
+        localStorage.setItem('atm_local_guides', JSON.stringify(localGuides));
+      } catch (err) {}
+      location.href = '/';
       return;
     }
     var pin = e.target.closest('[data-pin]');
     if (pin && slug) {
       e.preventDefault();
-      post('/api/guides/pin', { slug: slug, pinned: !pin.classList.contains('is-on') }).then(function (data) {
-        document.querySelectorAll('.social-bar[data-slug="' + slug + '"]').forEach(function (b) {
-          setBar(b, Object.assign({ canPin: true }, data));
-        });
-      }).catch(function () {});
+      var stats = getSocialStats(slug);
+      stats.pinned = !stats.pinned;
+      setSocialStats(slug, stats);
+      document.querySelectorAll('.social-bar[data-slug="' + slug + '"]').forEach(function (b) {
+        setBar(b, Object.assign({ canPin: true }, stats));
+      });
       return;
     }
     var share = e.target.closest('[data-share]');
     if (share) {
       e.preventDefault();
-      share.classList.add('is-busy');
-      var slug = (bar && bar.getAttribute('data-slug')) || slugFromPath();
-      post('/api/guides/share', { slug: slug }).then(function (data) {
-        share.classList.remove('is-busy');
-        var url = absGuideShort(data);
-        function publish(finalUrl) {
-          url = finalUrl || url;
-          function done() {
-            share.classList.add('is-on');
-            share.title = t('copied');
-            share.setAttribute('aria-label', t('copied'));
-            setTimeout(function () {
-              share.classList.remove('is-on');
-              share.title = t('share');
-              share.setAttribute('aria-label', t('share'));
-            }, 1600);
-          }
-          if (navigator.share) {
-            navigator.share({ title: 'Documento', url: url }).then(done).catch(function () {
-              if (navigator.clipboard) navigator.clipboard.writeText(url).then(done);
-              else done();
-            });
-          } else if (navigator.clipboard) navigator.clipboard.writeText(url).then(done);
-          else {
-            window.prompt(t('share'), url);
-            done();
-          }
-        }
-        publish(url);
-      }).catch(function () {
-        share.classList.remove('is-busy');
-      });
+      var url = location.href;
+      function done() {
+        share.classList.add('is-on');
+        share.title = t('copied');
+        share.setAttribute('aria-label', t('copied'));
+        setTimeout(function () {
+          share.classList.remove('is-on');
+          share.title = t('share');
+          share.setAttribute('aria-label', t('share'));
+        }, 1600);
+      }
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(done).catch(function () {
+          window.prompt(t('share'), url);
+          done();
+        });
+      } else {
+        window.prompt(t('share'), url);
+        done();
+      }
       return;
     }
     var save = e.target.closest('[data-save]');
@@ -335,13 +337,13 @@
       e.preventDefault();
       var handle = bar.getAttribute('data-handle');
       if (!handle) return;
-      post('/api/guides/follow', { handle: handle }).then(function (data) {
-        window.__taFollowing = data.list || [];
-        document.querySelectorAll('.social-bar[data-handle="' + handle + '"]').forEach(function (b) {
-          setBar(b, { canPin: true, up: 0, down: 0 });
-        });
-        hydrate();
-      }).catch(function () {});
+      var following = window.__taFollowing || [];
+      var fIdx = following.indexOf(handle);
+      if (fIdx >= 0) following.splice(fIdx, 1);
+      else following.push(handle);
+      window.__taFollowing = following;
+      try { localStorage.setItem('atm_following', JSON.stringify(following)); } catch (err) {}
+      hydrate();
     }
   });
 

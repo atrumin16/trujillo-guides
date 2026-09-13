@@ -126,12 +126,27 @@
       </section>
 
       <div class="metadata-grid">
-        <label>
-          <span>Idioma del contenido</span>
-          <select name="langDoc" id="write-lang-doc">
-            <option value="ca">Català (CA)</option>
-            <option value="es" selected>Español (ES)</option>
-            <option value="en">English (EN)</option>
+        <label for="guide-lang" class="form-label">
+          Idioma del contingut
+          <span id="auto-lang-indicator" style="font-size: 11px; color: #0284c7; margin-left: 6px; font-weight: 500;"></span>
+          <select id="guide-lang" name="langDoc" class="form-input">
+            <option value="auto" selected>✨ Detecció automàtica</option>
+            <option value="ca">🇦🇩 Català (CA)</option>
+            <option value="es">🇪🇸 Español (ES)</option>
+            <option value="en">🇬🇧 English (EN)</option>
+            <option value="fr">🇫🇷 Français (FR)</option>
+            <option value="de">🇩🇪 Deutsch (DE)</option>
+            <option value="it">🇮🇹 Italiano (IT)</option>
+            <option value="pt">🇵🇹 Português (PT)</option>
+            <option value="nl">🇳🇱 Nederlands (NL)</option>
+            <option value="pl">🇵🇱 Polski (PL)</option>
+            <option value="sv">🇸🇪 Svenska (SV)</option>
+            <option value="ru">🇷🇺 Русский (RU)</option>
+            <option value="zh">🇨🇳 中文 (ZH)</option>
+            <option value="ja">🇯🇵 日本語 (JA)</option>
+            <option value="ko">🇰🇷 한국어 (KO)</option>
+            <option value="ar">🇸🇦 العربية (AR)</option>
+            <option value="hi">🇮🇳 हिन्दी (HI)</option>
           </select>
         </label>
         <label>

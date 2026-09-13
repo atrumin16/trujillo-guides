@@ -429,21 +429,14 @@
 
   async function checkSession() {
     try {
-      var tok = localStorage.getItem('trujillo_ai_token') ||
-        localStorage.getItem('auth_token') ||
-        getSharedCookie('auth_token') ||
-        getSharedCookie('ta_session');
-      var h = { 'Content-Type': 'application/json' };
-      if (tok) h.Authorization = 'Bearer ' + tok;
-      var r = await fetch('/api/auth/status', {
-        headers: h,
-        credentials: 'same-origin'
-      });
-      var data = await r.json().catch(function () { return {}; });
-      if (data && data.authenticated && (data.user || data.me)) {
-        window.__taMe = data.user || data.me;
-        paintAccount();
-        document.dispatchEvent(new CustomEvent('atm:me'));
+      var rawUser = localStorage.getItem('trujillo_ai_user') || localStorage.getItem('auth_user');
+      if (rawUser) {
+        var user = JSON.parse(rawUser);
+        if (user) {
+          window.__taMe = user;
+          paintAccount();
+          document.dispatchEvent(new CustomEvent('atm:me'));
+        }
       }
     } catch (e) {}
   }
