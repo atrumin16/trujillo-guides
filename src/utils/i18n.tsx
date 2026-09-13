@@ -1,24 +1,31 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-export type LanguageId = 'es' | 'en' | 'ca' | 'fr' | 'de' | 'it' | 'pt' | 'zh' | 'ja' | 'ar';
+export type LanguageId = 'es' | 'en' | 'ca' | 'fr' | 'de' | 'it' | 'pt' | 'nl' | 'pl' | 'sv' | 'ru' | 'zh' | 'ja' | 'ko' | 'ar' | 'hi';
 
 export interface LanguageMeta {
   id: LanguageId;
+  code?: string;
   name: string;
   flag: string;
 }
 
 export const SUPPORTED_LANGUAGES: LanguageMeta[] = [
-  { id: 'es', name: 'Español', flag: '🇪🇸' },
-  { id: 'en', name: 'English', flag: '🇬🇧' },
-  { id: 'ca', name: 'Català', flag: '🇦🇩' },
-  { id: 'fr', name: 'Français', flag: '🇫🇷' },
-  { id: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { id: 'it', name: 'Italiano', flag: '🇮🇹' },
-  { id: 'pt', name: 'Português', flag: '🇵🇹' },
-  { id: 'zh', name: '中文', flag: '🇨🇳' },
-  { id: 'ja', name: '日本語', flag: '🇯🇵' },
-  { id: 'ar', name: 'العربية', flag: '🇸🇦' }
+  { id: 'es', code: 'es', name: 'Español', flag: '🇪🇸' },
+  { id: 'en', code: 'en', name: 'English', flag: '🇬🇧' },
+  { id: 'ca', code: 'ca', name: 'Català', flag: '🇦🇩' },
+  { id: 'fr', code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { id: 'de', code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { id: 'it', code: 'it', name: 'Italiano', flag: '🇮🇹' },
+  { id: 'pt', code: 'pt', name: 'Português', flag: '🇵🇹' },
+  { id: 'nl', code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
+  { id: 'pl', code: 'pl', name: 'Polski', flag: '🇵🇱' },
+  { id: 'sv', code: 'sv', name: 'Svenska', flag: '🇸🇪' },
+  { id: 'ru', code: 'ru', name: 'Русский', flag: '🇷🇺' },
+  { id: 'zh', code: 'zh', name: '中文', flag: '🇨🇳' },
+  { id: 'ja', code: 'ja', name: '日本語', flag: '🇯🇵' },
+  { id: 'ko', code: 'ko', name: '한국어', flag: '🇰🇷' },
+  { id: 'ar', code: 'ar', name: 'العربية', flag: '🇸🇦' },
+  { id: 'hi', code: 'hi', name: 'हिन्दी', flag: '🇮🇳' }
 ];
 
 export const TRANSLATIONS: Record<string, Record<string, string>> = {

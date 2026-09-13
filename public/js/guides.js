@@ -415,7 +415,7 @@
     if (!text) return '';
     const tickerRegex = /\(?\$([A-Z0-9]+(?:\.[A-Z0-9]+)?)\)?/g;
     return text.replace(tickerRegex, (match, ticker) => {
-      return `<span class="ticker-badge">$${ticker}</span>`;
+      return `<a href="https://www.tradingview.com/symbols/${ticker}/" target="_blank" rel="noopener noreferrer" class="ticker-badge" style="display: inline-flex; align-items: center; padding: 0.12rem 0.5rem; border-radius: 6px; font-size: 0.8em; font-family: ui-monospace, monospace; font-weight: 700; background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); text-decoration: none; cursor: pointer; pointer-events: auto; position: relative; z-index: 10; margin-left: 0.35rem; vertical-align: middle;">$${ticker}</a>`;
     });
   }
   window.formatTitleTickers = formatTitleTickers;
@@ -423,6 +423,7 @@
 
   function applyTickerToElement(el) {
     if (!el || el.getAttribute('data-ticker-parsed')) return;
+    el.style.pointerEvents = 'auto';
     if (el.querySelector && el.querySelector('.ticker-badge')) {
       el.setAttribute('data-ticker-parsed', '1');
       return;

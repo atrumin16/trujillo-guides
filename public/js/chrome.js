@@ -28,15 +28,16 @@
   function langPickerHtml() {
     var current = (typeof window.atmLang === 'function' && window.atmLang()) || 'es';
     var langs = window.ATM_LANGS || [];
-    var meta = langs.filter(function (l) { return l.id === current; })[0] || { id: 'es', flag: '🇪🇸', name: 'Español' };
+    var meta = langs.filter(function (l) { return (l.id === current || l.code === current); })[0] || { id: 'es', code: 'es', flag: '🇪🇸', name: 'Español' };
     var opts = langs.map(function (l) {
-      return '<button type="button" class="lang-option' + (l.id === current ? ' active' : '') +
-        '" data-lang="' + l.id + '" role="option"><span class="flag">' + l.flag +
+      var code = l.code || l.id;
+      return '<button type="button" class="lang-option' + (code === current ? ' active' : '') +
+        '" data-lang="' + code + '" role="option"><span class="flag">' + l.flag +
         '</span><span>' + l.name + '</span></button>';
     }).join('');
     return '<div class="lang-picker" id="lang-picker">' +
       '<button type="button" class="lang-flag-btn" id="lang-flag-btn" aria-haspopup="listbox" title="' + meta.name + '">' +
-      '<span class="flag">' + meta.flag + '</span><span class="lang-code">' + meta.id.toUpperCase() + '</span></button>' +
+      '<span class="flag">' + meta.flag + '</span><span class="lang-code">' + (meta.code || meta.id).toUpperCase() + '</span></button>' +
       '<div class="lang-menu" id="lang-menu" role="listbox" hidden>' + opts + '</div></div>';
   }
 

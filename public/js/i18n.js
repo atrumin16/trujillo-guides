@@ -1,15 +1,24 @@
-window.ATM_LANGS = [
-  { id: 'es', name: 'Español', flag: '🇪🇸' },
-  { id: 'en', name: 'English', flag: '🇬🇧' },
-  { id: 'ca', name: 'Català', flag: '🇦🇩' },
-  { id: 'fr', name: 'Français', flag: '🇫🇷' },
-  { id: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { id: 'it', name: 'Italiano', flag: '🇮🇹' },
-  { id: 'pt', name: 'Português', flag: '🇵🇹' },
-  { id: 'zh', name: '中文', flag: '🇨🇳' },
-  { id: 'ja', name: '日本語', flag: '🇯🇵' },
-  { id: 'ar', name: 'العربية', flag: '🇸🇦' }
+const SUPPORTED_LANGUAGES = [
+  { id: 'es', code: 'es', name: 'Español', flag: '🇪🇸' },
+  { id: 'en', code: 'en', name: 'English', flag: '🇬🇧' },
+  { id: 'ca', code: 'ca', name: 'Català', flag: '🇦🇩' },
+  { id: 'fr', code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { id: 'de', code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { id: 'it', code: 'it', name: 'Italiano', flag: '🇮🇹' },
+  { id: 'pt', code: 'pt', name: 'Português', flag: '🇵🇹' },
+  { id: 'nl', code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
+  { id: 'pl', code: 'pl', name: 'Polski', flag: '🇵🇱' },
+  { id: 'sv', code: 'sv', name: 'Svenska', flag: '🇸🇪' },
+  { id: 'ru', code: 'ru', name: 'Русский', flag: '🇷🇺' },
+  { id: 'zh', code: 'zh', name: '中文', flag: '🇨🇳' },
+  { id: 'ja', code: 'ja', name: '日本語', flag: '🇯🇵' },
+  { id: 'ko', code: 'ko', name: '한국어', flag: '🇰🇷' },
+  { id: 'ar', code: 'ar', name: 'العربية', flag: '🇸🇦' },
+  { id: 'hi', code: 'hi', name: 'हिन्दी', flag: '🇮🇳' }
 ];
+
+window.ATM_LANGS = SUPPORTED_LANGUAGES;
+window.SUPPORTED_LANGUAGES = SUPPORTED_LANGUAGES;
 
 window.ATM_UI = {
   es: {
@@ -183,13 +192,79 @@ window.ATM_UI = {
     emptyHome: 'لا أدلة مثبتة بعد.',
     pinned: 'مثبّتة', pin: 'تثبيت', copy: 'نسخ الرابط', copied: 'تم النسخ',
     like: 'إعجاب', theme: 'السمة', footer: '© 2026 ATM Software Labs'
+  },
+  nl: {
+    studio: 'Studio', profile: 'Profiel', index: 'Index', home: 'Home',
+    kicker: 'Technische documentatie',
+    'hero-title': 'Engineeringgidsen en runbooks',
+    'hero-sub': 'Echte architecturen. Op de voorpagina staan de beste vastgemaakte gidsen.',
+    search: 'Zoek gidsen…', featured: 'Uitgelicht', voted: 'Meest gestemd', all: 'Alle',
+    results: 'Resultaten', empty: 'Niets gevonden.',
+    emptyHome: 'Nog geen vastgemaakte gidsen.',
+    pinned: 'Vastgemaakt', pin: 'Vastmaken', copy: 'Link kopiëren', copied: 'Gekopieerd',
+    like: 'Vind ik leuk', theme: 'Thema', footer: '© 2026 ATM Software Labs'
+  },
+  pl: {
+    studio: 'Studio', profile: 'Profil', index: 'Indeks', home: 'Start',
+    kicker: 'Dokumentacja techniczna',
+    'hero-title': 'Przewodniki inżynieryjne i runbooki',
+    'hero-sub': 'Prawdziwe architektury. Na stronie głównej te przypięte przez autorów.',
+    search: 'Szukaj przewodników…', featured: 'Wyróżnione', voted: 'Najwyżej oceniane', all: 'Wszystkie',
+    results: 'Wyniki', empty: 'Brak wyników.',
+    emptyHome: 'Brak przypiętych przewodników.',
+    pinned: 'Przypięty', pin: 'Przypnij', copy: 'Kopiuj link', copied: 'Skopiowano',
+    like: 'Polub', theme: 'Motyw', footer: '© 2026 ATM Software Labs'
+  },
+  sv: {
+    studio: 'Studio', profile: 'Profil', index: 'Index', home: 'Hem',
+    kicker: 'Teknisk dokumentation',
+    'hero-title': 'Ingenjörsguider och runbooks',
+    'hero-sub': 'Verkliga arkitekturer. På startsidan visas de guider författarna nålar fast.',
+    search: 'Sök guider…', featured: 'Utvalda', voted: 'Mest röstade', all: 'Alla',
+    results: 'Resultat', empty: 'Inget matchar.',
+    emptyHome: 'Inga nålade guider ännu.',
+    pinned: 'Nålad', pin: 'Nåla', copy: 'Kopiera länk', copied: 'Kopierad',
+    like: 'Gilla', theme: 'Tema', footer: '© 2026 ATM Software Labs'
+  },
+  ru: {
+    studio: 'Studio', profile: 'Профиль', index: 'Индекс', home: 'Главная',
+    kicker: 'Техническая документация',
+    'hero-title': 'Инженерные руководства и ранбуки',
+    'hero-sub': 'Реальные архитектуры. На главной — лучшее, закрепленное авторами.',
+    search: 'Поиск руководств…', featured: 'Избранное', voted: 'Популярное', all: 'Все',
+    results: 'Результаты', empty: 'Ничего не найдено.',
+    emptyHome: 'Пока нет закрепленных руководств.',
+    pinned: 'Закреплено', pin: 'Закрепить', copy: 'Копировать ссылку', copied: 'Скопировано',
+    like: 'Нравится', theme: 'Тема', footer: '© 2026 ATM Software Labs'
+  },
+  ko: {
+    studio: 'Studio', profile: '프로필', index: '색인', home: '홈',
+    kicker: '기술 문서',
+    'hero-title': '엔지니어링 가이드 및 런북',
+    'hero-sub': '실제 아키텍처. 홈에는 작성자가 고정한 최고의 가이드가 표시됩니다.',
+    search: '가이드 검색…', featured: '추천', voted: '인기순', all: '전체',
+    results: '결과', empty: '일치하는 항목이 없습니다.',
+    emptyHome: '아직 고정된 가이드가 없습니다.',
+    pinned: '고정됨', pin: '고정', copy: '링크 복사', copied: '복사됨',
+    like: '좋아요', theme: '테마', footer: '© 2026 ATM Software Labs'
+  },
+  hi: {
+    studio: 'Studio', profile: 'प्रोफ़ाइल', index: 'सूची', home: 'होम',
+    kicker: 'तकनीकी दस्तावेज़',
+    'hero-title': 'इंजीनियरिंग गाइड और रनबुक्स',
+    'hero-sub': 'वास्तविक आर्किटेक्चर। होमपेज पर लेखकों द्वारा पिन की गई बेहतरीन गाइड।',
+    search: 'गाइड खोजें…', featured: 'विशेष', voted: 'सर्वाधिक पसंद', all: 'सभी',
+    results: 'परिणाम', empty: 'कोई परिणाम नहीं मिला।',
+    emptyHome: 'अभी कोई पिन की गई गाइड नहीं है।',
+    pinned: 'पिन किया गया', pin: 'पिन करें', copy: 'लिंक कॉपी करें', copied: 'कॉपी हो गया',
+    like: 'पसंद करें', theme: 'थीम', footer: '© 2026 ATM Software Labs'
   }
 };
 
 (function () {
   function known(id) {
     id = String(id || '').toLowerCase().slice(0, 2);
-    return window.ATM_LANGS.some(function (l) { return l.id === id; }) ? id : '';
+    return window.ATM_LANGS.some(function (l) { return l.id === id || l.code === id; }) ? id : '';
   }
 
   window.atmLang = function () {
@@ -234,10 +309,10 @@ window.ATM_UI = {
       }
     });
     var btn = document.getElementById('lang-flag-btn');
-    var meta = window.ATM_LANGS.filter(function (l) { return l.id === lang; })[0];
+    var meta = window.ATM_LANGS.filter(function (l) { return l.id === lang || l.code === lang; })[0];
     if (btn && meta) {
       btn.querySelector('.flag').textContent = meta.flag;
-      btn.querySelector('.lang-code').textContent = meta.id.toUpperCase();
+      btn.querySelector('.lang-code').textContent = (meta.code || meta.id).toUpperCase();
       btn.setAttribute('title', meta.name);
     }
     document.querySelectorAll('.lang-option').forEach(function (b) {
