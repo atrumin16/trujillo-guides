@@ -339,14 +339,14 @@
     if (!tabWrite || !tabPreview || !ta || !pv) return;
 
     if (mode === 'preview') {
-      tabPreview.classList.add('is-active');
-      tabWrite.classList.remove('is-active');
+      tabPreview.classList.add('is-active', 'active');
+      tabWrite.classList.remove('is-active', 'active');
       ta.style.display = 'none';
       pv.hidden = false;
       updatePreview();
     } else {
-      tabWrite.classList.add('is-active');
-      tabPreview.classList.remove('is-active');
+      tabWrite.classList.add('is-active', 'active');
+      tabPreview.classList.remove('is-active', 'active');
       pv.hidden = true;
       ta.style.display = '';
       ta.focus();
@@ -517,10 +517,13 @@
     }
 
     // Toolbar buttons
-    var toolBtn = e.target.closest('.studio-tool-btn');
-    if (toolBtn && toolBtn.dataset.tool) {
-      handleTool(toolBtn.dataset.tool);
-      return;
+    var toolBtn = e.target.closest('.studio-tool-btn, .editor-toolbar button, button[data-action], button[data-tool]');
+    if (toolBtn) {
+      var tool = toolBtn.dataset.tool || toolBtn.dataset.action;
+      if (tool) {
+        handleTool(tool);
+        return;
+      }
     }
 
     // Tabs
@@ -532,7 +535,7 @@
     if (e.target.closest('#draft-discard-btn')) { discardDraft(); return; }
 
     // References: Add row
-    if (e.target.closest('#add-reference-btn')) {
+    if (e.target.closest('#add-reference-btn, #btn-add-ref')) {
       addReferenceRow();
       scheduleAutoSave();
       return;

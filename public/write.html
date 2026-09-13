@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="es" class="dark" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -58,24 +58,24 @@
       <input type="hidden" name="lang" id="write-lang" value="markdown">
 
       <div class="studio-editor-box">
-        <div class="studio-toolbar">
+        <div class="studio-toolbar editor-toolbar">
           <div class="studio-tool-group">
-            <button type="button" class="studio-tool-btn" data-tool="bold" title="Negrita (Ctrl+B)"><strong>B</strong></button>
-            <button type="button" class="studio-tool-btn" data-tool="italic" title="Cursiva (Ctrl+I)"><em>I</em></button>
-            <button type="button" class="studio-tool-btn" data-tool="h2" title="Encabezado H2">H2</button>
-            <button type="button" class="studio-tool-btn" data-tool="h3" title="Encabezado H3">H3</button>
-            <button type="button" class="studio-tool-btn" data-tool="link" title="Enlace">
+            <button type="button" class="studio-tool-btn" data-tool="bold" data-action="bold" title="Negrita (Ctrl+B)"><strong>B</strong></button>
+            <button type="button" class="studio-tool-btn" data-tool="italic" data-action="italic" title="Cursiva (Ctrl+I)"><em>I</em></button>
+            <button type="button" class="studio-tool-btn" data-tool="h2" data-action="h2" title="Encabezado H2">H2</button>
+            <button type="button" class="studio-tool-btn" data-tool="h3" data-action="h3" title="Encabezado H3">H3</button>
+            <button type="button" class="studio-tool-btn" data-tool="link" data-action="link" title="Enlace">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
             </button>
-            <button type="button" class="studio-tool-btn btn-ticker" data-tool="ticker" title="Ticker bursátil (ej. $MSFT)">$ Ticker</button>
-            <button type="button" class="studio-tool-btn" data-tool="table" title="Tabla financiera/métrica">Tabla</button>
-            <button type="button" class="studio-tool-btn" data-tool="callout" title="Callout destacado">Callout</button>
-            <button type="button" class="studio-tool-btn" data-tool="code" title="Bloque de código">Code</button>
+            <button type="button" class="studio-tool-btn btn-ticker" data-tool="ticker" data-action="ticker" title="Ticker bursátil (ej. $MSFT)">$ Ticker</button>
+            <button type="button" class="studio-tool-btn" data-tool="table" data-action="table" title="Tabla financiera/métrica">Tabla</button>
+            <button type="button" class="studio-tool-btn" data-tool="callout" data-action="callout" title="Callout destacado">Callout</button>
+            <button type="button" class="studio-tool-btn" data-tool="code" data-action="code" title="Bloque de código">Code</button>
           </div>
           <div class="studio-tool-group" style="margin-left: auto;">
             <div class="metrics-pill" id="metrics-pill">0 palabras · ~0 min lectura · 0 caracteres</div>
-            <div class="studio-tabs">
-              <button type="button" class="studio-tab-btn is-active" id="tab-write">Escribir</button>
+            <div class="studio-tabs editor-tabs">
+              <button type="button" class="studio-tab-btn is-active active" id="tab-write">Escribir</button>
               <button type="button" class="studio-tab-btn" id="tab-preview">Vista previa</button>
             </div>
           </div>
@@ -117,7 +117,7 @@
             <h3 class="studio-section-title">Fuentes y Referencias Técnicas</h3>
             <p class="studio-section-desc">Cita SEC filings, repositorios de GitHub, papers de ArXiv o documentación oficial vinculada.</p>
           </div>
-          <button type="button" class="studio-btn-flat" id="add-reference-btn">
+          <button type="button" class="studio-btn-flat btn-add-ref" id="btn-add-ref">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             Añadir referencia
           </button>
@@ -151,7 +151,7 @@
 
       <p class="write-status" id="write-status" hidden></p>
       <div class="write-actions">
-        <button type="submit" id="publish-btn" data-i18n="publish">
+        <button type="submit" id="publish-btn" class="btn-publish" data-i18n="publish">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
           Publicar
         </button>

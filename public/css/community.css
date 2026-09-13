@@ -2567,3 +2567,157 @@ iframe {
   .guide-row { flex-direction: column; gap: 4px; }
   .guide-row-meta { white-space: normal; }
 }
+
+/* ==========================================================================
+   ESTILOS EXCLUSIVOS PARA BOTONES DEL EDITOR (STUDIO / PUBLISH)
+   ========================================================================== */
+
+/* Botones de la barra de herramientas Markdown (B, I, H2, Tabla, etc.) */
+.editor-toolbar button,
+.studio-toolbar button,
+button[data-action],
+button[data-tool],
+.studio-tool-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1.3;
+  transition: all 0.15s ease;
+}
+
+.editor-toolbar button:hover,
+.studio-toolbar button:hover,
+button[data-action]:hover,
+button[data-tool]:hover,
+.studio-tool-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+/* Pestañas [Escribir] y [Vista previa] */
+#tab-write,
+#tab-preview,
+.editor-tabs button,
+.studio-tabs button {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+#tab-write:hover,
+#tab-preview:hover,
+.editor-tabs button:hover,
+.studio-tabs button:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+#tab-write.active,
+#tab-preview.active,
+#tab-write.is-active,
+#tab-preview.is-active,
+.editor-tabs button.active,
+.editor-tabs button.is-active,
+.studio-tabs button.active,
+.studio-tabs button.is-active {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+}
+
+/* Botones de subida de archivos y referencias (+ Añadir referencia, Importar, Adjuntar) */
+#btn-add-ref,
+#add-reference-btn,
+label:has(input[type="file"]),
+.studio-btn-flat,
+button:not(.btn-publish):not([class*="bg-blue"]):not(.studio-tool-btn):not(.studio-tab-btn):not(#publish-btn):not(#tab-write):not(#tab-preview):not(.theme-toggle-btn) {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+#btn-add-ref:hover,
+#add-reference-btn:hover,
+label:has(input[type="file"]):hover,
+.studio-btn-flat:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+/* Soporte para modo oscuro si está activo */
+.dark .editor-toolbar button,
+[data-theme="dark"] .editor-toolbar button,
+[data-theme="dark"] .studio-toolbar button,
+.dark button[data-action],
+[data-theme="dark"] button[data-action],
+[data-theme="dark"] button[data-tool],
+[data-theme="dark"] .studio-tool-btn,
+.dark #tab-write,
+[data-theme="dark"] #tab-write,
+.dark #tab-preview,
+[data-theme="dark"] #tab-preview,
+.dark #btn-add-ref,
+[data-theme="dark"] #btn-add-ref,
+[data-theme="dark"] #add-reference-btn,
+.dark label:has(input[type="file"]),
+[data-theme="dark"] label:has(input[type="file"]),
+[data-theme="dark"] .studio-btn-flat {
+  background: #0f172a;
+  border-color: #1e293b;
+  color: #cbd5e1;
+}
+
+.dark .editor-toolbar button:hover,
+[data-theme="dark"] .editor-toolbar button:hover,
+[data-theme="dark"] .studio-toolbar button:hover,
+.dark button[data-action]:hover,
+[data-theme="dark"] button[data-action]:hover,
+[data-theme="dark"] button[data-tool]:hover,
+[data-theme="dark"] .studio-tool-btn:hover,
+.dark #btn-add-ref:hover,
+[data-theme="dark"] #btn-add-ref:hover,
+[data-theme="dark"] #add-reference-btn:hover,
+.dark label:has(input[type="file"]):hover,
+[data-theme="dark"] label:has(input[type="file"]):hover,
+[data-theme="dark"] .studio-btn-flat:hover {
+  background: #1e293b;
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
+[data-theme="dark"] #tab-write.active,
+[data-theme="dark"] #tab-preview.active,
+[data-theme="dark"] #tab-write.is-active,
+[data-theme="dark"] #tab-preview.is-active {
+  background: #38bdf8;
+  border-color: #38bdf8;
+  color: #0f172a;
+}
+
