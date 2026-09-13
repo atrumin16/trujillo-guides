@@ -3,155 +3,79 @@
 
   var STATIC_CATALOG = [
     {
-      slug: 'berkshire-analysis',
-      title: 'Desglose Financiero y Posiciones de Berkshire Hathaway ($BRK.B)',
-      href: '/guides/crypto-telemetry/',
-      handle: 'atrumin16',
-      authorName: 'Alberto Trujillo Mingorance',
-      authorPicture: '/avatar.png',
-      category: 'Análisis',
-      kind: 'analysis',
-      readTime: '16 min',
-      likes: 54,
-      up: 54,
-      pinned: true,
-      fixada: true,
-      summary: 'Estructura de capital, tesorería récord y análisis de participadas en ($BRK.B).',
-      date: '12 sep 2026',
-      updatedAt: 1789100000000,
-      static: true
-    },
-    {
-      slug: 'edge-ai-architecture',
-      title: 'Inferencia multimodal sub-100ms en Groq LPU y Cloudflare',
-      href: '/guides/edge-ai-architecture/',
-      handle: 'atrumin16',
-      authorName: 'Alberto Trujillo Mingorance',
-      authorPicture: '/avatar.png',
-      category: 'Análisis',
-      kind: 'analysis',
-      readTime: '14 min',
-      likes: 47,
-      up: 47,
-      pinned: true,
-      fixada: true,
-      summary: 'Streaming de ultra-baja latencia con Workers Edge y aceleración de hardware en Groq.',
-      date: '11 sep 2026',
-      updatedAt: 1788700000000,
-      static: true
-    },
-    {
-      slug: 'enterprise-email',
-      title: 'Arquitectura de Correo Empresarial a Coste 0 €',
+      slug: 'infraestructura-de-correo-corporativo-para-start',
+      title: 'Infraestructura de Correo Corporativo para Startups a Coste 0 €',
       href: '/guides/enterprise-email/',
       handle: 'atrumin16',
       authorName: 'Alberto Trujillo Mingorance',
-      authorPicture: '/avatar.png',
-      category: 'Runbook',
-      kind: 'runbook',
+      authorPicture: 'https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c',
+      category: 'Guía',
+      kind: 'guide',
       readTime: '18 min',
-      likes: 42,
-      up: 42,
+      likes: 3,
+      up: 3,
       pinned: true,
       fixada: true,
-      summary: 'Infraestructura de correo corporativo e identidad para startups sin Google Workspace.',
+      summary: 'Arquitectura de correo corporativo e identidad para startups sin Google Workspace.',
       date: '11 sep 2026',
-      updatedAt: 1789000000000,
+      updatedAt: 1789222141213,
       static: true
     },
     {
-      slug: 'it-glossary',
-      title: 'Glosario Interactivo de Sistemas e Informática',
-      href: '/guides/it-glossary/',
+      slug: 'informe-msft',
+      title: "Informe d'anàlisi tècnica, estratègica i financera ($MSFT)",
+      href: '/g/informe-msft',
       handle: 'atrumin16',
       authorName: 'Alberto Trujillo Mingorance',
-      authorPicture: '/avatar.png',
+      authorPicture: 'https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c',
+      category: 'Análisis',
+      kind: 'analysis',
+      readTime: '14 min',
+      likes: 2,
+      up: 2,
+      pinned: false,
+      fixada: false,
+      summary: 'Anàlisi exhaustiva de Microsoft: Azure, Office 365, integració Copilot/OpenAI, valoració DCF i escenaris de creixement.',
+      date: '10 sep 2026',
+      updatedAt: 1789173489276,
+      static: false
+    },
+    {
+      slug: 'desglose-de-cartera-y-simulador-de-berkshire-hat',
+      title: 'Desglossament de Cartera i Simulador de Berkshire Hathaway ($BRK.B)',
+      href: '/g/desglose-de-cartera-y-simulador-de-berkshire-hat',
+      handle: 'atrumin16',
+      authorName: 'Alberto Trujillo Mingorance',
+      authorPicture: 'https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c',
       category: 'Guía',
       kind: 'guide',
       readTime: '12 min',
-      likes: 38,
-      up: 38,
-      pinned: true,
-      fixada: true,
-      summary: 'Términos, protocolos, arquitecturas y herramientas esenciales de DevOps y SRE.',
+      likes: 1,
+      up: 1,
+      pinned: false,
+      fixada: false,
+      summary: 'Calculadora interactiva del balance: negocios privados, T-Bills y cartera cotizada según capital o acciones.',
       date: '11 sep 2026',
-      updatedAt: 1788900000000,
-      static: true
+      updatedAt: 1789241840820,
+      static: false
     },
     {
-      slug: 'japan-sogo-shosha',
-      title: 'Sogo Shosha: Inversión en Trading Houses Japonesas ($8058, $8001)',
-      href: '/guides/edge-ai-architecture/',
+      slug: 'it-glossary',
+      title: 'Glossari Interactiu de Sistemes i Informàtica',
+      href: '/guides/it-glossary/',
       handle: 'atrumin16',
       authorName: 'Alberto Trujillo Mingorance',
-      authorPicture: '/avatar.png',
-      category: 'Research',
-      kind: 'research',
-      readTime: '13 min',
-      likes: 49,
-      up: 49,
-      pinned: false,
-      fixada: false,
-      summary: 'Análisis fundamental de Mitsubishi Corp ($8058) e Itochu ($8001).',
-      date: '11 sep 2026',
-      updatedAt: 1789050000000,
-      static: true
-    },
-    {
-      slug: 'open-sentinel',
-      title: 'Telemetría Host y Detección de Intrusión (Open-Sentinel)',
-      href: '/guides/open-sentinel/',
-      handle: 'atrumin16',
-      authorName: 'Alberto Trujillo Mingorance',
-      authorPicture: '/avatar.png',
-      category: 'Runbook',
-      kind: 'runbook',
-      readTime: '15 min',
-      likes: 35,
-      up: 35,
-      pinned: false,
-      fixada: false,
-      summary: 'Agente de auditoría forense y monitorización de seguridad con alertado en tiempo real.',
-      date: '10 sep 2026',
-      updatedAt: 1788800000000,
-      static: true
-    },
-    {
-      slug: 'crypto-telemetry',
-      title: 'Telemetría On-Chain y Mempool (BitPulse)',
-      href: '/guides/crypto-telemetry/',
-      handle: 'atrumin16',
-      authorName: 'Alberto Trujillo Mingorance',
-      authorPicture: '/avatar.png',
-      category: 'Research',
-      kind: 'research',
-      readTime: '10 min',
-      likes: 31,
-      up: 31,
-      pinned: false,
-      fixada: false,
-      summary: 'Monitorización de transacciones no confirmadas, comisiones de gas y dinámica de bloques.',
-      date: '08 sep 2026',
-      updatedAt: 1788500000000,
-      static: true
-    },
-    {
-      slug: 'dns-zero-trust',
-      title: 'Filtrado DNS DoH y Zero-Trust (AdShield)',
-      href: '/guides/dns-zero-trust/',
-      handle: 'atrumin16',
-      authorName: 'Alberto Trujillo Mingorance',
-      authorPicture: '/avatar.png',
+      authorPicture: 'https://lh3.googleusercontent.com/a/ACg8ocLdgZZbUW1KzSg11REPuHungATAR_SeG52Na5yDYfOOXhpkXzs=s96-c',
       category: 'Guía',
       kind: 'guide',
-      readTime: '11 min',
-      likes: 29,
-      up: 29,
+      readTime: '10 min',
+      likes: 0,
+      up: 0,
       pinned: false,
       fixada: false,
-      summary: 'Resolución DNS cifrada con listas de bloqueo de telemetría y publicidad invasiva.',
+      summary: 'Terminologia clau de xarxes, Cloud, DevOps, protocols de seguretat i arquitectura de sistemes distribuïts.',
       date: '09 sep 2026',
-      updatedAt: 1788600000000,
+      updatedAt: 1788800000000,
       static: true
     }
   ];
@@ -269,12 +193,26 @@
     a.className = 'guide-card' + (pinned ? ' is-pinned' : '');
     a.href = hrefOf(g);
 
-    var img = document.createElement('img');
-    img.className = 'guide-card-avatar';
-    img.src = g.authorPicture || '/avatar.png';
-    img.alt = '';
-    img.width = 40;
-    img.height = 40;
+    var avatarEl;
+    var pic = g.authorPicture || '';
+    if (pic && pic !== '/avatar.png' && !pic.endsWith('avatar.png') && /^https?:\/\//i.test(pic)) {
+      avatarEl = document.createElement('img');
+      avatarEl.className = 'guide-card-avatar';
+      avatarEl.src = pic;
+      avatarEl.alt = g.authorName || 'AT';
+      avatarEl.width = 40;
+      avatarEl.height = 40;
+      avatarEl.onerror = function () {
+        var span = document.createElement('span');
+        span.className = 'guide-card-avatar guide-card-avatar-initials';
+        span.textContent = 'AT';
+        if (avatarEl.parentNode) avatarEl.parentNode.replaceChild(span, avatarEl);
+      };
+    } else {
+      avatarEl = document.createElement('span');
+      avatarEl.className = 'guide-card-avatar guide-card-avatar-initials';
+      avatarEl.textContent = 'AT';
+    }
 
     var body = document.createElement('div');
     body.className = 'guide-card-body';
@@ -309,7 +247,7 @@
     meta.innerHTML = metaHtml;
     body.appendChild(meta);
 
-    a.appendChild(img);
+    a.appendChild(avatarEl);
     a.appendChild(body);
     return a;
   }
@@ -471,18 +409,11 @@
     // 2. Render immediately from in-memory catalog (0 latency, 0 worker requests)
     render();
 
-    // 3. Static CDN refresh: fetch /data.json or fallback to /community-index.json
-    // Both are served as purely static assets by Cloudflare Pages CDN (zero workers invoked)
-    fetch('/data.json', { cache: 'default' })
+    // 3. Static CDN refresh from /community-index.json (0 worker requests)
+    fetch('/community-index.json', { cache: 'default' })
       .then(function (r) {
-        if (!r.ok) throw new Error('data.json status ' + r.status);
+        if (!r.ok) throw new Error('community-index status ' + r.status);
         return r.json();
-      })
-      .catch(function () {
-        return fetch('/community-index.json', { cache: 'default' }).then(function (r) {
-          if (!r.ok) throw new Error('community-index status ' + r.status);
-          return r.json();
-        });
       })
       .then(function (data) {
         var items = listFrom(data);

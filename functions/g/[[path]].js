@@ -35,6 +35,18 @@ export async function onRequestGet(context) {
   }
   if (isHiddenSlug(hidden, slug)) return html(renderGuideMissing(), 404);
   const record = await loadGuideBySlug(kv, slug);
+  if (!record && (slug.indexOf('correo') !== -1 || slug.indexOf('enterprise') !== -1)) {
+    return Response.redirect('https://guides.trujillomingorance.com/guides/enterprise-email/', 301);
+  }
+  if (!record && (slug.indexOf('glossar') !== -1 || slug.indexOf('glosario') !== -1)) {
+    return Response.redirect('https://guides.trujillomingorance.com/guides/it-glossary/', 301);
+  }
+  if (!record && (slug.indexOf('berkshire') !== -1 || slug.indexOf('desglose') !== -1)) {
+    return Response.redirect('https://guides.trujillomingorance.com/guides/desglose-de-cartera-y-simulador-de-berkshire-hat/', 301);
+  }
+  if (!record && (slug.indexOf('msft') !== -1 || slug.indexOf('microsoft') !== -1)) {
+    return Response.redirect('https://guides.trujillomingorance.com/guides/informe-msft/', 301);
+  }
   if (!record) {
     const redir = staticGuideRedirect(slug, hidden);
     if (redir) return redir;

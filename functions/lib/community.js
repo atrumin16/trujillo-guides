@@ -68,13 +68,52 @@ export async function loadGuideRecord(kv, handle, slug) {
 
 export async function loadGuideBySlug(kv, slug) {
   if (!kv || !slug) return null;
-  const ptrRaw = await kv.get('pub:guide:' + slug);
-  if (ptrRaw) {
-    try {
+  const cleanSlug = String(slug).toLowerCase().trim().replace(/[^a-z0-9-]+/g, '');
+  if (!cleanSlug) return null;
+
+  // 1. Try pointer pub:guide:cleanSlug
+  try {
+    const ptrRaw = await kv.get('pub:guide:' + cleanSlug);
+    if (ptrRaw) {
       const ptr = JSON.parse(ptrRaw);
-      if (ptr && ptr.handle) return loadGuideRecord(kv, ptr.handle, slug);
-    } catch (e) {}
-  }
+      const h = ptr && ptr.handle ? String(ptr.handle).replace(/^@/, '') : '';
+      if (h) {
+        const rec = (await loadGuideRecord(kv, h, ptr.slug || cleanSlug)) || (await loadGuideRecord(kv, '@' + h, ptr.slug || cleanSlug));
+        if (rec) return rec;
+      }
+    }
+  } catch (e) {}
+
+  // 2. Try direct handle guide:atrumin16:cleanSlug
+  try {
+    const direct = (await loadGuideRecord(kv, 'atrumin16', cleanSlug)) || (await loadGuideRecord(kv, '@atrumin16', cleanSlug));
+    if (direct) return direct;
+  } catch (e) {}
+
+  // 3. Try searching guide:public
+  try {
+    const pubList = await readJsonArray(kv, 'guide:public');
+    const matched = pubList.find((it) => it && String(it.slug || '').toLowerCase() === cleanSlug);
+    if (matched) {
+      if (matched.content) return matched;
+      const h = matched.handle ? String(matched.handle).replace(/^@/, '') : 'atrumin16';
+      const rec = (await loadGuideRecord(kv, h, matched.slug || cleanSlug)) || (await loadGuideRecord(kv, '@' + h, matched.slug || cleanSlug));
+      if (rec) return rec;
+      return matched;
+    }
+  } catch (e) {}
+
+  // 4. Try searching guide:index:atrumin16
+  try {
+    const userIndex = (await readJsonArray(kv, 'guide:index:atrumin16')) || (await readJsonArray(kv, 'guide:index:@atrumin16'));
+    const matched = userIndex.find((it) => it && String(it.slug || '').toLowerCase() === cleanSlug);
+    if (matched) {
+      const rec = (await loadGuideRecord(kv, 'atrumin16', matched.slug || cleanSlug)) || (await loadGuideRecord(kv, '@atrumin16', matched.slug || cleanSlug));
+      if (rec) return rec;
+      return matched;
+    }
+  } catch (e) {}
+
   return null;
 }
 
