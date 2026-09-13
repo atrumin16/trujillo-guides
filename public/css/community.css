@@ -584,46 +584,88 @@
 
 .guide-card {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-direction: row;
   align-items: flex-start;
+  gap: 16px;
   text-decoration: none;
   color: inherit;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .guide-card {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 .guide-card:has(.guide-card-avatar) {
   flex-direction: row;
-  gap: 14px;
+  gap: 16px;
 }
 
 .guide-card:hover {
-  border-color: var(--border-focus);
-  background: var(--bg-card-hover);
+  border-color: #38bdf8 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(56, 189, 248, 0.08);
+}
+
+[data-theme="dark"] .guide-card:hover {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(56, 189, 248, 0.3);
+}
+
+.guide-card.is-pinned {
+  border-left: 3px solid #38bdf8;
 }
 
 .guide-card-avatar {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
-.guide-card-body { min-width: 0; flex: 1; }
+[data-theme="light"] .guide-card-avatar {
+  border-color: #e2e8f0;
+}
 
-.guide-card h2 {
-  font-size: 1.05rem;
+.guide-card-body {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guide-card-title,
+.guide-card h2,
+.guide-card h3 {
+  font-size: 1.08rem;
   font-weight: 650;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-  margin: 0 0 6px;
-  line-height: 1.35;
+  letter-spacing: -0.015em;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+[data-theme="dark"] .guide-card-title,
+[data-theme="dark"] .guide-card h2,
+[data-theme="dark"] .guide-card h3 {
+  color: #f8fafc;
 }
 
 .guide-card p {
@@ -631,6 +673,116 @@
   font-size: 0.85rem;
   margin: 0;
   line-height: 1.45;
+}
+
+.guide-card-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+[data-theme="dark"] .guide-card-meta {
+  color: #94a3b8;
+}
+
+.meta-badge-kind {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(56, 189, 248, 0.08);
+  color: #0284c7;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  font-size: 11px;
+  font-weight: 650;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+[data-theme="dark"] .meta-badge-kind {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.meta-badge-pinned {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 9999px;
+}
+
+[data-theme="dark"] .meta-badge-pinned {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.meta-author {
+  font-weight: 550;
+  color: #475569;
+}
+
+[data-theme="dark"] .meta-author {
+  color: #cbd5e1;
+}
+
+.meta-sep {
+  opacity: 0.45;
+}
+
+.meta-read-time {
+  color: #64748b;
+}
+
+[data-theme="dark"] .meta-read-time {
+  color: #94a3b8;
+}
+
+.meta-votes {
+  font-weight: 600;
+  color: #10b981;
+}
+
+[data-theme="dark"] .meta-votes {
+  color: #34d399;
+}
+
+/* Universal Ticker Badge for Headings and Card Titles */
+.ticker-badge {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.82em;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  margin: 0 2px;
+}
+
+h1 .ticker-badge,
+.page-title .ticker-badge,
+.guide-title .ticker-badge {
+  font-size: 0.72em;
+  padding: 3px 8px;
+  border-radius: 8px;
+  border-width: 1.5px;
 }
 
 .guides-list {

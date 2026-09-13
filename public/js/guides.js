@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  window.__atmGuidesLoaded = true;
 
   var isMutating = false;
   var TABLE_WRAP = 'overflow-x-auto my-6 border border-neutral-800 rounded-lg bg-neutral-950/40 table-wrap';
@@ -348,6 +349,7 @@
 
     var targetH1 = articleH1 || outerH1 || $('h1');
     if (!targetH1) return;
+    applyTickerToElement(targetH1);
 
     var slug = slugFromPath();
     var dateEl = document.querySelector('time, .poster-date, [data-date]');
@@ -390,13 +392,46 @@
   }
 
   /* 5. Tickers, TradingView & Attachments */
+  var TICKER_BADGE_REGEX = /\(?\$([A-Z0-9]+(?:\.[A-Z0-9]+)?)\)?/g;
+
+  function formatTickerTitle(str) {
+    if (!str) return '';
+    return esc(str).replace(TICKER_BADGE_REGEX, function (_, sym) {
+      return '<span class="ticker-badge">$' + sym + '</span>';
+    });
+  }
+  window.formatTickerTitle = formatTickerTitle;
+
+  function applyTickerToElement(el) {
+    if (!el || el.getAttribute('data-ticker-parsed')) return;
+    if (el.querySelector && el.querySelector('.ticker-badge')) {
+      el.setAttribute('data-ticker-parsed', '1');
+      return;
+    }
+    var raw = el.textContent || '';
+    if (raw.indexOf('$') === -1) return;
+    var re = new RegExp(TICKER_BADGE_REGEX.source, 'g');
+    if (!re.test(raw)) return;
+    el.setAttribute('data-ticker-parsed', '1');
+    el.innerHTML = formatTickerTitle(raw);
+  }
+
+  function parseTitleAndCardTickers(root) {
+    var scope = root || document;
+    // 1. Article H1 headings in headers / titles
+    scope.querySelectorAll('h1, .page-title, .guide-title, .doc-header h1, article.doc h1, #guide-body h1').forEach(applyTickerToElement);
+    // 2. Feed cards or related guide cards (h2, h3, card titles)
+    scope.querySelectorAll('.guide-card-title, .guide-card h2, .guide-card h3, .guide-card a.title').forEach(applyTickerToElement);
+  }
+
   function linkifyTickers(root) {
     var scope = root || document;
+    parseTitleAndCardTickers(scope);
     var walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT, {
       acceptNode: function (node) {
         var p = node.parentElement;
-        if (!p || SKIP_TICKER[p.tagName]) return NodeFilter.FILTER_REJECT;
-        if (!/\$(?:[A-Z]{1,6}|\d{4,5})/.test(node.nodeValue || '')) return NodeFilter.FILTER_REJECT;
+        if (!p || SKIP_TICKER[p.tagName] || p.classList.contains('ticker-badge') || (p.closest && p.closest('.ticker-badge'))) return NodeFilter.FILTER_REJECT;
+        if (!/\$(?:[A-Z0-9]{1,6}(?:\.[A-Z0-9]+)?|\d{4,5})/.test(node.nodeValue || '')) return NodeFilter.FILTER_REJECT;
         return NodeFilter.FILTER_ACCEPT;
       }
     });
@@ -404,7 +439,7 @@
     while (walker.nextNode()) nodes.push(walker.currentNode);
     nodes.forEach(function (node) {
       var frag = document.createDocumentFragment();
-      var re = /(^|[\s()])\\?\$([A-Z]{1,6}(?:[.-][A-Z]{1,4})?|\d{4,5})\b/g;
+      var re = /(^|[\s()])\\?\$([A-Z0-9]+(?:\.[A-Z0-9]+)?)\b/g;
       var text = node.nodeValue;
       var last = 0;
       var m;
@@ -1008,6 +1043,7 @@
   }
 
   function autoEnhanceArticle() {
+    parseTitleAndCardTickers(document);
     var doc = document.querySelector('article.doc, #guide-body, .guide-container, .guide-content, .md-body');
     if (!doc) return;
 
